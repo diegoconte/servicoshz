@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Atendimento e Carta de Serviços - Horizontina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sp-yellow': '#ffe400',
+                        'sp-blue': '#002B5E',
+                        'sp-gray': '#f5f5f5',
+                        'sp-dark': '#333333'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .page-section { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hidden-section { display: none !important; }
+        
+        /* Estilo para a barra de rolagem dos filtros */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans flex flex-col min-h-screen">
+
+    <!-- Topo de Acessibilidade -->
+    <div class="w-full bg-white py-2 px-4 flex justify-end items-center gap-4 text-sm border-b border-gray-200">
+        <div class="flex items-center gap-3 mr-4 hidden sm:flex">
+            <button class="hover:underline font-bold" aria-label="Aumentar texto">A+</button>
+            <button class="hover:underline font-bold" aria-label="Diminuir texto">A-</button>
+            <button class="hover:text-gray-600" aria-label="Alto Contraste"><i class="fas fa-adjust"></i></button>
+        </div>
+        <button class="bg-gray-200 hover:bg-gray-300 px-4 py-1 rounded-full text-gray-700 font-semibold transition">
+            <i class="fas fa-sign-in-alt mr-2"></i> ENTRE
+        </button>
+    </div>
+
+    <!-- Cabeçalho Principal -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-4 cursor-pointer" onclick="showPage('home')">
+                <div class="w-16 h-20 bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center shadow-sm">
+                    <i class="fas fa-shield-alt text-3xl text-gray-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold text-gray-800 leading-tight">PREFEITURA DE</h1>
+                    <h2 class="text-2xl font-extrabold text-sp-blue leading-tight uppercase">Horizontina</h2>
+                    <div class="flex items-center gap-1 mt-1">
+                        <span class="bg-sp-yellow text-black font-bold text-xs px-1 rounded">156</span>
+                        <span class="text-sm font-semibold text-gray-600">CARTA DE SERVIÇOS</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Menu de Navegação Secundário -->
+    <nav class="bg-sp-blue text-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto flex overflow-x-auto text-sm font-semibold uppercase">
+            <button onclick="showPage('home')" id="nav-home" class="nav-link px-6 py-4 transition bg-sp-yellow text-black">Início</button>
+            <button onclick="showPage('carta')" id="nav-carta" class="nav-link px-6 py-4 transition hover:bg-blue-800">Todos os Serviços</button>
+            <button onclick="showPage('acompanhar')" id="nav-acompanhar" class="nav-link px-6 py-4 transition hover:bg-blue-800">Acompanhar Protocolo</button>
+        </div>
+    </nav>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        
+        <!-- ========================================== -->
+        <!-- PÁGINA 1: INÍCIO (DESTAQUES)               -->
+        <!-- ========================================== -->
+        <div id="page-home" class="page-section">
+            
+            <!-- Barra de Busca Rápida -->
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-10 text-center">
+                <h2 class="text-2xl font-bold mb-2">O que você está buscando?</h2>
+                <p class="text-gray-600 mb-6">Encontre serviços, informações e formulários da Prefeitura.</p>
+                <div class="max-w-2xl mx-auto flex flex-col sm:flex-row shadow-sm">
+                    <input type="text" id="busca-home" placeholder="Ex: Alvará, Iluminação, IPTU..." class="w-full border border-gray-300 px-6 py-4 rounded-t-md sm:rounded-l-md sm:rounded-tr-none focus:outline-none focus:border-sp-blue text-lg">
+                    <button onclick="buscarDaHome()" class="bg-sp-blue text-white px-8 py-4 hover:bg-blue-900 transition sm:rounded-r-md sm:rounded-bl-none rounded-b-md font-bold text-lg">
+                        <i class="fas fa-search mr-2"></i> Buscar
+                    </button>
+                </div>
+            </div>
+
+            <h3 class="text-2xl font-bold text-gray-900 mb-6 border-b-2 border-sp-yellow inline-block pb-1">Serviços Mais Procurados</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="grid-destaques">
+                <!-- Preenchido via JavaScript -->
+            </div>
+            
+            <div class="text-center mt-8">
+                <button onclick="showPage('carta')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded-full transition shadow-sm">
+                    Ver Todos os Serviços da Carta <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PÁGINA 2: CARTA DE SERVIÇOS (FILTROS)      -->
+        <!-- ========================================== -->
+        <div id="page-carta" class="page-section hidden-section">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">Carta de Serviços ao Cidadão</h2>
+            
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Sidebar de Filtros -->
+                <aside class="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
+                    <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fas fa-filter text-sp-blue"></i> Filtros</h3>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Busca por Palavra</label>
+                        <input type="text" id="input-busca" placeholder="Filtrar serviços..." class="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:border-sp-blue" onkeyup="aplicarFiltros()">
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="font-bold text-sm text-gray-700 mb-3 border-b pb-1">Por Secretaria</h4>
+                        <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar text-sm" id="filtros-secretaria">
+                            <!-- Preenchido via JS -->
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="font-bold text-sm text-gray-700 mb-3 border-b pb-1">Custo do Serviço</h4>
+                        <div class="space-y-2 text-sm">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="filtro-custo rounded text-sp-blue" value="gratuito" onchange="aplicarFiltros()"> Gratuito
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="filtro-custo rounded text-sp-blue" value="pago" onchange="aplicarFiltros()"> Possui Taxas/Custos
+                            </label>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Área de Resultados (Lista de Serviços) -->
+                <div class="w-full md:w-3/4">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-gray-600 font-semibold" id="contador-resultados">Mostrando 0 serviços</span>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4" id="lista-servicos">
+                        <!-- Preenchido via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PÁGINA 3: DETALHE DO SERVIÇO (PDF MODELO)  -->
+        <!-- ========================================== -->
+        <div id="page-detalhe" class="page-section hidden-section">
+            <button onclick="showPage('carta')" class="text-sp-blue font-bold hover:underline mb-6 flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> Voltar para a lista de serviços
+            </button>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <!-- Cabeçalho do Serviço -->
+                <div class="bg-sp-blue text-white p-8">
+                    <span id="det-secretaria" class="bg-blue-800 text-blue-100 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Secretaria</span>
+                    <h2 id="det-titulo" class="text-3xl font-bold mt-4 mb-2">Nome do Serviço</h2>
+                    <div class="flex flex-wrap gap-4 mt-4 text-sm font-medium">
+                        <span id="det-custo-badge" class="bg-green-500 text-white px-3 py-1 rounded-md flex items-center gap-2"><i class="fas fa-dollar-sign"></i> Gratuito</span>
+                        <span id="det-publico-badge" class="bg-blue-700 text-white px-3 py-1 rounded-md flex items-center gap-2"><i class="fas fa-users"></i> Público</span>
+                    </div>
+                </div>
+
+                <div class="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Coluna Principal (Descrição, Documentos, Etapas) -->
+                    <div class="lg:col-span-2 space-y-8">
+                        
+                        <section>
+                            <h3 class="text-xl font-bold text-gray-900 border-b-2 border-sp-yellow pb-2 mb-4 flex items-center gap-2">
+                                <i class="fas fa-info-circle text-sp-blue"></i> O que é?
+                            </h3>
+                            <p id="det-descricao" class="text-gray-700 leading-relaxed"></p>
+                        </section>
+
+                        <section>
+                            <h3 class="text-xl font-bold text-gray-900 border-b-2 border-sp-yellow pb-2 mb-4 flex items-center gap-2">
+                                <i class="far fa-id-card text-sp-blue"></i> Quem pode solicitar? (Elegibilidade)
+                            </h3>
+                            <p id="det-elegibilidade" class="text-gray-700 leading-relaxed"></p>
+                        </section>
+
+                        <section>
+                            <h3 class="text-xl font-bold text-gray-900 border-b-2 border-sp-yellow pb-2 mb-4 flex items-center gap-2">
+                                <i class="fas fa-file-alt text-sp-blue"></i> Documentação Exigida
+                            </h3>
+                            <ul id="det-documentos" class="list-disc list-inside text-gray-700 space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                <!-- Preenchido via JS -->
+                            </ul>
+                        </section>
+
+                        <section>
+                            <h3 class="text-xl font-bold text-gray-900 border-b-2 border-sp-yellow pb-2 mb-4 flex items-center gap-2">
+                                <i class="fas fa-shoe-prints text-sp-blue"></i> Etapas do Processo
+                            </h3>
+                            <div id="det-etapas" class="space-y-4">
+                                <!-- Preenchido via JS com design de "stepper" -->
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Coluna Lateral (Prazos, Canais, Custos) -->
+                    <div class="space-y-6">
+                        
+                        <!-- Ação Principal -->
+                        <div id="det-area-online" class="bg-yellow-50 border border-yellow-200 p-6 rounded-lg text-center hidden">
+                            <h4 class="font-bold text-lg text-gray-900 mb-2">Serviço Digital</h4>
+                            <p class="text-sm text-gray-600 mb-4">Você pode solicitar este serviço diretamente pela internet.</p>
+                            <a href="#" id="det-link-online" class="block w-full bg-sp-blue hover:bg-blue-900 text-white font-bold py-3 px-4 rounded transition">
+                                Solicitar Online <i class="fas fa-external-link-alt ml-1"></i>
+                            </a>
+                        </div>
+
+                        <!-- Canais de Atendimento -->
+                        <div class="bg-gray-50 border border-gray-200 p-6 rounded-lg">
+                            <h4 class="font-bold text-gray-900 mb-4 border-b pb-2"><i class="fas fa-map-marker-alt text-red-500 mr-2"></i> Onde solicitar?</h4>
+                            <div id="det-canais" class="text-sm text-gray-700 space-y-3">
+                                <!-- Preenchido via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Prazos -->
+                        <div class="bg-gray-50 border border-gray-200 p-6 rounded-lg">
+                            <h4 class="font-bold text-gray-900 mb-4 border-b pb-2"><i class="far fa-clock text-blue-500 mr-2"></i> Prazos</h4>
+                            <ul class="text-sm text-gray-700 space-y-3">
+                                <li class="flex justify-between border-b border-gray-200 pb-2">
+                                    <span class="text-gray-500">Tempo de Espera:</span>
+                                    <strong id="det-prazo-espera"></strong>
+                                </li>
+                                <li class="flex justify-between border-b border-gray-200 pb-2">
+                                    <span class="text-gray-500">Prazo de Análise:</span>
+                                    <strong id="det-prazo-analise"></strong>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span class="text-gray-500">Prazo Total Máximo:</span>
+                                    <strong id="det-prazo-total"></strong>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Custos detalhados -->
+                        <div class="bg-gray-50 border border-gray-200 p-6 rounded-lg">
+                            <h4 class="font-bold text-gray-900 mb-4 border-b pb-2"><i class="fas fa-coins text-yellow-600 mr-2"></i> Custos e Taxas</h4>
+                            <p id="det-custos-desc" class="text-sm text-gray-700"></p>
+                        </div>
+                        
+                        <!-- Resultado -->
+                        <div class="bg-gray-50 border border-gray-200 p-6 rounded-lg">
+                            <h4 class="font-bold text-gray-900 mb-4 border-b pb-2"><i class="fas fa-check-circle text-green-500 mr-2"></i> O que eu recebo?</h4>
+                            <p id="det-resultado" class="text-sm text-gray-700"></p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="bg-sp-blue text-white py-8 border-t-4 border-sp-yellow mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <h3 class="font-bold text-lg mb-2">Prefeitura Municipal de Horizontina</h3>
+            <p class="text-sm text-gray-300">Ouvidoria Municipal | Ação de Transparência e Governança - Lei nº 13.460/2017</p>
+        </div>
+    </footer>
+
+    <!-- BANCO DE DADOS SIMULADO & LÓGICA -->
+    <script>
+        // 1. Dados estruturados baseados no formulário PDF
+        const bdServicos = [
+            {
+                id: 1,
+                titulo: "Iluminação Pública - Solicitar Reparo",
+                secretaria: "Secretaria de Infraestrutura e Logística",
+                descricao: "Serviço para solicitar o conserto de lâmpadas queimadas, piscando ou quebradas em postes de vias públicas do município.",
+                elegibilidade: "Qualquer cidadão residente no município.",
+                documentos: ["Endereço completo do poste com defeito", "Ponto de referência", "Não é necessário anexar documentos pessoais"],
+                etapas: [
+                    { nome: "Abertura do Protocolo", desc: "Cidadão registra o pedido via sistema online ou telefone." },
+                    { nome: "Vistoria Técnica", desc: "Equipe técnica avalia o local reportado." },
+                    { nome: "Execução do Serviço", desc: "Troca da lâmpada ou reparo da fiação." }
+                ],
+                canais: [
+                    { tipo: "Online", local: "Portal do Cidadão 156", link: "#" },
+                    { tipo: "Telefone", local: "(55) 3537-XXXX (Seg a Sex, 08h às 17h)" }
+                ],
+                prazos: { espera: "Imediato", analise: "2 dias úteis", total: "Até 5 dias úteis" },
+                custo: { gratuito: true, descricao: "O serviço é totalmente gratuito, coberto pela CIP (Contribuição de Iluminação Pública)." },
+                resultado: "Reparo efetuado no local indicado.",
+                destaque: true
+            },
+            {
+                id: 2,
+                titulo: "Emissão de Alvará de Licença e Funcionamento",
+                secretaria: "Secretaria da Fazenda",
+                descricao: "Documento obrigatório que autoriza o funcionamento de atividades comerciais, industriais, institucionais e de prestação de serviços no município.",
+                elegibilidade: "Pessoas Jurídicas (Empresas) e Profissionais Autônomos estabelecidos em Horizontina.",
+                documentos: ["CNPJ atualizado", "Contrato Social", "RG e CPF dos sócios", "Alvará PPCI (Bombeiros)", "Comprovante de endereço do imóvel"],
+                etapas: [
+                    { nome: "Protocolo", desc: "Envio da documentação via Portal de Serviços." },
+                    { nome: "Análise Tributária e Zoneamento", desc: "Verificação se a atividade é permitida no local." },
+                    { nome: "Pagamento de Taxa", desc: "Emissão e pagamento da guia." },
+                    { nome: "Emissão do Alvará", desc: "Documento liberado para impressão." }
+                ],
+                canais: [
+                    { tipo: "Online", local: "Sistema de Alvará Digital", link: "#" },
+                    { tipo: "Presencial", local: "Paço Municipal - Setor de Tributação (Seg a Sex, 08h-12h)" }
+                ],
+                prazos: { espera: "Até 30 min (Presencial)", analise: "10 dias úteis", total: "15 dias úteis" },
+                custo: { gratuito: false, descricao: "Cobrança de Taxa de Licença de Localização (TLL). O valor varia de acordo com o ramo de atividade e metragem." },
+                resultado: "Alvará de Funcionamento (PDF validado digitalmente).",
+                destaque: true
+            },
+            {
+                id: 3,
+                titulo: "CIPTEA - Carteira do Autista",
+                secretaria: "Secretaria de Assistência Social e Habitação",
+                descricao: "Solicitação da Carteira de Identificação da Pessoa com Transtorno do Espectro do Autismo (CIPTEA), para garantir atenção integral, pronto atendimento e prioridade no acesso a serviços públicos e privados.",
+                elegibilidade: "Pessoas com diagnóstico de Transtorno do Espectro do Autismo (TEA) residentes no município.",
+                documentos: ["Laudo médico com indicação do CID", "RG e CPF do beneficiário e do responsável", "Comprovante de residência", "Foto 3x4 recente", "Exame de tipagem sanguínea (opcional)"],
+                etapas: [
+                    { nome: "Recepção", desc: "Entrega dos documentos no CRAS." },
+                    { nome: "Análise", desc: "Conferência da documentação pela equipe de Serviço Social." },
+                    { nome: "Emissão", desc: "Confecção e entrega da carteirinha impressa." }
+                ],
+                canais: [
+                    { tipo: "Presencial", local: "CRAS - Centro de Referência de Assistência Social" }
+                ],
+                prazos: { espera: "Até 15 min", analise: "5 dias úteis", total: "15 dias corridos" },
+                custo: { gratuito: true, descricao: "Totalmente gratuito, conforme Lei nº 13.977/2020 (Lei Romeo Mion)." },
+                resultado: "Carteira física (CIPTEA) com validade de 5 anos.",
+                destaque: false
+            },
+            {
+                id: 4,
+                titulo: "Vagas na Educação Infantil (Creches)",
+                secretaria: "Secretaria de Educação e Cultura",
+                descricao: "Inscrição no Cadastro Único para solicitação de vagas em Escolas Municipais de Educação Infantil (EMEIs) para crianças de 0 a 5 anos.",
+                elegibilidade: "Pais ou responsáveis legais de crianças residentes no município.",
+                documentos: ["Certidão de Nascimento da Criança", "CPF da criança (se houver)", "RG e CPF dos pais/responsáveis", "Comprovante de residência atualizado", "Carteira de Vacinação"],
+                etapas: [
+                    { nome: "Inscrição", desc: "Preenchimento da ficha online ou presencial." },
+                    { nome: "Classificação", desc: "Avaliação de critérios (renda, vulnerabilidade) para fila de espera." },
+                    { nome: "Convocação", desc: "Aviso telefônico/edital quando a vaga surge." },
+                    { nome: "Matrícula", desc: "Efetivação na escola designada." }
+                ],
+                canais: [
+                    { tipo: "Online", local: "Portal da Educação", link: "#" },
+                    { tipo: "Presencial", local: "Secretaria de Educação (Central de Vagas)" }
+                ],
+                prazos: { espera: "Variável", analise: "Imediata (para cadastro)", total: "Depende da fila de espera do zoneamento." },
+                custo: { gratuito: true, descricao: "Serviço totalmente gratuito." },
+                resultado: "Comprovante de Inscrição na Fila de Espera.",
+                destaque: true
+            },
+             {
+                id: 5,
+                titulo: "2ª Via do IPTU",
+                secretaria: "Secretaria da Fazenda",
+                descricao: "Emissão da segunda via das guias de pagamento do Imposto Predial e Territorial Urbano para o exercício atual ou dívida ativa.",
+                elegibilidade: "Qualquer cidadão que possua o número da Inscrição Imobiliária ou CPF do proprietário.",
+                documentos: ["Número da Inscrição do Imóvel (Cadastro) ou CPF do Proprietário."],
+                etapas: [
+                    { nome: "Acesso ao Sistema", desc: "Informar os dados de identificação do imóvel." },
+                    { nome: "Geração da Guia", desc: "Sistema emite código de barras/PIX para pagamento." }
+                ],
+                canais: [
+                    { tipo: "Online", local: "Portal de Serviços Tributários", link: "#" }
+                ],
+                prazos: { espera: "Imediato", analise: "Automática", total: "Imediato" },
+                custo: { gratuito: true, descricao: "A emissão do documento é gratuita. O contribuinte pagará apenas o valor do imposto constante na guia." },
+                resultado: "Guia de pagamento (DAM) em formato PDF.",
+                destaque: true
+            }
+        ];
+
+        // 2. Funções de Navegação de Telas
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden-section'));
+            document.getElementById('page-' + pageId).classList.remove('hidden-section');
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('bg-sp-yellow', 'text-black');
+                if(!link.classList.contains('hover:bg-blue-800')) link.classList.add('hover:bg-blue-800');
+            });
+            
+            const activeNav = document.getElementById('nav-' + pageId);
+            if(activeNav) {
+                activeNav.classList.remove('hover:bg-blue-800');
+                activeNav.classList.add('bg-sp-yellow', 'text-black');
+            }
+
+            if(pageId === 'home') renderDestaques();
+            if(pageId === 'carta') renderListaServicos();
+        }
+
+        // 3. Renderização na Home (Destaques)
+        function renderDestaques() {
+            const grid = document.getElementById('grid-destaques');
+            grid.innerHTML = '';
+            
+            const destaques = bdServicos.filter(s => s.destaque);
+            
+            destaques.forEach(serv => {
+                const card = document.createElement('div');
+                card.className = "bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition flex flex-col p-6 cursor-pointer";
+                card.onclick = () => abrirDetalhe(serv.id);
+                card.innerHTML = `
+                    <span class="text-xs font-bold text-sp-blue uppercase mb-2 block">${serv.secretaria}</span>
+                    <h4 class="font-bold text-lg mb-3 flex-grow text-gray-900 line-clamp-2">${serv.titulo}</h4>
+                    <span class="text-sm ${serv.custo.gratuito ? 'text-green-600' : 'text-yellow-600'} font-semibold mb-4 block">
+                        <i class="fas ${serv.custo.gratuito ? 'fa-check' : 'fa-dollar-sign'}"></i> ${serv.custo.gratuito ? 'Gratuito' : 'Com Custo'}
+                    </span>
+                    <button class="w-full bg-gray-100 hover:bg-sp-yellow hover:text-black text-gray-800 font-bold py-2 px-4 rounded transition border border-gray-200">
+                        Ver Detalhes
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 4. Lógica da Carta de Serviços (Filtros e Lista)
+        function extrairSecretarias() {
+            const secretarias = [...new Set(bdServicos.map(s => s.secretaria))].sort();
+            const container = document.getElementById('filtros-secretaria');
+            container.innerHTML = '';
+            
+            secretarias.forEach(sec => {
+                container.innerHTML += `
+                    <label class="flex items-center gap-2 cursor-pointer mb-2">
+                        <input type="checkbox" class="filtro-sec rounded text-sp-blue" value="${sec}" onchange="aplicarFiltros()"> 
+                        <span class="leading-tight">${sec}</span>
+                    </label>
+                `;
+            });
+        }
+
+        function aplicarFiltros() {
+            const termoBusca = document.getElementById('input-busca').value.toLowerCase();
+            
+            // Pega checkboxes marcados de Secretaria
+            const secSelecionadas = Array.from(document.querySelectorAll('.filtro-sec:checked')).map(cb => cb.value);
+            
+            // Pega checkboxes marcados de Custo
+            const custosSelecionados = Array.from(document.querySelectorAll('.filtro-custo:checked')).map(cb => cb.value);
+
+            const resultados = bdServicos.filter(serv => {
+                // Filtro de Texto
+                const matchTexto = serv.titulo.toLowerCase().includes(termoBusca) || serv.descricao.toLowerCase().includes(termoBusca);
+                
+                // Filtro de Secretaria
+                const matchSec = secSelecionadas.length === 0 || secSelecionadas.includes(serv.secretaria);
+                
+                // Filtro de Custo
+                let matchCusto = true;
+                if (custosSelecionados.length > 0) {
+                    if (custosSelecionados.includes('gratuito') && custosSelecionados.includes('pago')) {
+                        matchCusto = true; // Ambos marcados
+                    } else if (custosSelecionados.includes('gratuito')) {
+                        matchCusto = serv.custo.gratuito === true;
+                    } else if (custosSelecionados.includes('pago')) {
+                        matchCusto = serv.custo.gratuito === false;
+                    }
+                }
+
+                return matchTexto && matchSec && matchCusto;
+            });
+
+            renderLista(resultados);
+        }
+
+        function renderLista(lista) {
+            const container = document.getElementById('lista-servicos');
+            document.getElementById('contador-resultados').innerText = `Mostrando ${lista.length} serviço(s)`;
+            container.innerHTML = '';
+
+            if(lista.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-gray-500 bg-white rounded border border-gray-200">Nenhum serviço encontrado com estes filtros.</div>`;
+                return;
+            }
+
+            lista.forEach(serv => {
+                // Identifica se tem atendimento online para destacar
+                const temOnline = serv.canais.some(c => c.tipo === "Online");
+                const badgeOnline = temOnline ? `<span class="bg-blue-100 text-sp-blue text-xs font-bold px-2 py-1 rounded ml-2"><i class="fas fa-laptop"></i> Solicitação Online</span>` : '';
+
+                const card = document.createElement('div');
+                card.className = "bg-white border border-gray-200 p-5 rounded-lg hover:border-sp-blue transition shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-4 cursor-pointer";
+                card.onclick = () => abrirDetalhe(serv.id);
+                card.innerHTML = `
+                    <div class="flex-grow">
+                        <span class="text-xs font-bold text-gray-500 uppercase">${serv.secretaria}</span>
+                        <h4 class="font-bold text-lg text-sp-blue flex items-center flex-wrap gap-2 mt-1">
+                            ${serv.titulo} ${badgeOnline}
+                        </h4>
+                        <p class="text-sm text-gray-600 mt-2 line-clamp-2">${serv.descricao}</p>
+                    </div>
+                    <div class="flex-shrink-0 md:text-right">
+                        <div class="text-sm font-bold ${serv.custo.gratuito ? 'text-green-600' : 'text-yellow-600'} mb-2">
+                            ${serv.custo.gratuito ? 'Gratuito' : 'Com Custo'}
+                        </div>
+                        <button class="bg-gray-800 text-white hover:bg-gray-700 px-4 py-2 rounded text-sm font-bold w-full md:w-auto transition">
+                            Acessar Serviço
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderListaServicos() {
+            extrairSecretarias();
+            aplicarFiltros(); // Renderiza com os filtros iniciais (vazios = todos)
+        }
+
+        // Função auxiliar para busca pela Home
+        function buscarDaHome() {
+            const texto = document.getElementById('busca-home').value;
+            showPage('carta');
+            document.getElementById('input-busca').value = texto;
+            aplicarFiltros();
+        }
+
+        // 5. Preencher e Abrir a Tela de Detalhes do Serviço
+        function abrirDetalhe(id) {
+            const serv = bdServicos.find(s => s.id === id);
+            if(!serv) return;
+
+            // Cabeçalho
+            document.getElementById('det-titulo').innerText = serv.titulo;
+            document.getElementById('det-secretaria').innerText = serv.secretaria;
+            
+            // Badges
+            const badgeCusto = document.getElementById('det-custo-badge');
+            badgeCusto.className = `px-3 py-1 rounded-md flex items-center gap-2 ${serv.custo.gratuito ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'}`;
+            badgeCusto.innerHTML = `<i class="fas ${serv.custo.gratuito ? 'fa-check' : 'fa-dollar-sign'}"></i> ${serv.custo.gratuito ? 'Gratuito' : 'Com Custo'}`;
+            
+            // Textos Principais
+            document.getElementById('det-descricao').innerText = serv.descricao;
+            document.getElementById('det-elegibilidade').innerText = serv.elegibilidade;
+            document.getElementById('det-resultado').innerText = serv.resultado;
+            
+            // Documentos (Lista)
+            const ulDocs = document.getElementById('det-documentos');
+            ulDocs.innerHTML = '';
+            serv.documentos.forEach(doc => {
+                ulDocs.innerHTML += `<li>${doc}</li>`;
+            });
+
+            // Etapas (Stepper)
+            const divEtapas = document.getElementById('det-etapas');
+            divEtapas.innerHTML = '';
+            serv.etapas.forEach((etapa, index) => {
+                divEtapas.innerHTML += `
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full bg-sp-yellow text-black font-bold flex items-center justify-center shrink-0 z-10 border-2 border-white shadow-sm">${index + 1}</div>
+                            ${index < serv.etapas.length - 1 ? '<div class="w-0.5 h-full bg-gray-200 mt-1"></div>' : ''}
+                        </div>
+                        <div class="pb-6 pt-1">
+                            <h5 class="font-bold text-gray-800">${etapa.nome}</h5>
+                            <p class="text-sm text-gray-600 mt-1">${etapa.desc}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Prazos
+            document.getElementById('det-prazo-espera').innerText = serv.prazos.espera;
+            document.getElementById('det-prazo-analise').innerText = serv.prazos.analise;
+            document.getElementById('det-prazo-total').innerText = serv.prazos.total;
+
+            // Custos Texto
+            document.getElementById('det-custos-desc').innerText = serv.custo.descricao;
+
+            // Canais e Botão Online
+            const divCanais = document.getElementById('det-canais');
+            divCanais.innerHTML = '';
+            
+            const areaOnline = document.getElementById('det-area-online');
+            const linkOnline = document.getElementById('det-link-online');
+            areaOnline.classList.add('hidden'); // esconde por padrão
+            
+            serv.canais.forEach(canal => {
+                let icone = 'fa-map-marker-alt';
+                if(canal.tipo === 'Online') icone = 'fa-laptop';
+                if(canal.tipo === 'Telefone') icone = 'fa-phone';
+
+                divCanais.innerHTML += `
+                    <div class="flex gap-3 mb-2">
+                        <i class="fas ${icone} text-gray-400 mt-1"></i>
+                        <div>
+                            <strong class="block">${canal.tipo}</strong>
+                            <span>${canal.local}</span>
+                        </div>
+                    </div>
+                `;
+
+                // Se houver canal online com link, ativa o botão grande em destaque
+                if(canal.tipo === 'Online' && canal.link) {
+                    areaOnline.classList.remove('hidden');
+                    linkOnline.href = canal.link;
+                }
+            });
+
+            // Mudar a tela
+            showPage('detalhe');
+            window.scrollTo(0, 0); // Sobe a página para o topo
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage('home');
+        });
+
+    </script>
+</body>
+</html>
