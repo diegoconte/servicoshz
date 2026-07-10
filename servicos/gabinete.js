@@ -38,11 +38,10 @@ bdServicos.push(
         titulo: "Videomonitoramento e Cercamento Eletrônico",
         secretaria: "Secretaria do Gabinete do Prefeito",
         descricao: "Disponibilização e análise de registros de imagens capturadas pelas câmeras de videomonitoramento e do cercamento eletrônico municipal, visando dar suporte a investigações de segurança de forma coordenada com as forças policiais.",
-        elegibilidade: "Qualquer pessoa física ou jurídica que apresente registro de Ocorrência Policial relacionada ao fato motivador do pedido.",
+        elegibilidade: "Qualquer pessoa física ou jurídica que atenda as normas fixadas na Portaria SSP nº 016/2022.",
         documentos: [
-            "Número do Protocolo da solicitação municipal",
-            "Cópia física do Registro de Ocorrência Policial relacionada ao evento"
-        ],
+            "O acesso as imagens será concedido mediante solicitação formal, contendo os dados necessários para a extração pontual das imagens, tais como: o endereço completo, data e horário inicial e final do fato: I - da autoridade judicial e do Ministério Público; II - dos encarregados de inquérito policial, do inquérito policial-militar, da sindicância ou procedimentos congêneres, em qualquer caso. III - dos setores de inteligência da polícia civil e militar.",
+            ],
         etapas: [
             { nome: "Abertura de Protocolo", desc: "O cidadão inicia o protocolo municipal devidamente justificado com a documentação em anexo." },
             { nome: "Análise Legal", desc: "Verificação da conformidade com a Lei Geral de Proteção de Dados (LGPD) e critérios de autorização técnica." },
