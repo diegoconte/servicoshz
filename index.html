@@ -20,6 +20,28 @@
         }
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- =================================================== -->
+    <!-- CONEXÃO COM OS ARQUIVOS DE SERVIÇOS DAS SECRETARIAS -->
+    <!-- =================================================== -->
+    <script>const bdServicos = [];</script>
+    <!-- =================================================== -->
+    <!-- CONEXÃO COM OS ARQUIVOS DE SERVIÇOS DAS SECRETARIAS -->
+    <!-- =================================================== -->
+    <script>const bdServicos = [];</script>
+    <script src="servicos/gabinete.js"></script>
+    <script src="servicos/planejamento.js"></script>
+    <script src="servicos/administracao.js"></script>
+    <script src="servicos/fazenda.js"></script>
+    <script src="servicos/infraestrutura.js"></script>
+    <script src="servicos/saude.js"></script>
+    <script src="servicos/educacao.js"></script>
+    <script src="servicos/desenvolvimento_social.js"></script>
+    <script src="servicos/desenvolvimento_economico.js"></script>
+    <script src="servicos/desenvolvimento_rural.js"></script>
+    <script src="servicos/esporte_cultura.js"></script>
+    <script src="servicos/governo.js"></script>
+
     <style>
         .page-section { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn {
@@ -33,6 +55,27 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    /* Regras Universais para Alto Contraste */
+        body.alto-contraste {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+        }
+        body.alto-contraste :not(.no-contrast-toggle) {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            border-color: #ffffff !important;
+            box-shadow: none !important;
+        }
+        /* Destacar links, botões e ícones em amarelo brilhante */
+        body.alto-contraste a, 
+        body.alto-contraste button:not(.nav-link),
+        body.alto-contraste i {
+            color: #ffff00 !important;
+            border-color: #ffff00 !important;
+        }
+        body.alto-contraste button:hover {
+            background-color: #333333 !important;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans flex flex-col min-h-screen">
@@ -40,9 +83,9 @@
     <!-- Topo de Acessibilidade -->
     <div class="w-full bg-white py-2 px-4 flex justify-end items-center gap-4 text-sm border-b border-gray-200">
         <div class="flex items-center gap-3 mr-4 hidden sm:flex">
-            <button class="hover:underline font-bold" aria-label="Aumentar texto">A+</button>
-            <button class="hover:underline font-bold" aria-label="Diminuir texto">A-</button>
-            <button class="hover:text-gray-600" aria-label="Alto Contraste"><i class="fas fa-adjust"></i></button>
+            <button onclick="alterarFonte('aumentar')" class="hover:underline font-bold" aria-label="Aumentar texto">A+</button>
+            <button onclick="alterarFonte('diminuir')"class="hover:underline font-bold" aria-label="Diminuir texto">A-</button>
+            <button onclick="alternarContraste()" class="hover:text-gray-600" aria-label="Alto Contraste"><i class="fas fa-adjust"></i></button>
         </div>
         <button class="bg-gray-200 hover:bg-gray-300 px-4 py-1 rounded-full text-gray-700 font-semibold transition">
             <i class="fas fa-sign-in-alt mr-2"></i> ENTRE
@@ -58,9 +101,10 @@
                     <h1 class="text-sm font-bold text-gray-800 leading-tight">PREFEITURA DE</h1>
                     <h2 class="text-2xl font-extrabold text-sp-blue leading-tight uppercase">Horizontina</h2>
                     <div class="flex items-center gap-1 mt-1">
-                        <span class="bg-sp-yellow text-black font-bold text-xs px-1 rounded">156</span>
-                        <span class="text-sm font-semibold text-gray-600">CARTA DE SERVIÇOS</span>
-                    </div>
+                        <div class="flex items-center gap-1 mt-1">
+    <span id="contador-header-num" class="bg-sp-yellow text-black font-bold text-xs px-1 rounded">0</span>
+    <span id="contador-header-txt" class="text-sm font-semibold text-gray-600">CARTAS DE SERVIÇOS</span>
+</div>
                 </div>
             </div>
         </div>
@@ -72,6 +116,7 @@
             <button onclick="showPage('home')" id="nav-home" class="nav-link px-6 py-4 transition bg-sp-yellow text-black">Início</button>
             <button onclick="showPage('carta')" id="nav-carta" class="nav-link px-6 py-4 transition hover:bg-blue-800">Todos os Serviços</button>
             <button onclick="showPage('acompanhar')" id="nav-acompanhar" class="nav-link px-6 py-4 transition hover:bg-blue-800">Acompanhar Protocolo</button>
+            <button onclick="showPage('ouvidoria')" id="nav-ouvidoria" class="nav-link px-6 py-4 transition hover:bg-blue-800">Ouvidoria Municipal</button>
         </div>
     </nav>
 
@@ -283,8 +328,68 @@
             </div>
         </div>
 
-    <footer class="bg-sp-blue text-white py-8 border-t-4 border-sp-yellow mt-auto">
-        
+    <footer class="bg-sp-white text-white py-8 border-t-4 border-sp-yellow mt-auto">
+
+        <div id="page-ouvidoria" class="page-section hidden-section">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+                    <i class="fas fa-bullhorn text-sp-white"></i> Ouvidoria Municipal
+                </h2>
+                <p class="text-gray-600 mb-6">Canal direto de comunicação entre o cidadão e a Administração Municipal de Horizontina[cite: 5, 14].</p>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg mb-8 shadow-sm">
+                    <p class="text-sm text-yellow-800 font-medium">
+                        <i class="fas fa-gavel mr-2"></i> Este serviço está baseado nas normas estabelecidas nas Legislações Federais nº 12.527/2011 (LAI) e nº 13.460/2017[cite: 7].
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                    
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-red-400 transition flex flex-col justify-between">
+                        <div>
+                            <span class="text-red-600 bg-red-50 text-xs font-bold px-2.5 py-1 rounded-full uppercase"><i class="fas fa-exclamation-triangle"></i> Reclamação</span>
+                            <p class="text-gray-600 text-sm mt-3 mb-4">Relate insatisfações com os serviços públicos municipais, atrasos, mau atendimento ou descumprimento de obrigações.</p>
+                        </div>
+                        <a href="https://horizontina.atende.net" target="_blank" class="w-full bg-gray-800 hover:bg-gray-900 text-white text-center font-bold py-2.5 px-4 rounded text-sm transition">Registrar Reclamação</a>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-orange-400 transition flex flex-col justify-between">
+                        <div>
+                            <span class="text-orange-600 bg-orange-50 text-xs font-bold px-2.5 py-1 rounded-full uppercase"><i class="fas fa-shield-alt"></i> Denúncia</span>
+                            <p class="text-gray-600 text-sm mt-3 mb-4">Comunique atos ilegais, irregularidades administrativas, indícios de corrupção ou uso indevido da máquina pública.</p>
+                        </div>
+                        <a href="https://horizontina.atende.net" target="_blank" class="w-full bg-gray-800 hover:bg-gray-900 text-white text-center font-bold py-2.5 px-4 rounded text-sm transition">Registrar Denúncia</a>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-blue-400 transition flex flex-col justify-between">
+                        <div>
+                            <span class="text-blue-600 bg-blue-50 text-xs font-bold px-2.5 py-1 rounded-full uppercase"><i class="fas fa-lightbulb"></i> Sugestão</span>
+                            <p class="text-gray-600 text-sm mt-3 mb-4">Envie propostas de melhoria, ideias inovadoras ou alternativas para o aprimoramento dos serviços da Prefeitura.</p>
+                        </div>
+                        <a href="https://horizontina.atende.net" target="_blank" class="w-full bg-gray-800 hover:bg-gray-900 text-white text-center font-bold py-2.5 px-4 rounded text-sm transition">Enviar Sugestão</a>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-green-400 transition flex flex-col justify-between">
+                        <div>
+                            <span class="text-green-600 bg-green-50 text-xs font-bold px-2.5 py-1 rounded-full uppercase"><i class="fas fa-thumbs-up"></i> Elogio</span>
+                            <p class="text-gray-600 text-sm mt-3 mb-4">Expresse sua satisfação, agradecimento ou reconhecimento por um bom atendimento ou serviço prestado no município.</p>
+                        </div>
+                        <a href="https://horizontina.atende.net" target="_blank" class="w-full bg-gray-800 hover:bg-gray-900 text-white text-center font-bold py-2.5 px-4 rounded text-sm transition">Registrar Elogio</a>
+                    </div>
+
+                </div>
+
+                <div class="bg-gray-100 p-5 rounded-lg border border-gray-200 text-sm text-gray-600">
+                    <h4 class="font-bold text-gray-800 mb-2 flex items-center gap-2"><i class="fas fa-user-secret"></i> Sobre a identificação do solicitante:</h4>
+                    <p class="mb-2">Ao acessar o sistema da prefeitura, você poderá escolher entre três modalidades:</p>
+                    <ul class="list-disc list-inside space-y-1 ml-2">
+                        <li><strong>Identificação sem restrição:</strong> Seus dados ficam visíveis para todos os setores envolvidos.</li>
+                        <li><strong>Identificação com restrição:</strong> Seus dados ficam protegidos e visíveis apenas para a equipe da Ouvidoria.</li>
+                        <li><strong>Não se identificar (Anônimo):</strong> Seu relato é registrado sem qualquer vínculo com seus dados pessoais.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Rodapé -->
@@ -297,114 +402,7 @@
 
     <!-- BANCO DE DADOS SIMULADO & LÓGICA -->
     <script>
-        // 1. Dados estruturados baseados no formulário PDF
-        const bdServicos = [
-            {
-                id: 1,
-                titulo: "Iluminação Pública - Solicitar Reparo",
-                secretaria: "Secretaria de Infraestrutura e Logística",
-                descricao: "Serviço para solicitar o conserto de lâmpadas queimadas, piscando ou quebradas em postes de vias públicas do município.",
-                elegibilidade: "Qualquer cidadão residente no município.",
-                documentos: ["Endereço completo do poste com defeito", "Ponto de referência", "Não é necessário anexar documentos pessoais"],
-                etapas: [
-                    { nome: "Abertura do Protocolo", desc: "Cidadão registra o pedido via sistema online ou telefone." },
-                    { nome: "Vistoria Técnica", desc: "Equipe técnica avalia o local reportado." },
-                    { nome: "Execução do Serviço", desc: "Troca da lâmpada ou reparo da fiação." }
-                ],
-                canais: [
-                    { tipo: "Online", local: "Portal do Cidadão 156", link: "#" },
-                    { tipo: "Telefone", local: "(55) 3537-XXXX (Seg a Sex, 08h às 17h)" }
-                ],
-                prazos: { espera: "Imediato", analise: "2 dias úteis", total: "Até 5 dias úteis" },
-                custo: { gratuito: true, descricao: "O serviço é totalmente gratuito, coberto pela CIP (Contribuição de Iluminação Pública)." },
-                resultado: "Reparo efetuado no local indicado.",
-                destaque: true
-            },
-            {
-                id: 2,
-                titulo: "Emissão de Alvará de Licença e Funcionamento",
-                secretaria: "Secretaria da Fazenda",
-                descricao: "Documento obrigatório que autoriza o funcionamento de atividades comerciais, industriais, institucionais e de prestação de serviços no município.",
-                elegibilidade: "Pessoas Jurídicas (Empresas) e Profissionais Autônomos estabelecidos em Horizontina.",
-                documentos: ["CNPJ atualizado", "Contrato Social", "RG e CPF dos sócios", "Alvará PPCI (Bombeiros)", "Comprovante de endereço do imóvel"],
-                etapas: [
-                    { nome: "Protocolo", desc: "Envio da documentação via Portal de Serviços." },
-                    { nome: "Análise Tributária e Zoneamento", desc: "Verificação se a atividade é permitida no local." },
-                    { nome: "Pagamento de Taxa", desc: "Emissão e pagamento da guia." },
-                    { nome: "Emissão do Alvará", desc: "Documento liberado para impressão." }
-                ],
-                canais: [
-                    { tipo: "Online", local: "Sistema de Alvará Digital", link: "#" },
-                    { tipo: "Presencial", local: "Paço Municipal - Setor de Tributação (Seg a Sex, 08h-12h)" }
-                ],
-                prazos: { espera: "Até 30 min (Presencial)", analise: "10 dias úteis", total: "15 dias úteis" },
-                custo: { gratuito: false, descricao: "Cobrança de Taxa de Licença de Localização (TLL). O valor varia de acordo com o ramo de atividade e metragem." },
-                resultado: "Alvará de Funcionamento (PDF validado digitalmente).",
-                destaque: true
-            },
-            {
-                id: 3,
-                titulo: "CIPTEA - Carteira do Autista",
-                secretaria: "Secretaria de Assistência Social e Habitação",
-                descricao: "Solicitação da Carteira de Identificação da Pessoa com Transtorno do Espectro do Autismo (CIPTEA), para garantir atenção integral, pronto atendimento e prioridade no acesso a serviços públicos e privados.",
-                elegibilidade: "Pessoas com diagnóstico de Transtorno do Espectro do Autismo (TEA) residentes no município.",
-                documentos: ["Laudo médico com indicação do CID", "RG e CPF do beneficiário e do responsável", "Comprovante de residência", "Foto 3x4 recente", "Exame de tipagem sanguínea (opcional)"],
-                etapas: [
-                    { nome: "Recepção", desc: "Entrega dos documentos no CRAS." },
-                    { nome: "Análise", desc: "Conferência da documentação pela equipe de Serviço Social." },
-                    { nome: "Emissão", desc: "Confecção e entrega da carteirinha impressa." }
-                ],
-                canais: [
-                    { tipo: "Presencial", local: "CRAS - Centro de Referência de Assistência Social" }
-                ],
-                prazos: { espera: "Até 15 min", analise: "5 dias úteis", total: "15 dias corridos" },
-                custo: { gratuito: true, descricao: "Totalmente gratuito, conforme Lei nº 13.977/2020 (Lei Romeo Mion)." },
-                resultado: "Carteira física (CIPTEA) com validade de 5 anos.",
-                destaque: false
-            },
-            {
-                id: 4,
-                titulo: "Vagas na Educação Infantil (Creches)",
-                secretaria: "Secretaria de Educação e Cultura",
-                descricao: "Inscrição no Cadastro Único para solicitação de vagas em Escolas Municipais de Educação Infantil (EMEIs) para crianças de 0 a 5 anos.",
-                elegibilidade: "Pais ou responsáveis legais de crianças residentes no município.",
-                documentos: ["Certidão de Nascimento da Criança", "CPF da criança (se houver)", "RG e CPF dos pais/responsáveis", "Comprovante de residência atualizado", "Carteira de Vacinação"],
-                etapas: [
-                    { nome: "Inscrição", desc: "Preenchimento da ficha online ou presencial." },
-                    { nome: "Classificação", desc: "Avaliação de critérios (renda, vulnerabilidade) para fila de espera." },
-                    { nome: "Convocação", desc: "Aviso telefônico/edital quando a vaga surge." },
-                    { nome: "Matrícula", desc: "Efetivação na escola designada." }
-                ],
-                canais: [
-                    { tipo: "Online", local: "Portal da Educação", link: "#" },
-                    { tipo: "Presencial", local: "Secretaria de Educação (Central de Vagas)" }
-                ],
-                prazos: { espera: "Variável", analise: "Imediata (para cadastro)", total: "Depende da fila de espera do zoneamento." },
-                custo: { gratuito: true, descricao: "Serviço totalmente gratuito." },
-                resultado: "Comprovante de Inscrição na Fila de Espera.",
-                destaque: true
-            },
-             {
-                id: 5,
-                titulo: "2ª Via do IPTU",
-                secretaria: "Secretaria da Fazenda",
-                descricao: "Emissão da segunda via das guias de pagamento do Imposto Predial e Territorial Urbano para o exercício atual ou dívida ativa.",
-                elegibilidade: "Qualquer cidadão que possua o número da Inscrição Imobiliária ou CPF do proprietário.",
-                documentos: ["Número da Inscrição do Imóvel (Cadastro) ou CPF do Proprietário."],
-                etapas: [
-                    { nome: "Acesso ao Sistema", desc: "Informar os dados de identificação do imóvel." },
-                    { nome: "Geração da Guia", desc: "Sistema emite código de barras/PIX para pagamento." }
-                ],
-                canais: [
-                    { tipo: "Online", local: "Portal de Serviços Tributários", link: "#" }
-                ],
-                prazos: { espera: "Imediato", analise: "Automática", total: "Imediato" },
-                custo: { gratuito: true, descricao: "A emissão do documento é gratuita. O contribuinte pagará apenas o valor do imposto constante na guia." },
-                resultado: "Guia de pagamento (DAM) em formato PDF.",
-                destaque: true
-            }
-        ];
-
+       
         // 2. Funções de Navegação de Telas
         function showPage(pageId) {
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden-section'));
@@ -639,11 +637,39 @@
             window.scrollTo(0, 0); // Sobe a página para o topo
         }
 
-        // Inicialização
+            // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             showPage('home');
+            
+            // Lógica do Contador Automático do Cabeçalho
+            const totalDeServicos = bdServicos.length;
+            
+            // Injeta o número total de serviços no quadradinho amarelo
+            document.getElementById('contador-header-num').innerText = totalDeServicos;
+            
+            // Aplica a regra de plural que você sugeriu
+            const textoContador = document.getElementById('contador-header-txt');
+            if (totalDeServicos === 1) {
+                textoContador.innerText = "CARTA DE SERVIÇO";
+            } else {
+                textoContador.innerText = "CARTAS DE SERVIÇOS";
+            }
         });
+    // Funções de Acessibilidade (Tamanho de Fonte e Contraste)
+        let tamanhoFonteAtual = 100;
 
+        function alterarFonte(acao) {
+            if (acao === 'aumentar' && tamanhoFonteAtual < 130) {
+                tamanhoFonteAtual += 10; // Aumenta de 10% em 10%
+            } else if (acao === 'diminuir' && tamanhoFonteAtual > 80) {
+                tamanhoFonteAtual -= 10; // Diminui de 10% em 10%
+            }
+            document.documentElement.style.fontSize = tamanhoFonteAtual + '%';
+        }
+
+        function alternarContraste() {
+            document.body.classList.toggle('alto-contraste');
+        }
     </script>
 </body>
 </html>
