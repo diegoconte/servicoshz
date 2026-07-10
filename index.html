@@ -449,16 +449,19 @@
         }
 
         // 4. Lógica da Carta de Serviços (Filtros e Lista)
-        function extrairSecretarias() {
+      function extrairSecretarias() {
             const secretarias = [...new Set(bdServicos.map(s => s.secretaria))].sort();
             const container = document.getElementById('filtros-secretaria');
             container.innerHTML = '';
             
             secretarias.forEach(sec => {
+                // CONTA AUTOMATICAMENTE QUANTOS SERVIÇOS ESSA SECRETARIA POSSUI
+                const totalDaSecretaria = bdServicos.filter(s => s.secretaria === sec).length;
+
                 container.innerHTML += `
                     <label class="flex items-center gap-2 cursor-pointer mb-2">
                         <input type="checkbox" class="filtro-sec rounded text-sp-blue" value="${sec}" onchange="aplicarFiltros()"> 
-                        <span class="leading-tight">${sec}</span>
+                        <span class="leading-tight">${sec} (${totalDaSecretaria})</span>
                     </label>
                 `;
             });
