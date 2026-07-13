@@ -163,6 +163,15 @@
         <option value="alfabetica">Ordem Alfabética (A-Z)</option>
         <option value="populares">Mais Procurados</option>
     </select>
+<!-- Botões de Alternar Visualização -->
+<div class="flex gap-1 bg-gray-200 p-1 rounded ml-4">
+    <button onclick="alterarLayout('cards')" id="btn-layout-cards" class="bg-white text-gray-800 px-3 py-1 text-sm font-bold rounded shadow-sm">
+        <i class="fas fa-th-large mr-1 text-sp-blue"></i> Cards
+    </button>
+    <button onclick="alterarLayout('compacto')" id="btn-layout-compacto" class="text-gray-600 hover:text-gray-800 px-3 py-1 text-sm font-semibold rounded">
+        <i class="fas fa-list mr-1"></i> Lista
+    </button>
+</div>
 </div>
             <div class="flex flex-col md:flex-row gap-8">
                 <!-- Sidebar de Filtros -->
@@ -440,6 +449,9 @@ const db = firebase.firestore();
 // 1. A "mochila" que vai guardar os cliques de toda a cidade temporariamente na memória
 let bdCliquesGlobais = {};
 
+// para abrir a visualização sempre em cards
+let layoutAtual = 'cards';
+
 // 2. A função que viaja até a Google e traz os dados atualizados
 async function carregarCliquesGlobais() {
     try {
@@ -520,7 +532,26 @@ async function carregarCliquesGlobais() {
                 `;
             });
         }
-
+        
+        function alterarLayout(novoLayout) {
+    layoutAtual = novoLayout;
+    
+    // 1. Pega os botões no HTML
+    const btnCards = document.getElementById('btn-layout-cards');
+    const btnCompacto = document.getElementById('btn-layout-compacto');
+    
+    // 2. Troca as classes do Tailwind para destacar o botão ativo
+    if (novoLayout === 'cards') {
+        btnCards.className = "bg-white text-gray-800 px-3 py-1 text-sm font-bold rounded shadow-sm";
+        btnCompacto.className = "text-gray-600 hover:text-gray-800 px-3 py-1 text-sm font-semibold rounded";
+    } else {
+        btnCards.className = "text-gray-600 hover:text-gray-800 px-3 py-1 text-sm font-semibold rounded";
+        btnCompacto.className = "bg-white text-gray-800 px-3 py-1 text-sm font-bold rounded shadow-sm";
+    }
+    
+    // 3. Redesenha a lista com o novo layout
+    aplicarFiltros();
+}
         function aplicarFiltros() {
             const termoBusca = document.getElementById('input-busca').value.toLowerCase();
             
@@ -646,33 +677,54 @@ async function carregarCliquesGlobais() {
                 return;
             }
 
-            lista.forEach(serv => {
-                // Identifica se tem atendimento online para destacar
-                const temOnline = serv.canais.some(c => c.tipo === "Online");
-                const badgeOnline = temOnline ? `<span class="bg-blue-100 text-sp-blue text-xs font-bold px-2 py-1 rounded ml-2"><i class="fas fa-laptop"></i> Solicitação Online</span>` : '';
+           lista.forEach(serv => {
+    const temOnline = serv.canais.some(c => c.tipo === "Online");
+    const badgeOnline = temOnline ? `<span class="bg-blue-100 text-sp-blue text-xs font-bold px-2 py-1 rounded ml-2"><i class="fas fa-laptop"></i> Online</span>` : '';
 
-                const card = document.createElement('div');
-                card.className = "bg-white border border-gray-200 p-5 rounded-lg hover:border-sp-blue transition shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-4 cursor-pointer";
-                card.onclick = () => abrirDetalhe(serv.id);
-                card.innerHTML = `
-                    <div class="flex-grow">
-                        <span class="text-xs font-bold text-gray-500 uppercase">${serv.secretaria}</span>
-                        <h4 class="font-bold text-lg text-sp-blue flex items-center flex-wrap gap-2 mt-1">
-                          ${serv.titulo} ${badgeOnline} - (ID do Serviço: ${serv.id}) 
-                        </h4>
-                        <p class="text-sm text-gray-600 mt-2 line-clamp-2">${serv.descricao}</p>
-                    </div>
-                    <div class="flex-shrink-0 md:text-right">
-                        <div class="text-sm font-bold ${serv.custo.gratuito ? 'text-green-600' : 'text-yellow-600'} mb-2">
-                            ${serv.custo.gratuito ? 'Gratuito' : 'Com Custo'}
-                        </div>
-                        <button class="bg-gray-800 text-white hover:bg-gray-700 px-4 py-2 rounded text-sm font-bold w-full md:w-auto transition">
-                            Acessar Serviço
-                        </button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+    const card = document.createElement('div');
+    
+    if (layoutAtual === 'cards') {
+        // 📋 1. MODO CARDS (O visual clássico e detalhado que você já tinha)
+        card.className = "bg-white border border-gray-200 p-5 rounded-lg hover:border-sp-blue transition shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-4 cursor-pointer";
+        card.innerHTML = `
+            <div class="flex-grow">
+                <span class="text-xs font-bold text-gray-500 uppercase">${serv.secretaria}</span>
+                <h4 class="font-bold text-lg text-sp-blue flex items-center flex-wrap gap-2 mt-1">
+                  (ID: ${serv.id}) - ${serv.titulo} ${badgeOnline}
+                </h4>
+                <p class="text-sm text-gray-600 mt-2 line-clamp-2">${serv.descricao}</p>
+            </div>
+            <div class="flex-shrink-0 md:text-right">
+                <div class="text-sm font-bold ${serv.custo.gratuito ? 'text-green-600' : 'text-yellow-600'} mb-2">
+                    ${serv.custo.gratuito ? 'Gratuito' : 'Com Custo'}
+                </div>
+                <button class="bg-gray-800 text-white hover:bg-gray-700 px-4 py-2 rounded text-sm font-bold w-full md:w-auto transition">
+                    Acessar Serviço
+                </button>
+            </div>
+        `;
+    } else {
+        // 📱 2. MODO COMPACTO (Apenas uma linha elegante por serviço)
+        card.className = "bg-white border border-gray-200 p-3 rounded-lg hover:border-sp-blue transition shadow-sm flex justify-between items-center gap-4 cursor-pointer";
+        card.innerHTML = `
+           <div class="flex flex-col gap-1 overflow-hidden">
+                <span class="text-xs font-bold text-gray-400 uppercase truncate">${serv.secretaria}</span>
+                <h4 class="font-semibold text-gray-800 text-sm md:text-base truncate">
+                    (ID: ${serv.id}) - ${serv.titulo} ${badgeOnline}
+                </h4>
+            </div>
+            <div class="flex items-center gap-3 shrink-0">
+                <span class="text-xs font-bold px-2 py-1 rounded ${serv.custo.gratuito ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}">
+                    ${serv.custo.gratuito ? 'Gratuito' : 'Pago'}
+                </span>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+            </div>
+        `;
+    }
+
+    card.onclick = () => abrirDetalhe(serv.id);
+    container.appendChild(card);
+});
         }
 
         function renderListaServicos() {
