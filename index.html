@@ -154,7 +154,14 @@
         <!-- ========================================== -->
         <div id="page-carta" class="page-section hidden-section">
             <h2 class="text-3xl font-bold text-gray-900 mb-8">Carta de Serviços ao Cidadão</h2>
-            
+            <!-- CONTROLADOR DE ORDENAÇÃO -->
+<div class="flex items-center gap-2 mb-4 justify-end">
+    <label for="ordenar-servicos" class="text-sm font-medium text-gray-600">Ordenar por:</label>
+    <select id="ordenar-servicos" onchange="aplicarFiltros()" class="border border-gray-300 rounded px-3 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:border-sp-blue cursor-pointer">
+        <option value="alfabetica">Ordem Alfabética (A-Z)</option>
+        <option value="populares">Mais Procurados</option>
+    </select>
+</div>
             <div class="flex flex-col md:flex-row gap-8">
                 <!-- Sidebar de Filtros -->
                 <aside class="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
@@ -494,7 +501,29 @@
 
                 return matchTexto && matchSec && matchCusto;
             });
+// 1. Descobre qual opção (alfabetica ou populares) o usuário clicou no HTML
+            const criterioOrdenacao = document.getElementById('ordenar-servicos').value;
 
+            // 2. Aplica a organização na fila baseado na escolha
+            if (criterioOrdenacao === 'alfabetica') {
+                resultados.sort((a, b) => a.titulo.localeCompare(b.titulo));
+           } else if (criterioOrdenacao === 'populares') {
+    // 1. Pega o histórico de cliques direto da memória do navegador
+    const historicoCliques = JSON.parse(localStorage.getItem('cliquesServicos')) || {};
+    
+    // 2. Organiza os cartões colocando quem tem mais cliques no topo
+    resultados.sort((a, b) => {
+        const cliquesA = historicoCliques[a.id] || 0;
+        const cliquesB = historicoCliques[b.id] || 0;
+        
+        // Se o número de cliques for diferente, joga o maior para cima
+        if (cliquesB !== cliquesA) {
+            return cliquesB - cliquesA;
+        }
+        // Se empatar em zero ou no mesmo número de cliques, desempata por ordem alfabética
+        return a.titulo.localeCompare(b.titulo);
+    });
+}
             renderLista(resultados);
         }
 
@@ -552,6 +581,16 @@
 
         // 5. Preencher e Abrir a Tela de Detalhes do Serviço
         function abrirDetalhe(id) {
+            // --- MEMÓRIA DE CLIQUES (LOCALSTORAGE) ---
+// 1. Pega a tabela de cliques que já existe ou cria uma vazia se for a primeira vez
+let historicoCliques = JSON.parse(localStorage.getItem('cliquesServicos')) || {};
+
+// 2. Soma +1 clique para o ID deste serviço específico
+historicoCliques[id] = (historicoCliques[id] || 0) + 1;
+
+// 3. Salva a tabela atualizada de volta na memória do navegador
+localStorage.setItem('cliquesServicos', JSON.stringify(historicoCliques));
+// -----------------------------------------
             const serv = bdServicos.find(s => s.id === id);
             if(!serv) return;
 
