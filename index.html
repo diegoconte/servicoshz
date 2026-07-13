@@ -177,15 +177,15 @@
                             <!-- Preenchido via JS -->
                         </div>
                     </div>
-
+<!-- FILTRO PARA custos -->
                     <div class="mb-6">
                         <h4 class="font-bold text-sm text-gray-700 mb-3 border-b pb-1">Custo do Serviço</h4>
                         <div class="space-y-2 text-sm">
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" class="filtro-custo rounded text-sp-blue" value="gratuito" onchange="aplicarFiltros()"> Gratuito
+                                <input type="checkbox" class="filtro-custo rounded text-sp-blue" value="gratuito" onchange="aplicarFiltros()"> Gratuito <span id="qtd-gratuito" class="text-gray-500 text-xs">(0)</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" class="filtro-custo rounded text-sp-blue" value="pago" onchange="aplicarFiltros()"> Possui Taxas/Custos
+                                <input type="checkbox" class="filtro-custo rounded text-sp-blue" value="pago" onchange="aplicarFiltros()"> Possui Taxas/Custos <span id="qtd-pago" class="text-gray-500 text-xs">(0)</span>
                             </label>
                         </div>
                     </div>
@@ -194,10 +194,10 @@
                         <h4 class="font-bold text-sm text-gray-700 mb-3 border-b pb-1">Disponibilidade</h4>
                         <div class="space-y-2 text-sm">
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" class="filtro-disponibilidade rounded text-sp-blue" value="Online" onchange="aplicarFiltros()"> Online
+                                <input type="checkbox" class="filtro-disponibilidade rounded text-sp-blue" value="Online" onchange="aplicarFiltros()"> Online <span id="qtd-online" class="text-gray-500 text-xs">(0)</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" class="filtro-disponibilidade rounded text-sp-blue" value="Presencial/Outros" onchange="aplicarFiltros()"> Presencial/Outros
+                                <input type="checkbox" class="filtro-disponibilidade rounded text-sp-blue" value="Presencial/Outros" onchange="aplicarFiltros()"> Presencial/Outros <span id="qtd-presencial" class="text-gray-500 text-xs">(0)</span>
                             </label>
                         </div>
                     </div>
@@ -527,7 +527,7 @@ async function carregarCliquesGlobais() {
             // Pega checkboxes marcados de Custo
             const custosSelecionados = Array.from(document.querySelectorAll('.filtro-custo:checked')).map(cb => cb.value);
 
-            // Pega checkboxes marcados de Custo
+            // Pega checkboxes marcados de disponibilidade
             const disponibilidadeSelecionados = Array.from(document.querySelectorAll('.filtro-disponibilidade:checked')).map(cb => cb.value);
 
             const resultados = bdServicos.filter(serv => {
@@ -590,7 +590,48 @@ async function carregarCliquesGlobais() {
             renderLista(resultados);
         }
 
+        function atualizarContadores() {
+    // 1. Começamos os contadores todos zerados na memória
+    let qtdGratuito = 0;
+    let qtdPago = 0;
+    let qtdOnline = 0;
+    let qtdPresencial = 0;
+
+    // 2. O loop que passa de serviço em serviço na piscina de dados (bdServicos)
+    bdServicos.forEach(serv => {
+        
+        // [CUSTO] Se for gratuito soma no gratuito, se não, soma no pago
+        if (serv.custo.gratuito === true) {
+            qtdGratuito++;
+        } else {
+            qtdPago++;
+        }
+
+        // [DISPONIBILIDADE] Mapeia os canais do serviço atual
+        const temOnline = serv.canais.some(c => c.tipo === "Online");
+        const exclusivoPresencial = serv.canais.every(c => c.tipo !== "Online");
+
+        if (temOnline === true) {
+            qtdOnline++;
+        }
+        if (exclusivoPresencial === true) {
+            qtdPresencial++;
+        }
+
+    });
+    
+    // 3. O comando que carimba os números finais no HTML
+    document.getElementById('qtd-gratuito').innerText = `(${qtdGratuito})`;
+    document.getElementById('qtd-pago').innerText = `(${qtdPago})`;
+    document.getElementById('qtd-online').innerText = `(${qtdOnline})`;
+    document.getElementById('qtd-presencial').innerText = `(${qtdPresencial})`;
+}
+
         function renderLista(lista) {
+           atualizarContadores(); // ◄ Cole exatamente esta linha aqui!
+    
+    // O restante do seu código original que já estava aí continua aqui para baixo...
+
             const container = document.getElementById('lista-servicos');
             document.getElementById('contador-resultados').innerText = `Mostrando ${lista.length} serviço(s)`;
             container.innerHTML = '';
