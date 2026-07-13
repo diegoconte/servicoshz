@@ -415,11 +415,33 @@ const firebaseConfig = {
     appId: "1:782471493827:web:96548c54f925a80a404a76"
 };
 
+
 // 2. Liga o motor do Firebase no navegador
 firebase.initializeApp(firebaseConfig);
 
 // 3. Cria o atalho "db" para podermos acessar o banco de dados facilmente
 const db = firebase.firestore();
+
+// 1. A "mochila" que vai guardar os cliques de toda a cidade temporariamente na memória
+let bdCliquesGlobais = {};
+
+// 2. A função que viaja até a Google e traz os dados atualizados
+async function carregarCliquesGlobais() {
+    try {
+        // Faz uma busca em toda a coleção da nuvem
+        const snapshot = await db.collection('acessosServicos').get();
+        
+        // Passa de gaveta em gaveta pegando o ID do serviço e o número de cliques
+        snapshot.forEach(doc => {
+            bdCliquesGlobais[doc.id] = doc.data().cliques || 0;
+        });
+        
+        console.log("Sucesso! Cliques globais carregados da nuvem:", bdCliquesGlobais);
+    } catch (erro) {
+        // Se a internet falhar, o site não trava
+        console.error("Não foi possível carregar os cliques globais:", erro);
+    }
+}
         // 2. Funções de Navegação de Telas
         function showPage(pageId) {
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden-section'));
@@ -520,9 +542,9 @@ const db = firebase.firestore();
             // 2. Aplica a organização na fila baseado na escolha
             if (criterioOrdenacao === 'alfabetica') {
                 resultados.sort((a, b) => a.titulo.localeCompare(b.titulo));
-           } else if (criterioOrdenacao === 'populares') {
-    // 1. Pega o histórico de cliques direto da memória do navegador
-    const historicoCliques = JSON.parse(localStorage.getItem('cliquesServicos')) || {};
+          } else if (criterioOrdenacao === 'populares') {
+    // 1. Agora apontamos direto para a nossa mochila preenchida pelo Google!
+    const historicoCliques = bdCliquesGlobais;
     
     // 2. Organiza os cartões colocando quem tem mais cliques no topo
     resultados.sort((a, b) => {
@@ -726,11 +748,11 @@ const db = firebase.firestore();
         }
 
         // Aguarda TODOS os arquivos das secretarias carregarem 100% na memória
-        window.addEventListener('load', () => {
-            atualizarContadorHeader(); // Conta os serviços reais
-            showPage('home');          // Monta a página inicial com os destaques corretos
+        window.addEventListener('load', async () => {
+            await carregarCliquesGlobais(); // ◄ [NOVO] Baixa os cliques da nuvem primeiro!
+            atualizarContadorHeader();       // Conta os serviços reais
+            showPage('home');                // Monta a página inicial com os destaques
         });
-        // ========================================================
 
      // Funções de Acessibilidade (Tamanho de Fonte e Contraste)
         let tamanhoFonteAtual = 100;
