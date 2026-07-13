@@ -21,13 +21,9 @@
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+       <!-- CONEXÃO COM OS ARQUIVOS DE SERVIÇOS DAS SECRETARIAS -->
     <!-- =================================================== -->
-    <!-- CONEXÃO COM OS ARQUIVOS DE SERVIÇOS DAS SECRETARIAS -->
-    <!-- =================================================== -->
-    <script>const bdServicos = [];</script>
-    <!-- =================================================== -->
-    <!-- CONEXÃO COM OS ARQUIVOS DE SERVIÇOS DAS SECRETARIAS -->
-    <!-- =================================================== -->
+    
     <script>const bdServicos = [];</script>
     <script src="servicos/gabinete.js"></script>
     <script src="servicos/planejamento.js"></script>
@@ -77,6 +73,9 @@
             background-color: #333333 !important;
         }
     </style>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans flex flex-col min-h-screen">
 
@@ -406,7 +405,21 @@
 
     <!-- BANCO DE DADOS SIMULADO & LÓGICA -->
     <script>
-       
+       // 1. Suas credenciais oficiais da Google (Copiadas da sua imagem!)
+const firebaseConfig = {
+    apiKey: "AIzaSyAZk6WrwIHn3iRjT41Ju0GToc01XJhFrtE",
+    authDomain: "carta-servicos-horizontina.firebaseapp.com",
+    projectId: "carta-servicos-horizontina",
+    storageBucket: "carta-servicos-horizontina.firebasestorage.app",
+    messagingSenderId: "782471493827",
+    appId: "1:782471493827:web:96548c54f925a80a404a76"
+};
+
+// 2. Liga o motor do Firebase no navegador
+firebase.initializeApp(firebaseConfig);
+
+// 3. Cria o atalho "db" para podermos acessar o banco de dados facilmente
+const db = firebase.firestore();
         // 2. Funções de Navegação de Telas
         function showPage(pageId) {
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden-section'));
@@ -579,18 +592,37 @@
             aplicarFiltros();
         }
 
+   // 5. Preencher e Abrir a Tela de Detalhes do Serviço
         // 5. Preencher e Abrir a Tela de Detalhes do Serviço
         function abrirDetalhe(id) {
-            // --- MEMÓRIA DE CLIQUES (LOCALSTORAGE) ---
-// 1. Pega a tabela de cliques que já existe ou cria uma vazia se for a primeira vez
-let historicoCliques = JSON.parse(localStorage.getItem('cliquesServicos')) || {};
+            
+            // === [BLINDADO] ENVIA O CLIQUE PARA A NUVEM (FIREBASE) ===
+            try {
+                // Forçamos o ID a virar texto (String), pois o Firebase às vezes rejeita números puros
+                const idTexto = String(id); 
+                
+                db.collection('acessosServicos').doc(idTexto).set({
+                    cliques: firebase.firestore.FieldValue.increment(1)
+                }, { merge: true });
+                
+                console.log("Sucesso! Clique enviado para o Firebase para o ID:", idTexto);
+            } catch (erro) {
+                // Se a Google falhar por qualquer motivo, o erro aparece aqui no console,
+                // mas o 'catch' segura o rojão e NÃO deixa o site travar!
+                console.error("Ops! O Firebase falhou, mas o site vai continuar funcionando:", erro);
+            }
+            // =====================================================
 
-// 2. Soma +1 clique para o ID deste serviço específico
-historicoCliques[id] = (historicoCliques[id] || 0) + 1;
-
-// 3. Salva a tabela atualizada de volta na memória do navegador
-localStorage.setItem('cliquesServicos', JSON.stringify(historicoCliques));
-// -----------------------------------------
+            // --- MEMÓRIA DE CLIQUES LOCAL (LOCALSTORAGE) ---
+            try {
+                let historicoCliques = JSON.parse(localStorage.getItem('cliquesServicos')) || {};
+                historicoCliques[id] = (historicoCliques[id] || 0) + 1;
+                localStorage.setItem('cliquesServicos', JSON.stringify(historicoCliques));
+            } catch (e) {
+                console.error("Erro no LocalStorage:", e);
+            }
+            // -----------------------------------------------
+            
             const serv = bdServicos.find(s => s.id === id);
             if(!serv) return;
 
@@ -664,7 +696,6 @@ localStorage.setItem('cliquesServicos', JSON.stringify(historicoCliques));
                     </div>
                 `;
 
-                // Se houver canal online com link, ativa o botão grande em destaque
                 if(canal.tipo === 'Online' && canal.link) {
                     areaOnline.classList.remove('hidden');
                     linkOnline.href = canal.link;
@@ -674,27 +705,34 @@ localStorage.setItem('cliquesServicos', JSON.stringify(historicoCliques));
             // Mudar a tela
             showPage('detalhe');
             window.scrollTo(0, 0); // Sobe a página para o topo
-        }
-
-            // Inicialização
-        document.addEventListener('DOMContentLoaded', () => {
-            showPage('home');
-            
-            // Lógica do Contador Automático do Cabeçalho
+        }   
+        
+        // ========================================================
+        // 🔄 BLOCCO DE INICIALIZAÇÃO (O QUE FOI APAGADO)
+        // ========================================================
+        function atualizarContadorHeader() {
             const totalDeServicos = bdServicos.length;
             
             // Injeta o número total de serviços no quadradinho amarelo
             document.getElementById('contador-header-num').innerText = totalDeServicos;
             
-            // Aplica a regra de plural que você sugeriu
+            // Aplica a regra de plural
             const textoContador = document.getElementById('contador-header-txt');
             if (totalDeServicos === 1) {
                 textoContador.innerText = "CARTA DE SERVIÇO";
             } else {
                 textoContador.innerText = "CARTAS DE SERVIÇOS";
             }
+        }
+
+        // Aguarda TODOS os arquivos das secretarias carregarem 100% na memória
+        window.addEventListener('load', () => {
+            atualizarContadorHeader(); // Conta os serviços reais
+            showPage('home');          // Monta a página inicial com os destaques corretos
         });
-    // Funções de Acessibilidade (Tamanho de Fonte e Contraste)
+        // ========================================================
+
+     // Funções de Acessibilidade (Tamanho de Fonte e Contraste)
         let tamanhoFonteAtual = 100;
 
         function alterarFonte(acao) {
