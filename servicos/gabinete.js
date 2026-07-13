@@ -1,11 +1,11 @@
 // ===================================================
-// SERVIÇOS: Secretaria do Gabinete do Prefeito
+// SERVIÇOS: Gabinete do Prefeito
 // ===================================================
 bdServicos.push(
     {
         id: 2,
         titulo: "Controladoria e Controle Interno",
-        secretaria: "Secretaria do Gabinete do Prefeito",
+        secretaria: "Gabinete do Prefeito",
         descricao: "Planejar, coordenar e executar atividades de auditoria e fiscalização interna de conformidade legal, além de atender de forma direta as demandas, prazos e diligências de controle do Tribunal de Contas do Estado (TCE/RS).",
         elegibilidade: "Não se aplica (Serviço técnico-administrativo restrito de caráter estritamente interno).",
         documentos: [
@@ -36,7 +36,7 @@ bdServicos.push(
     {
         id: 13,
         titulo: "Videomonitoramento e Cercamento Eletrônico",
-        secretaria: "Secretaria do Gabinete do Prefeito",
+        secretaria: "Gabinete do Prefeito",
         descricao: "Disponibilização e análise de registros de imagens capturadas pelas câmeras de videomonitoramento e do cercamento eletrônico municipal, visando dar suporte a investigações de segurança de forma coordenada com as forças policiais.",
         elegibilidade: "Qualquer pessoa física ou jurídica que atenda as normas fixadas na Portaria SSP nº 016/2022.",
         documentos: [
@@ -66,7 +66,7 @@ bdServicos.push(
     {
         id: 14,
         titulo: "Demandas da Subprefeitura de Cascata",
-        secretaria: "Secretaria do Gabinete do Prefeito",
+        secretaria: "Gabinete do Prefeito",
         descricao: "Canal presencial direto de atendimento, recebimento e triagem de solicitações e demandas de melhoria de infraestrutura e serviços públicos para os moradores da região de Cascata.",
         elegibilidade: "Qualquer munícipe maior de idade residente no município de Horizontina.",
         documentos: [
@@ -99,7 +99,7 @@ bdServicos.push(
     {
         id: 15,
         titulo: "Atendimento PROCON (Defesa do Consumidor)",
-        secretaria: "Secretaria do Gabinete do Prefeito",
+        secretaria: "Gabinete do Prefeito",
         descricao: "Receber reclamações de consumidores, mediar conflitos na relação de consumo e orientar cidadãos e fornecedores de acordo com as normas de proteção e defesa do consumidor.",
         elegibilidade: "Qualquer consumidor (pessoa física ou jurídica) que adquira produto ou serviço como destinatário final no município de Horizontina, no âmbito de uma relação de consumo (comprovada por notas fiscais, contratos, ordens de serviço, faturas ou extratos). Nota: Problemas de vizinhança, relações de locação residencial pura, questões trabalhistas ou serviços prestados por profissionais liberais sem característica empresarial não entram no escopo.",
         documentos: [
@@ -135,7 +135,7 @@ bdServicos.push(
     {
         id: 16,
         titulo: "Avaliação Rápida de Danos e Resposta a Desastres Naturais",
-        secretaria: "Secretaria do Gabinete do Prefeito",
+        secretaria: "Gabinete do Prefeito",
         descricao: "Serviço voltado à avaliação técnica imediata de danos e prejuízos materiais causados por temporais, vendavais, chuva de granizo, enchentes e desastres naturais adversos. Atua diretamente na resposta humanitária e na coordenação de auxílios à integridade física da população.",
         elegibilidade: "Qualquer cidadão residente no município de Horizontina atingido por eventos climáticos severos e desastres naturais.",
         documentos: [
@@ -168,7 +168,7 @@ bdServicos.push(
     {
         id: 17,
         titulo: "Busca e Localização de Pessoas Desaparecidas em Áreas Rurais",
-        secretaria: "Secretaria do Gabinete do Prefeito",
+        secretaria: "Gabinete do Prefeito",
         descricao: "Ações emergenciais conjuntas de busca, rastreamento e auxílio ao resgate de pessoas desaparecidas em áreas de mata, rurais ou localidades de difícil acesso geográfico do município, visando salvaguardar vidas de forma integrada.",
         elegibilidade: "Qualquer pessoa cujo desaparecimento tenha ocorrido em limites territoriais do município de Horizontina.",
         documentos: [
@@ -201,7 +201,7 @@ bdServicos.push(
     {
         id: 18,
         titulo: "Acompanhamento de Queimadas e Incêndios Florestais",
-        secretaria: "Secretaria do Gabinete do Prefeito",
+        secretaria: "Gabinete do Prefeito",
         descricao: "Ações coordenadas de monitoramento preventivo, apoio ao combate e controle de queimadas e focos de incêndio florestal em lavouras e vegetações nativas, cooperando diretamente com as forças de combate de incêndios do Corpo de Bombeiros.",
         elegibilidade: "Proprietários rurais ou qualquer cidadão do município que identifique situação de queimadas descontroladas ou focos ativos de incêndio.",
         documentos: [
@@ -233,7 +233,7 @@ bdServicos.push(
     {
         id: 19,
         titulo: "Monitoramento Preventivo de Áreas de Risco",
-        secretaria: "Secretaria do Gabinete do Prefeito",
+        secretaria: "Gabinete do Prefeito",
         descricao: "Inspeções preventivas constantes de áreas suscetíveis a alagamentos, deslizamentos, quedas ou perigos estruturais (pontes rurais, encostas, margens de rios e barragens) visando mitigar ameaças materiais e resguardar a comunidade.",
         elegibilidade: "Munícipes de Horizontina que residam ou tenham bens em áreas vulneráveis a intempéries e desastres geológicos.",
         documentos: [
@@ -266,7 +266,7 @@ bdServicos.push(
     {
         id: 28,
         titulo: "Registros de Ouvidoria (Reclamações, Denúncias, Sugestões e Elogios)",
-        secretaria: "Secretaria do Gabinete do Prefeito",
+        secretaria: "Gabinete do Prefeito",
         descricao: "Processamento e acolhimento das manifestações dos cidadãos de Horizontina, como solicitações, reclamações, denúncias, sugestões ou elogios. Atua na mediação de conflitos, promoção de melhorias de gestão interna e na garantia dos direitos dos usuários.",
         elegibilidade: "Qualquer cidadão que utilize serviços públicos municipais ou que sinta que seus direitos foram de alguma forma violados.",
         documentos: [

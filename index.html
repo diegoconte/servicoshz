@@ -152,7 +152,10 @@
         <!-- PÁGINA 2: CARTA DE SERVIÇOS (FILTROS)      -->
         <!-- ========================================== -->
         <div id="page-carta" class="page-section hidden-section">
-            <h2 class="text-3xl font-bold text-gray-900 mb-8">Carta de Serviços ao Cidadão</h2>
+    <h2 class="text-3xl font-bold text-gray-900 mb-8">
+        Carta de Serviços ao Cidadão 
+        <span id="totalDeServicos" class="text-gray-500 font-normal text-xl ml-2">(0)</span>
+    </h2>
             <!-- CONTROLADOR DE ORDENAÇÃO -->
 <div class="flex items-center gap-2 mb-4 justify-end">
     <label for="ordenar-servicos" class="text-sm font-medium text-gray-600">Ordenar por:</label>
@@ -487,7 +490,7 @@ async function carregarCliquesGlobais() {
                 card.onclick = () => abrirDetalhe(serv.id);
                 card.innerHTML = `
                     <span class="text-xs font-bold text-sp-blue uppercase mb-2 block">${serv.secretaria}</span>
-                    <h4 class="font-bold text-lg mb-3 flex-grow text-gray-900 line-clamp-3">(ID ${serv.id}) - ${serv.titulo}</h4>
+                    <h4 class="font-bold text-lg mb-3 flex-grow text-gray-900 line-clamp-3"> ${serv.titulo} - (ID ${serv.id})</h4>
                     <span class="text-sm ${serv.custo.gratuito ? 'text-green-600' : 'text-yellow-600'} font-semibold mb-4 block">
                         <i class="fas ${serv.custo.gratuito ? 'fa-check' : 'fa-dollar-sign'}"></i> ${serv.custo.gratuito ? 'Gratuito' : 'Com Custo'}
                     </span>
@@ -625,6 +628,8 @@ async function carregarCliquesGlobais() {
     document.getElementById('qtd-pago').innerText = `(${qtdPago})`;
     document.getElementById('qtd-online').innerText = `(${qtdOnline})`;
     document.getElementById('qtd-presencial').innerText = `(${qtdPresencial})`;
+
+    document.getElementById('totalDeServicos').innerText = `(${bdServicos.length})`;
 }
 
         function renderLista(lista) {
@@ -653,7 +658,7 @@ async function carregarCliquesGlobais() {
                     <div class="flex-grow">
                         <span class="text-xs font-bold text-gray-500 uppercase">${serv.secretaria}</span>
                         <h4 class="font-bold text-lg text-sp-blue flex items-center flex-wrap gap-2 mt-1">
-                          (ID do Serviço: ${serv.id}) - ${serv.titulo} ${badgeOnline}
+                          ${serv.titulo} ${badgeOnline} - (ID do Serviço: ${serv.id}) 
                         </h4>
                         <p class="text-sm text-gray-600 mt-2 line-clamp-2">${serv.descricao}</p>
                     </div>
