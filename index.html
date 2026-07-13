@@ -449,9 +449,50 @@ const db = firebase.firestore();
 // 1. A "mochila" que vai guardar os cliques de toda a cidade temporariamente na memória
 let bdCliquesGlobais = {};
 
+// Função para pintar de amarelo a palavra buscada
+// Função turbinada para pintar a palavra buscada ignorando acentos
+function destacarTexto(texto, termo) {
+    if (!termo || termo.trim() === "") return texto;
+
+    // 1. Remove os acentos do termo que o usuário digitou para normalizar a busca
+    let termoSemAcento = termo.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+    // Escapa caracteres especiais para não quebrar o código
+    let termoEscapado = termoSemAcento.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+
+    // 2. Mapeia cada letra para aceitar qualquer variação dela com acento
+    const mapaAcentos = {
+        'a': '[aáàâãäåæā]',
+        'e': '[eéèêëēėę]',
+        'i': '[iíìîïīįí]',
+        'o': '[oóòôõöøō]',
+        'u': '[uúùûüū]',
+        'c': '[cçćĉċ]',
+        'n': '[nñń]'
+    };
+
+    // Monta a regra de busca letra por letra
+    let regexString = "";
+    for (let i = 0; i < termoEscapado.length; i++) {
+        const letra = termoEscapado[i].toLowerCase();
+        regexString += mapaAcentos[letra] || termoEscapado[i];
+    }
+
+    try {
+        // Cria a busca inteligente ignorando maiúsculas e minúsculas (gi)
+        const regex = new RegExp(`(${regexString})`, 'gi');
+        return texto.replace(regex, '<mark class="bg-yellow-200 text-gray-900 rounded px-0.5">$1</mark>');
+    } catch (e) {
+        return texto; // Caso o usuário digite algo muito estranho, não trava o site
+    }
+}
 // para abrir a visualização sempre em cards
 let layoutAtual = 'cards';
 
+// Função simples para tirar os acentos de qualquer texto
+function removerAcentos(texto) {
+    return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 // 2. A função que viaja até a Google e traz os dados atualizados
 async function carregarCliquesGlobais() {
     try {
@@ -553,76 +594,79 @@ async function carregarCliquesGlobais() {
     aplicarFiltros();
 }
         function aplicarFiltros() {
-            const termoBusca = document.getElementById('input-busca').value.toLowerCase();
-            
-            // Pega checkboxes marcados de Secretaria
-            const secSelecionadas = Array.from(document.querySelectorAll('.filtro-sec:checked')).map(cb => cb.value);
-            
-            // Pega checkboxes marcados de Custo
-            const custosSelecionados = Array.from(document.querySelectorAll('.filtro-custo:checked')).map(cb => cb.value);
-
-            // Pega checkboxes marcados de disponibilidade
-            const disponibilidadeSelecionados = Array.from(document.querySelectorAll('.filtro-disponibilidade:checked')).map(cb => cb.value);
-
-            const resultados = bdServicos.filter(serv => {
-                // Filtro de Texto
-                const matchTexto = serv.titulo.toLowerCase().includes(termoBusca) || serv.descricao.toLowerCase().includes(termoBusca);
-                
-                // Filtro de Secretaria
-                const matchSec = secSelecionadas.length === 0 || secSelecionadas.includes(serv.secretaria);
-                
-                // Filtro de Custo
-                let matchCusto = true;
-                if (custosSelecionados.length > 0) {
-                    if (custosSelecionados.includes('gratuito') && custosSelecionados.includes('pago')) {
-                        matchCusto = true; // Ambos marcados
-                    } else if (custosSelecionados.includes('gratuito')) {
-                        matchCusto = serv.custo.gratuito === true;
-                    } else if (custosSelecionados.includes('pago')) {
-                        matchCusto = serv.custo.gratuito === false;
-                    }
-                }
-                //CONFIGURAR OS FILTROS DE DISPONIBILIDADE
-                const temOnline = serv.canais.some(c => c.tipo === "Online");
-                const Presencial = serv.canais.every(c => c.tipo !== "Online");
-
-                let matchDisponibilidade = true
-                if (disponibilidadeSelecionados.length > 0) {    
-                    if (disponibilidadeSelecionados.includes('Online') && disponibilidadeSelecionados.includes('Presencial/Outros')) {
-                        matchDisponibilidade = true; // Ambos marcados
-                    } else if (disponibilidadeSelecionados.includes('Online')) {
-                        matchDisponibilidade = temOnline;
-                    } else if (disponibilidadeSelecionados.includes('Presencial/Outros')) {
-                       matchDisponibilidade = Presencial;}                       
-                    }
-
-                return matchTexto && matchSec && matchCusto && matchDisponibilidade;
-            });
-// 1. Descobre qual opção (alfabetica ou populares) o usuário clicou no HTML
-            const criterioOrdenacao = document.getElementById('ordenar-servicos').value;
-
-            // 2. Aplica a organização na fila baseado na escolha
-            if (criterioOrdenacao === 'alfabetica') {
-                resultados.sort((a, b) => a.titulo.localeCompare(b.titulo));
-          } else if (criterioOrdenacao === 'populares') {
-    // 1. Agora apontamos direto para a nossa mochila preenchida pelo Google!
-    const historicoCliques = bdCliquesGlobais;
+    // 1. Remove os acentos do que o usuário digitou
+    const termoBusca = removerAcentos(document.getElementById('input-busca').value.toLowerCase());
     
-    // 2. Organiza os cartões colocando quem tem mais cliques no topo
-    resultados.sort((a, b) => {
-        const cliquesA = historicoCliques[a.id] || 0;
-        const cliquesB = historicoCliques[b.id] || 0;
+    // Pega checkboxes marcados de Secretaria
+    const secSelecionadas = Array.from(document.querySelectorAll('.filtro-sec:checked')).map(cb => cb.value);
+    
+    // Pega checkboxes marcados de Custo
+    const custosSelecionados = Array.from(document.querySelectorAll('.filtro-custo:checked')).map(cb => cb.value);
+
+    // Pega checkboxes marcados de disponibilidade
+    const disponibilidadeSelecionados = Array.from(document.querySelectorAll('.filtro-disponibilidade:checked')).map(cb => cb.value);
+
+    const resultados = bdServicos.filter(serv => {
+        // 2. Remove os acentos do título e da descrição do serviço para comparar de igual para igual
+        const tituloSemAcento = removerAcentos(serv.titulo.toLowerCase());
+        const descricaoSemAcento = removerAcentos(serv.descricao.toLowerCase());
         
-        // Se o número de cliques for diferente, joga o maior para cima
-        if (cliquesB !== cliquesA) {
-            return cliquesB - cliquesA;
+        const matchTexto = tituloSemAcento.includes(termoBusca) || descricaoSemAcento.includes(termoBusca);
+        
+        // Filtro de Secretaria
+        const matchSec = secSelecionadas.length === 0 || secSelecionadas.includes(serv.secretaria);
+        
+        // Filtro de Custo
+        let matchCusto = true;
+        if (custosSelecionados.length > 0) {
+            if (custosSelecionados.includes('gratuito') && custosSelecionados.includes('pago')) {
+                matchCusto = true; // Ambos marcados
+            } else if (custosSelecionados.includes('gratuito')) {
+                matchCusto = serv.custo.gratuito === true;
+            } else if (custosSelecionados.includes('pago')) {
+                matchCusto = serv.custo.gratuito === false;
+            }
         }
-        // Se empatar em zero ou no mesmo número de cliques, desempata por ordem alfabética
-        return a.titulo.localeCompare(b.titulo);
+        
+        // CONFIGURAR OS FILTROS DE DISPONIBILIDADE
+        const temOnline = serv.canais.some(c => c.tipo === "Online");
+        const Presencial = serv.canais.every(c => c.tipo !== "Online");
+
+        let matchDisponibilidade = true;
+        if (disponibilidadeSelecionados.length > 0) {    
+            if (disponibilidadeSelecionados.includes('Online') && disponibilidadeSelecionados.includes('Presencial/Outros')) {
+                matchDisponibilidade = true; // Ambos marcados
+            } else if (disponibilidadeSelecionados.includes('Online')) {
+                matchDisponibilidade = temOnline;
+            } else if (disponibilidadeSelecionados.includes('Presencial/Outros')) {
+               matchDisponibilidade = Presencial;
+            }                       
+        }
+
+        return matchTexto && matchSec && matchCusto && matchDisponibilidade;
     });
+
+    // 1. Descobre qual opção (alfabetica ou populares) o usuário clicou no HTML
+    const criterioOrdenacao = document.getElementById('ordenar-servicos').value;
+
+    // 2. Aplica a organização na fila baseado na escolha
+    if (criterioOrdenacao === 'alfabetica') {
+        resultados.sort((a, b) => a.titulo.localeCompare(b.titulo));
+    } else if (criterioOrdenacao === 'populares') {
+        const historicoCliques = bdCliquesGlobais;
+        
+        resultados.sort((a, b) => {
+            const cliquesA = historicoCliques[a.id] || 0;
+            const cliquesB = historicoCliques[b.id] || 0;
+            
+            if (cliquesB !== cliquesA) {
+                return cliquesB - cliquesA;
+            }
+            return a.titulo.localeCompare(b.titulo);
+        });
+    }
+    renderLista(resultados);
 }
-            renderLista(resultados);
-        }
 
         function atualizarContadores() {
     // 1. Começamos os contadores todos zerados na memória
@@ -664,68 +708,73 @@ async function carregarCliquesGlobais() {
 }
 
         function renderLista(lista) {
-           atualizarContadores(); // ◄ Cole exatamente esta linha aqui!
+    atualizarContadores();
     
-    // O restante do seu código original que já estava aí continua aqui para baixo...
+    const container = document.getElementById('lista-servicos');
+    document.getElementById('contador-resultados').innerText = `Mostrando ${lista.length} serviço(s)`;
+    container.innerHTML = '';
 
-            const container = document.getElementById('lista-servicos');
-            document.getElementById('contador-resultados').innerText = `Mostrando ${lista.length} serviço(s)`;
-            container.innerHTML = '';
-
-            if(lista.length === 0) {
-                container.innerHTML = `<div class="p-8 text-center text-gray-500 bg-white rounded border border-gray-200">Nenhum serviço encontrado com estes filtros.</div>`;
-                return;
-            }
-
-           lista.forEach(serv => {
-    const temOnline = serv.canais.some(c => c.tipo === "Online");
-    const badgeOnline = temOnline ? `<span class="bg-blue-100 text-sp-blue text-xs font-bold px-2 py-1 rounded ml-2"><i class="fas fa-laptop"></i> Online</span>` : '';
-
-    const card = document.createElement('div');
-    
-    if (layoutAtual === 'cards') {
-        // 📋 1. MODO CARDS (O visual clássico e detalhado que você já tinha)
-        card.className = "bg-white border border-gray-200 p-5 rounded-lg hover:border-sp-blue transition shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-4 cursor-pointer";
-        card.innerHTML = `
-            <div class="flex-grow">
-                <span class="text-xs font-bold text-gray-500 uppercase">${serv.secretaria}</span>
-                <h4 class="font-bold text-lg text-sp-blue flex items-center flex-wrap gap-2 mt-1">
-                  (ID: ${serv.id}) - ${serv.titulo} ${badgeOnline}
-                </h4>
-                <p class="text-sm text-gray-600 mt-2 line-clamp-2">${serv.descricao}</p>
-            </div>
-            <div class="flex-shrink-0 md:text-right">
-                <div class="text-sm font-bold ${serv.custo.gratuito ? 'text-green-600' : 'text-yellow-600'} mb-2">
-                    ${serv.custo.gratuito ? 'Gratuito' : 'Com Custo'}
-                </div>
-                <button class="bg-gray-800 text-white hover:bg-gray-700 px-4 py-2 rounded text-sm font-bold w-full md:w-auto transition">
-                    Acessar Serviço
-                </button>
-            </div>
-        `;
-    } else {
-        // 📱 2. MODO COMPACTO (Apenas uma linha elegante por serviço)
-        card.className = "bg-white border border-gray-200 p-3 rounded-lg hover:border-sp-blue transition shadow-sm flex justify-between items-center gap-4 cursor-pointer";
-        card.innerHTML = `
-           <div class="flex flex-col gap-1 overflow-hidden">
-                <span class="text-xs font-bold text-gray-400 uppercase truncate">${serv.secretaria}</span>
-                <h4 class="font-semibold text-gray-800 text-sm md:text-base truncate">
-                    (ID: ${serv.id}) - ${serv.titulo} ${badgeOnline}
-                </h4>
-            </div>
-            <div class="flex items-center gap-3 shrink-0">
-                <span class="text-xs font-bold px-2 py-1 rounded ${serv.custo.gratuito ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}">
-                    ${serv.custo.gratuito ? 'Gratuito' : 'Pago'}
-                </span>
-                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
-            </div>
-        `;
+    if(lista.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-gray-500 bg-white rounded border border-gray-200">Nenhum serviço encontrado com estes filtros.</div>`;
+        return;
     }
 
-    card.onclick = () => abrirDetalhe(serv.id);
-    container.appendChild(card);
-});
+    // 🔍 Captura o termo digitado na busca
+    const termo = document.getElementById('input-busca') ? document.getElementById('input-busca').value : '';
+
+    lista.forEach(serv => {
+        const temOnline = serv.canais.some(c => c.tipo === "Online");
+        const badgeOnline = temOnline ? `<span class="bg-blue-100 text-sp-blue text-xs font-bold px-2 py-1 rounded ml-2"><i class="fas fa-laptop"></i> Online</span>` : '';
+
+        // Gera os textos com a marcação amarela
+        const tituloDestacado = destacarTexto(serv.titulo, termo);
+        const descricaoDestacada = destacarTexto(serv.descricao, termo);
+
+        const card = document.createElement('div');
+        
+        if (layoutAtual === 'cards') {
+            // 📋 1. MODO CARDS (Usa o título e a descrição destacados)
+            card.className = "bg-white border border-gray-200 p-5 rounded-lg hover:border-sp-blue transition shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-4 cursor-pointer";
+            card.innerHTML = `
+                <div class="flex-grow">
+                    <span class="text-xs font-bold text-gray-500 uppercase">${serv.secretaria}</span>
+                    <h4 class="font-bold text-lg text-sp-blue flex items-center flex-wrap gap-2 mt-1">
+                      (ID: ${serv.id}) - ${tituloDestacado} ${badgeOnline}
+                    </h4>
+                    <p class="text-sm text-gray-600 mt-2 line-clamp-2">${descricaoDestacada}</p>
+                </div>
+                <div class="flex-shrink-0 md:text-right">
+                    <div class="text-sm font-bold ${serv.custo.gratuito ? 'text-green-600' : 'text-yellow-600'} mb-2">
+                        ${serv.custo.gratuito ? 'Gratuito' : 'Com Custo'}
+                    </div>
+                    <button class="bg-gray-800 text-white hover:bg-gray-700 px-4 py-2 rounded text-sm font-bold w-full md:w-auto transition">
+                        Acessar Serviço
+                    </button>
+                </div>
+            `;
+        } else {
+            // 📱 2. MODO COMPACTO (Usa apenas o título destacado)
+            card.className = "bg-white border border-gray-200 p-3 rounded-lg hover:border-sp-blue transition shadow-sm flex justify-between items-center gap-4 cursor-pointer";
+            card.innerHTML = `
+                <div class="flex flex-col gap-1 overflow-hidden">
+                    <span class="text-xs font-bold text-gray-400 uppercase truncate">${serv.secretaria}</span>
+                    <h4 class="font-semibold text-gray-800 text-sm md:text-base truncate">
+                        (ID: ${serv.id}) - ${tituloDestacado} ${badgeOnline}
+                    </h4>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                    <span class="text-xs font-bold px-2 py-1 rounded ${serv.custo.gratuito ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}">
+                        ${serv.custo.gratuito ? 'Gratuito' : 'Pago'}
+                    </span>
+                    <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                </div>
+            `;
         }
+
+        card.onclick = () => abrirDetalhe(serv.id);
+        container.appendChild(card);
+    });
+}
 
         function renderListaServicos() {
             extrairSecretarias();
