@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Estatístico - Carta de Serviços</title>
+    <!-- Conexão oficial com o Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- Módulo de Autenticação do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <!-- Chart.js para desenhar gráficos interativos espetaculares -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- O Tailwind CSS que pinta nossa tela -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10 flex flex-col justify-center items-center">
+
+    <!-- ======================================================= -->
+    <!-- 1. TELA DE LOGIN (Aparece primeiro por segurança)        -->
+    <!-- ======================================================= -->
+    <div id="login-container" class="max-w-md w-full bg-white p-8 rounded-2xl shadow-md border border-slate-200">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-[#002B5E]">Acesso Restrito</h1>
+            <p class="text-slate-500 text-sm mt-1">Identifique-se para acessar o Dashboard Analítico</p>
+        </div>
+
+        <form id="form-login" class="space-y-4">
+            <div class="flex flex-col">
+                <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">E-mail</label>
+                <input type="email" id="login-email" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required>
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Senha</label>
+                <input type="password" id="login-senha" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required>
+            </div>
+
+            <button type="submit" id="btn-login" class="w-full bg-[#002B5E] hover:bg-[#001D40] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all">
+                🔑 Entrar no Dashboard
+            </button>
+        </form>
+    </div>
+
+
+    <!-- ======================================================= -->
+    <!-- 2. CONTAINER PRINCIPAL DO DASHBOARD                     -->
+    <!-- ======================================================= -->
+    <div id="dashboard-container" class="max-w-6xl w-full bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
+        
+        <!-- Cabeçalho -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-5 mb-6">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-[#002B5E] tracking-tight">Dashboard de Monitoramento</h1>
+                <p class="text-slate-500 mt-1">Estatísticas, tráfego de cidadãos e volumes da Carta de Serviços.</p>
+            </div>
+            <div class="flex gap-3 mt-4 md:mt-0">
+                <a href="admin.html" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition-colors flex items-center justify-center">
+                    ⚙️ Voltar ao Admin
+                </a>
+                <button onclick="fazerLogout()" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-lg text-sm transition-colors">
+                    🚪 Sair
+                </button>
+            </div>
+        </div>
+
+        <!-- 📊 LINHA 1: CARD DE MÉTRICAS RÁPIDAS (KPIs) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <!-- Total de Serviços -->
+            <div class="bg-blue-50 p-5 rounded-xl border border-blue-100">
+                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider block">Serviços Cadastrados</span>
+                <span id="stat-total-servicos" class="text-3xl font-extrabold text-blue-900 block mt-2">0</span>
+                <span class="text-[11px] text-blue-500 mt-1 block">
+                    Ativos: <span id="stat-ativos" class="font-bold">0</span> | Inativos: <span id="stat-inativos" class="font-bold">0</span>
+                </span>
+            </div>
+
+            <!-- Total de Acessos -->
+            <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-100">
+                <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider block">Total de Acessos (Cliques)</span>
+                <span id="stat-total-cliques" class="text-3xl font-extrabold text-emerald-900 block mt-2">0</span>
+                <span class="text-[11px] text-emerald-500 mt-1 block">Registrados na nuvem</span>
+            </div>
+
+            <!-- Média de Cliques -->
+            <div class="bg-violet-50 p-5 rounded-xl border border-violet-100">
+                <span class="text-xs font-bold text-violet-600 uppercase tracking-wider block">Média de Cliques</span>
+                <span id="stat-media-cliques" class="text-3xl font-extrabold text-violet-900 block mt-2">0</span>
+                <span class="text-[11px] text-violet-500 mt-1 block">Por serviço cadastrado</span>
+            </div>
+
+            <!-- Dispositivo Campeão -->
+            <div class="bg-amber-50 p-5 rounded-xl border border-amber-100">
+                <span class="text-xs font-bold text-amber-600 uppercase tracking-wider block">Principal Dispositivo</span>
+                <span id="stat-dispositivo-lider" class="text-xl font-extrabold text-amber-900 block mt-3 uppercase">Carregando...</span>
+                <span id="stat-dispositivo-detalhe" class="text-[11px] text-amber-500 mt-1 block">Detectando acessos anônimos</span>
+            </div>
+        </div>
+
+        <!-- 📊 LINHA 2: GRÁFICOS PRINCIPAIS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Gráfico 1: Top 5 Serviços Mais Procurados -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 lg:col-span-2">
+                <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
+                    🔥 Top 5 Serviços Mais Acessados (Cliques)
+                </h3>
+                <div class="h-80 relative flex items-center justify-center">
+                    <canvas id="chart-populares"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 2: Divisão por Dispositivo (Celular vs Desktop) -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
+                    📱 Acessos por Dispositivo (LGPD)
+                </h3>
+                <div class="h-80 relative flex items-center justify-center">
+                    <canvas id="chart-dispositivos"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico 3: Concentração de Serviços por Secretaria -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 lg:col-span-3 mt-2">
+                <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
+                    🏛️ Serviços Cadastrados por Secretaria Municipal
+                </h3>
+                <div class="h-96 relative flex items-center justify-center">
+                    <canvas id="chart-secretarias"></canvas>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- JAVASCRIPT: BUSCA DE DADOS E CARREGAMENTO DE GRÁFICOS   -->
+    <!-- ======================================================= -->
+    <script>
+        // Configurações oficiais do seu Firebase[cite: 2, 3]
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZk6WrwIHn3iRjT41Ju0GTocO1XJhFrtE",
+            authDomain: "carta-servicos-horizontina.firebaseapp.com",
+            projectId: "carta-servicos-horizontina",
+            storageBucket: "carta-servicos-horizontina.firebasestorage.app",
+            messagingSenderId: "782471493827",
+            appId: "1:782471493827:web:96548c54f925a80a404a76"
+        }; //[cite: 2, 3]
+
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig); //
+        const db = firebase.firestore(); //
+        const auth = firebase.auth(); //[cite: 3]
+
+        let databaseServicos = {};
+        let databaseCliques = {};
+        let databaseDispositivos = {};
+
+        // -------------------------------------------------------------
+        // VIGIA DO ESTADO DE LOGIN[cite: 3]
+        // -------------------------------------------------------------
+        auth.onAuthStateChanged(usuario => {
+            const loginBox = document.getElementById('login-container');
+            const dashboardBox = document.getElementById('dashboard-container');
+
+            if (usuario) {
+                loginBox.classList.add('hidden'); //[cite: 3]
+                dashboardBox.classList.remove('hidden'); //[cite: 3]
+                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10"; //[cite: 3]
+                
+                carregarEstatísticasDoFirebase();
+            } else {
+                dashboardBox.classList.add('hidden'); //[cite: 3]
+                loginBox.classList.remove('hidden'); //[cite: 3]
+                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 flex flex-col justify-center items-center"; //[cite: 3]
+            }
+        });
+
+        // -------------------------------------------------------------
+        // EXECUTAR LOGIN[cite: 3]
+        // -------------------------------------------------------------
+        document.getElementById('form-login').onsubmit = async (evento) => {
+            evento.preventDefault(); //[cite: 3]
+            const email = document.getElementById('login-email').value.trim(); //[cite: 3]
+            const senha = document.getElementById('login-senha').value; //[cite: 3]
+            const btn = document.getElementById('btn-login'); //[cite: 3]
+
+            btn.disabled = true; //[cite: 3]
+            btn.innerText = "⏳ Acessando painel..."; //[cite: 3]
+
+            try {
+                await auth.signInWithEmailAndPassword(email, senha); //[cite: 3]
+            } catch (erro) {
+                console.error("Erro no login:", erro); //[cite: 3]
+                alert("❌ Erro no Firebase: " + erro.message); //[cite: 3]
+            } finally {
+                btn.disabled = false; //[cite: 3]
+                btn.innerText = "🔑 Entrar no Dashboard"; //[cite: 3]
+            }
+        };
+
+        // -------------------------------------------------------------
+        // LOGOUT (SAIR)[cite: 3]
+        // -------------------------------------------------------------
+        async function fazerLogout() {
+            if (confirm("Deseja realmente sair do Dashboard?")) {
+                await auth.signOut(); //[cite: 3]
+            }
+        }
+
+        // -------------------------------------------------------------
+        // BUSCADOR GERAL DE DADOS (PARALELO)
+        // -------------------------------------------------------------
+        async function carregarEstatísticasDoFirebase() {
+            try {
+                // Dispara as requisições em paralelo para carregar o Dashboard voando!
+                const [docServicos, docCliques, docDispositivos] = await Promise.all([
+                    db.collection('catalogo').doc('todosOsServicos').get(), //[cite: 2, 3]
+                    db.collection('estatisticas').doc('todosOsCliques').get(), //[cite: 2]
+                    db.collection('estatisticas').doc('perfilAcessos').get()
+                ]);
+
+                databaseServicos = docServicos.exists ? docServicos.data() : {};
+                databaseCliques = docCliques.exists ? docCliques.data() : {};
+                databaseDispositivos = docDispositivos.exists ? docDispositivos.data() : {};
+
+                processarEMontarDashboard();
+            } catch (erro) {
+                console.error("Falha ao montar as métricas:", erro);
+                alert("Ocorreu um erro de conexão ao carregar as métricas.");
+            }
+        }
+
+        // -------------------------------------------------------------
+        // CÉREBRO DE CÁLCULO E PLOTAGEM DE GRÁFICOS
+        // -------------------------------------------------------------
+        function processarEMontarDashboard() {
+            const listaServicos = Object.values(databaseServicos);
+
+            // 1. Volumes Gerais
+            const totalServicos = listaServicos.length;
+            const ativos = listaServicos.filter(s => s.ativo !== false).length;
+            const inativos = totalServicos - ativos;
+
+            document.getElementById('stat-total-servicos').innerText = totalServicos;
+            document.getElementById('stat-ativos').innerText = ativos;
+            document.getElementById('stat-inativos').innerText = inativos;
+
+            // 2. Cliques e Engajamento[cite: 2]
+            let totalCliques = 0;
+            listaServicos.forEach(s => {
+                totalCliques += (databaseCliques[s.id] || 0); //[cite: 2]
+            });
+            const mediaCliques = totalServicos > 0 ? (totalCliques / totalServicos).toFixed(1) : 0;
+
+            document.getElementById('stat-total-cliques').innerText = totalCliques;
+            document.getElementById('stat-media-cliques').innerText = mediaCliques;
+
+            // 3. Métricas de Dispositivos (Anônimo)
+            const celularAcessos = databaseDispositivos["Celular/Tablet"] || 0;
+            const desktopAcessos = databaseDispositivos["Computador/Desktop"] || 0;
+            
+            let liderDispositivo = "Sem Acessos";
+            let liderTexto = "Nenhum dado capturado ainda";
+
+            if (celularAcessos > 0 || desktopAcessos > 0) {
+                if (celularAcessos >= desktopAcessos) {
+                    liderDispositivo = "Celular 📱";
+                    liderTexto = `Celular lidera com ${celularAcessos} acessos`;
+                } else {
+                    liderDispositivo = "Computador 💻";
+                    liderTexto = `Desktop lidera com ${desktopAcessos} acessos`;
+                }
+            }
+            document.getElementById('stat-dispositivo-lider').innerText = liderDispositivo;
+            document.getElementById('stat-dispositivo-detalhe').innerText = liderTexto;
+
+            // ---------------------------------------------------------
+            // GRÁFICO 1: TOP 5 SERVIÇOS MAIS ACESSADOS[cite: 2]
+            // ---------------------------------------------------------
+            const top5Servicos = [...listaServicos]
+                .sort((a, b) => (databaseCliques[b.id] || 0) - (databaseCliques[a.id] || 0)) //[cite: 2]
+                .slice(0, 5);
+
+            new Chart(document.getElementById('chart-populares'), {
+                type: 'bar',
+                data: {
+                    labels: top5Servicos.map(s => `ID ${s.id}: ${s.titulo.substring(0, 20)}...`),
+                    datasets: [{
+                        label: 'Quantidade de Cliques',
+                        data: top5Servicos.map(s => databaseCliques[s.id] || 0), //[cite: 2]
+                        backgroundColor: '#002B5E', //[cite: 2]
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // ---------------------------------------------------------
+            // GRÁFICO 2: DISPOSITIVOS (DOUGHNUT)
+            // ---------------------------------------------------------
+            new Chart(document.getElementById('chart-dispositivos'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Celular / Tablet', 'Computador / Desktop'],
+                    datasets: [{
+                        data: [celularAcessos, desktopAcessos],
+                        backgroundColor: ['#f59e0b', '#002B5E'] //[cite: 2]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // ---------------------------------------------------------
+            // GRÁFICO 3: CONCENTRAÇÃO POR SECRETARIA[cite: 3]
+            // ---------------------------------------------------------
+            // Secretarias oficiais do seu admin.html[cite: 3]
+            const secretariasOficiais = [
+                "Gabinete do Prefeito",
+                "Defesa Civil",
+                "Secretaria de Saúde",
+                "Secretaria de Educação",
+                "Secretaria de Desenvolvimento Social",
+                "Secretaria de Agricultura e Meio Ambiente",
+                "Secretaria de Infraestrutura",
+                "Secretaria de Planejamento e Administração",
+                "Secretaria de Fazenda",
+                "Secretaria de Desenvolvimento Econômico e Turismo"
+            ]; //[cite: 3]
+
+            // Conta os serviços reais associados a cada uma delas[cite: 2]
+            const distribuicaoSecretarias = secretariasOficiais.map(sec => {
+                return listaServicos.filter(s => s.secretaria === sec).length; //[cite: 2]
+            });
+
+            new Chart(document.getElementById('chart-secretarias'), {
+                type: 'bar',
+                data: {
+                    labels: secretariasOficiais.map(s => s.replace("Secretaria de ", "")),
+                    datasets: [{
+                        label: 'Serviços Cadastrados',
+                        data: distribuicaoSecretarias,
+                        backgroundColor: '#10b981',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Gráfico de barras horizontais
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

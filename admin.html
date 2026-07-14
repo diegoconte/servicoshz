@@ -59,15 +59,20 @@
             </button>
         </div>
 
-        <!-- BARRA DE AÇÕES: Totalizador e Botão de Novo Cadastro -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <span class="text-sm font-semibold text-slate-500">
-                Total cadastrado: <span id="total-servicos" class="text-slate-800 font-bold">0</span> serviços
-            </span>
-            <button onclick="abrirCriadorDeServico()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 text-sm">
-                ➕ Cadastrar Novo Serviço
-            </button>
-        </div>
+        <!-- BARRA DE AÇÕES: Totalizador, Atalho de Dashboard e Novo Cadastro -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div class="flex items-center gap-4">
+        <span class="text-sm font-semibold text-slate-500">
+            Total cadastrado: <span id="total-servicos" class="text-slate-800 font-bold">0</span> serviços
+        </span>
+        <a href="dashboard.html" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-xs rounded-xl transition-all">
+            📈 Ver Dashboard
+        </a>
+    </div>
+    <button onclick="abrirCriadorDeServico()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 text-sm">
+        ➕ Cadastrar Novo Serviço
+    </button>
+</div>
         
         <!-- Tabela elegante e limpa -->
         <div class="overflow-x-auto rounded-xl border border-slate-200">
@@ -116,15 +121,14 @@
                         <select id="edit-secretaria" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required>
                             <option value="">Selecione uma secretaria...</option>
                             <option value="Gabinete do Prefeito">Gabinete do Prefeito</option>
-                            <option value="Defesa Civil">Defesa Civil</option>
                             <option value="Secretaria de Saúde">Secretaria de Saúde</option>
                             <option value="Secretaria de Educação">Secretaria de Educação</option>
                             <option value="Secretaria de Desenvolvimento Social">Secretaria de Desenvolvimento Social</option>
-                            <option value="Secretaria de Agricultura e Meio Ambiente">Secretaria de Agricultura e Meio Ambiente</option>
+                            <option value="Secretaria de Desenvolvimento Rural">Secretaria de Desenvolvimento Rural</option>
                             <option value="Secretaria de Infraestrutura">Secretaria de Infraestrutura</option>
                             <option value="Secretaria de Planejamento e Administração">Secretaria de Planejamento e Administração</option>
                             <option value="Secretaria de Fazenda">Secretaria de Fazenda</option>
-                            <option value="Secretaria de Desenvolvimento Econômico e Turismo">Secretaria de Desenvolvimento Econômico e Turismo</option>
+                            <option value="Secretaria de Desenvolvimento Econômico">Secretaria de Desenvolvimento Econômico</option>
                         </select>
                     </div>
                 </div>
