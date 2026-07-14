@@ -31,23 +31,30 @@
     </div>
 
     <!-- 1B. TELA DE SOLICITAÇÃO DE ACESSO -->
-    <div id="solicitar-container" class="max-w-md w-full bg-white p-8 rounded-2xl shadow-md border border-slate-200 hidden">
-        <h1 class="text-2xl font-bold text-[#002B5E] text-center mb-6">Solicitar Permissão</h1>
-        <form id="form-solicitar" class="space-y-4">
-            <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">Nome Completo</label><input type="text" id="solicitar-nome" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" required></div>
+    <div id="solicitar-container" class="max-w-md w-full bg-white p-6 md:p-8 rounded-2xl shadow-md border border-slate-200 hidden">
+        <h1 class="text-2xl font-bold text-[#002B5E] text-center mb-4">Solicitar Permissão</h1>
+        <form id="form-solicitar" class="space-y-3">
+            <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">Nome Completo</label><input type="text" id="solicitar-nome" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" required></div>
             <div class="grid grid-cols-2 gap-4">
-                <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">CPF</label><input type="text" id="solicitar-cpf" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" required placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)"></div>
-                <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">Secretaria</label><input type="text" id="solicitar-secretaria" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" required></div>
+                <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">CPF</label><input type="text" id="solicitar-cpf" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" required placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)"></div>
+                <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">Secretaria</label><input type="text" id="solicitar-secretaria" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" required></div>
             </div>
-            <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">E-mail Corporativo</label><input type="email" id="solicitar-email" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" required></div>
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-2">
+            <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">E-mail Corporativo</label><input type="email" id="solicitar-email" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" required></div>
+            
+            <!-- 🆕 NOVOS CAMPOS: SENHA E CONFIRMAÇÃO DE SENHA -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">Senha Desejada</label><input type="password" id="solicitar-senha" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" required minlength="6" placeholder="Mín. 6 caracteres"></div>
+                <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">Confirmar Senha</label><input type="password" id="solicitar-confirmar-senha" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" required minlength="6" placeholder="Repita a senha"></div>
+            </div>
+
+            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-1">
                 <p class="font-bold text-[#002B5E] uppercase text-[10px]">⚖️ Termo de Responsabilidade</p>
                 <p>Me responsabilizo administrativa, civil e criminalmente por todas as ações no painel e aceito o registro e auditoria de meus logs conforme necessário.</p>
                 <label class="flex items-start gap-2 cursor-pointer pt-1 font-semibold text-slate-700"><input type="checkbox" id="solicitar-termo" class="rounded text-blue-600 h-4 w-4 mt-0.5" required><span>Aceito as condições.</span></label>
             </div>
-            <button type="submit" id="btn-solicitar" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-md">✉️ Enviar Solicitação</button>
+            <button type="submit" id="btn-solicitar" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition-colors">✉️ Enviar Solicitação</button>
         </form>
-        <div class="text-center mt-6 pt-4 border-t border-slate-100"><button onclick="alternarFormularios('login')" class="text-xs text-slate-500 font-bold hover:underline">Voltar ao Login</button></div>
+        <div class="text-center mt-4 pt-3 border-t border-slate-100"><button onclick="alternarFormularios('login')" class="text-xs text-slate-500 font-bold hover:underline">Voltar ao Login</button></div>
     </div>
 
     <!-- 2. CONTAINER PRINCIPAL -->
@@ -79,11 +86,17 @@
         <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 md:p-8 max-h-[90vh] overflow-y-auto border">
             <div class="flex justify-between items-center border-b pb-4 mb-6"><h2 id="modal-titulo-servico" class="text-xl font-bold text-[#002B5E]">Editar Serviço</h2><span id="botao-fechar" class="text-3xl font-light text-slate-400 hover:text-slate-600 cursor-pointer">&times;</span></div>
             <form id="form-servico" class="space-y-6">
-                <input type="hidden" id="edit-id">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1">Título</label><input type="text" id="edit-titulo" class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm" required></div>
-                    <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1">Secretaria</label><select id="edit-secretaria" class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm" required><option value="">Selecione...</option><option value="Gabinete do Prefeito">Gabinete do Prefeito</option><option value="Defesa Civil">Defesa Civil</option><option value="Secretaria de Saúde">Secretaria de Saúde</option><option value="Secretaria de Educação">Secretaria de Educação</option><option value="Secretaria de Desenvolvimento Social">Secretaria de Desenvolvimento Social</option><option value="Secretaria de Agricultura e Meio Ambiente">Secretaria de Agricultura e Meio Ambiente</option><option value="Secretaria de Infraestrutura">Secretaria de Infraestrutura</option><option value="Secretaria de Planejamento e Administração">Secretaria de Planejamento e Administração</option><option value="Secretaria de Fazenda">Secretaria de Fazenda</option><option value="Secretaria de Desenvolvimento Econômico e Turismo">Secretaria de Desenvolvimento Econômico e Turismo</option></select></div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="flex flex-col md:col-span-1">
+                        <label class="text-xs font-bold text-slate-700 mb-1 uppercase">Número ID</label>
+                        <input type="number" id="edit-id" class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm font-bold text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed" required min="1">
+                    </div>
+                    <div class="flex flex-col md:col-span-3">
+                        <label class="text-xs font-semibold text-slate-600 mb-1">Título do Serviço</label>
+                        <input type="text" id="edit-titulo" class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm" required>
+                    </div>
                 </div>
+                <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1">Secretaria</label><select id="edit-secretaria" class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm" required><option value="">Selecione...</option><option value="Gabinete do Prefeito">Gabinete do Prefeito</option><option value="Secretaria de Saúde">Secretaria de Saúde</option><option value="Secretaria de Educação">Secretaria de Educação</option><option value="Secretaria de Desenvolvimento Social">Secretaria de Desenvolvimento Social</option><option value="Secretaria de Agricultura e Meio Ambiente">Secretaria de Agricultura e Meio Ambiente</option><option value="Secretaria de Infraestrutura">Secretaria de Infraestrutura</option><option value="Secretaria de Planejamento e Administração">Secretaria de Planejamento e Administração</option><option value="Secretaria de Fazenda">Secretaria de Fazenda</option><option value="Secretaria de Desenvolvimento Econômico e Turismo">Secretaria de Desenvolvimento Econômico e Turismo</option></select></div>
                 <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1">O que é?</label><textarea id="edit-descricao" class="w-full h-20 px-3 py-2 bg-slate-50 border rounded-lg text-sm" required></textarea></div>
                 <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1">Quem pode solicitar?</label><textarea id="edit-elegibilidade" class="w-full h-20 px-3 py-2 bg-slate-50 border rounded-lg text-sm"></textarea></div>
                 <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1">O que eu recebo?</label><input type="text" id="edit-resultado" class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm"></div>
@@ -135,6 +148,7 @@
         const db = firebase.firestore(), auth = firebase.auth();
         const EMAILS_ADMINISTRADORES = ["diegoconte@horizontina.rs.gov.br", "raquelcallegaro@horizontina.rs.gov.br"];
         let emailUsuarioLogado = "", bancoDeDadosLocal = {};
+        let idOriginalEdicao = null;
 
         emailjs.init("N73BvpXvytn4cs4xN");
 
@@ -187,14 +201,36 @@
             } catch (err) { console.error("Erro EmailJS:", err); }
         }
 
+        // -------------------------------------------------------------
+        // TRATAR O ENVIO DA SOLICITAÇÃO DE ACESSO (COM CPF, TERMO E VALIDAÇÃO DE SENHA)
+        // -------------------------------------------------------------
         document.getElementById('form-solicitar').onsubmit = async (e) => {
             e.preventDefault();
-            const n = document.getElementById('solicitar-nome').value.trim(), c = document.getElementById('solicitar-cpf').value.trim(), s = document.getElementById('solicitar-secretaria').value.trim(), em = document.getElementById('solicitar-email').value.trim(), btn = document.getElementById('btn-solicitar');
-            if (!validarCPF(c)) return alert("⚠️ CPF Inválido!");
+            const n = document.getElementById('solicitar-nome').value.trim();
+            const c = document.getElementById('solicitar-cpf').value.trim();
+            const s = document.getElementById('solicitar-secretaria').value.trim();
+            const em = document.getElementById('solicitar-email').value.trim();
+            const senha = document.getElementById('solicitar-senha').value;
+            const confirmarSenha = document.getElementById('solicitar-confirmar-senha').value;
+            const termoAceito = document.getElementById('solicitar-termo').checked;
+            const btn = document.getElementById('btn-solicitar');
+
+            if (!validarCPF(c)) return alert("⚠️ CPF Inválido! Por favor, digite um CPF real.");
+            
+            // 🆕 VALIDAÇÃO DAS SENHAS REPETIDAS
+            if (senha !== confirmarSenha) {
+                return alert("⚠️ As senhas digitadas não coincidem! Verifique e tente novamente.");
+            }
+
             btn.disabled = true; btn.innerText = "⏳ Enviando...";
             emailUsuarioLogado = em;
-            await enviarEmail("Solicitação de Acesso", "PENDENTE", `Solicitante: ${n}\nCPF: ${c}\nSecretaria: ${s}\nE-mail: ${em}\n\nO servidor aceitou os termos legais.`);
-            alert("✉️ Solicitação enviada!");
+
+            // Envia a senha em formato limpo no corpo do e-mail para vocês copiarem
+            const corpoEmail = `Solicitante: ${n}\nCPF: ${c}\nSecretaria: ${s}\nE-mail: ${em}\nSenha Desejada: ${senha}\n\nO servidor concordou formalmente com os termos de responsabilidade criminal, civil e auditoria técnica de logs.`;
+
+            await enviarEmail("Solicitação de Acesso", "PENDENTE", corpoEmail);
+            
+            alert("✉️ Solicitação enviada com sucesso! Diego e Raquel foram notificados e avaliarão o seu acesso.");
             document.getElementById('form-solicitar').reset();
             alternarFormularios('login');
             btn.disabled = false; btn.innerText = "✉️ Enviar Solicitação";
@@ -258,8 +294,12 @@
         }
 
         function abrirCriadorDeServico() {
+            idOriginalEdicao = null;
+            const isMaster = EMAILS_ADMINISTRADORES.map(e => e.toLowerCase()).includes(emailUsuarioLogado.toLowerCase());
+            document.getElementById('edit-id').disabled = !isMaster;
+
             const ids = Object.values(bancoDeDadosLocal).map(s => Number(s.id) || 0), prox = ids.length > 0 ? Math.max(...ids) + 1 : 1;
-            document.getElementById('modal-titulo-servico').innerText = `Cadastrar Serviço (ID ${prox})`;
+            document.getElementById('modal-titulo-servico').innerText = `Cadastrar Novo Serviço`;
             document.getElementById('form-servico').reset();
             document.getElementById('edit-id').value = prox;
             ['presencial','telefone','email','web'].forEach(t => toggleCanal(t));
@@ -270,7 +310,11 @@
 
         function abrirEditorDeServico(id) {
             const s = bancoDeDadosLocal[`ID_${id}`]; if (!s) return;
-            document.getElementById('modal-titulo-servico').innerText = `Editar: ${s.titulo}`;
+            idOriginalEdicao = Number(id);
+            const isMaster = EMAILS_ADMINISTRADORES.map(e => e.toLowerCase()).includes(emailUsuarioLogado.toLowerCase());
+            document.getElementById('edit-id').disabled = !isMaster;
+
+            document.getElementById('modal-titulo-servico').innerText = `Editar Serviço`;
             document.getElementById('edit-id').value = s.id;
             document.getElementById('edit-titulo').value = s.titulo || "";
             document.getElementById('edit-secretaria').value = s.secretaria || "";
@@ -298,7 +342,16 @@
 
         document.getElementById('form-servico').onsubmit = async (e) => {
             e.preventDefault();
-            const id = document.getElementById('edit-id').value, btn = document.getElementById('btn-submit');
+            const idNovo = Number(document.getElementById('edit-id').value), btn = document.getElementById('btn-submit');
+            const isEdicao = (idOriginalEdicao !== null);
+            
+            if (!isEdicao && bancoDeDadosLocal[`ID_${idNovo}`]) {
+                return alert(`⚠️ Erro: O ID ${idNovo} já está ocupado pelo serviço "${bancoDeDadosLocal['ID_'+idNovo].titulo}". Digite outro número!`);
+            }
+            if (isEdicao && idNovo !== idOriginalEdicao && bancoDeDadosLocal[`ID_${idNovo}`]) {
+                return alert(`⚠️ Erro: Você não pode mudar para o ID ${idNovo}, pois ele já está sendo usado por "${bancoDeDadosLocal['ID_'+idNovo].titulo}".`);
+            }
+
             const canais = [];
             ['presencial','telefone','email'].forEach(t => { if(document.getElementById(`chk-${t}`).checked) canais.push({ tipo: t.charAt(0).toUpperCase()+t.slice(1), local: document.getElementById(`input-${t}`).value.trim() }); });
             if(document.getElementById('chk-web').checked) canais.push({ tipo: "Online", local: "Internet", link: document.getElementById('input-web').value.trim() });
@@ -311,9 +364,10 @@
             if (etapas.length === 0) return alert("⚠️ Requer ao menos 1 etapa!");
 
             btn.disabled = true; btn.innerText = "⏳ Gravando...";
-            const sOrig = bancoDeDadosLocal[`ID_${id}`];
+            const sOrig = isEdicao ? bancoDeDadosLocal[`ID_${idOriginalEdicao}`] : null;
+            
             const sAtual = {
-                id: Number(id), ativo: sOrig ? (sOrig.ativo !== false) : true,
+                id: idNovo, ativo: sOrig ? (sOrig.ativo !== false) : true,
                 titulo: document.getElementById('edit-titulo').value.trim(), secretaria: document.getElementById('edit-secretaria').value,
                 descricao: document.getElementById('edit-descricao').value.trim(), elegibilidade: document.getElementById('edit-elegibilidade').value.trim(),
                 resultado: document.getElementById('edit-resultado').value.trim(),
@@ -322,17 +376,30 @@
                 canais, etapas, documentos: document.getElementById('edit-documentos').value.split("\n").map(l => l.trim()).filter(l => l !== "")
             };
 
+            const payload = { [`ID_${idNovo}`]: sAtual };
+            if (isEdicao && idNovo !== idOriginalEdicao) {
+                payload[`ID_${idOriginalEdicao}`] = firebase.firestore.FieldValue.delete();
+            }
+
             try {
-                await db.collection('catalogo').doc('todosOsServicos').set({ [`ID_${id}`]: sAtual }, { merge: true });
-                bancoDeDadosLocal[`ID_${id}`] = sAtual; desenharTabelaReal(); await registrarAuditoria();
-                await enviarEmail(sOrig ? "Edição" : "Criação", id, `Serviço alterado/criado.`);
-                alert("✅ Firebase Atualizado!"); document.getElementById('modal-edicao').classList.add('hidden');
-            } catch (err) { alert("❌ Erro ao salvar."); }
+                await db.collection('catalogo').doc('todosOsServicos').set(payload, { merge: true });
+                if (isEdicao && idNovo !== idOriginalEdicao) {
+                    delete bancoDeDadosLocal[`ID_${idOriginalEdicao}`];
+                }
+                bancoDeDadosLocal[`ID_${idNovo}`] = sAtual;
+                desenharTabelaReal(); await registrarAuditoria();
+                await enviarEmail(sOrig ? "Edição de Registro" : "Criação de Registro", idNovo, `Serviço gravado com ID manual ${idNovo}. ${isEdicao && idNovo !== idOriginalEdicao ? 'O ID antigo ' + idOriginalEdicao + ' foi removido.' : ''}`);
+                alert("✅ Firebase Atualizado com Sucesso!"); document.getElementById('modal-edicao').classList.add('hidden');
+            } catch (err) { alert("❌ Erro crítico ao salvar."); }
             btn.disabled = false; btn.innerText = "💾 Salvar Alterações";
         };
 
         document.getElementById('botao-fechar').onclick = () => document.getElementById('modal-edicao').classList.add('hidden');
-        window.onclick = (e) => { if (evento.target === document.getElementById('modal-edicao')) document.getElementById('modal-edicao').classList.add('hidden'); };
+        
+        // 🛡️ CORREÇÃO DEFINITIVA DO CLIQUE FORA DO MODAL
+        window.onclick = (e) => { 
+            if (e.target === document.getElementById('modal-edicao')) document.getElementById('modal-edicao').classList.add('hidden'); 
+        };
     </script>
 </body>
 </html>
