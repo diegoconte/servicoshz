@@ -549,12 +549,27 @@ async function carregarCliquesGlobais() {
         }
 
         // 3. Renderização na Home (Destaques)
+        // 3. Renderização na Home (Destaques Dinâmicos baseados nos Cliques Reais)
         function renderDestaques() {
             const grid = document.getElementById('grid-destaques');
             grid.innerHTML = '';
             
-            const destaques = bdServicos.filter(s => s.destaque);
+            // 1. Copia a lista de serviços e ordena pelos cliques do Firebase
+            const destaques = [...bdServicos]
+                .sort((a, b) => {
+                    const cliquesA = bdCliquesGlobais[a.id] || 0;
+                    const cliquesB = bdCliquesGlobais[b.id] || 0;
+                    
+                    // Se o número de cliques for diferente, põe o maior primeiro
+                    if (cliquesB !== cliquesA) {
+                        return cliquesB - cliquesA;
+                    }
+                    // Se der empate (ex: ambos com 0 cliques), organiza em ordem alfabética
+                    return a.titulo.localeCompare(b.titulo);
+                })
+                .slice(0, 4); // 2. Filtra para pegar apenas os 4 mais acessados
             
+            // 3. Desenha os 4 cards campeões na tela
             destaques.forEach(serv => {
                 const card = document.createElement('div');
                 card.className = "bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition flex flex-col p-6 cursor-pointer";
