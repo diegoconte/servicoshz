@@ -6,7 +6,7 @@
     <!-- Conexão oficial com o Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <!-- Adicionamos o módulo de Autenticação do Firebase -->
+    <!-- Módulo de Autenticação do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <!-- O Tailwind CSS que pinta nossa tela -->
@@ -42,17 +42,27 @@
 
 
     <!-- ======================================================= -->
-    <!-- 2. CONTAINER PRINCIPAL (Começa escondido com 'hidden')  -->
+    <!-- 2. CONTAINER PRINCIPAL (Começa escondido)               -->
     <!-- ======================================================= -->
     <div id="painel-container" class="max-w-5xl w-full bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-5 mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-5 mb-6">
             <div>
                 <h1 class="text-2xl md:text-3xl font-bold text-[#002B5E] tracking-tight">Painel de Controle - Editor de Serviços</h1>
-                <p class="text-slate-500 mt-1">Clique no lápis (✏️) ao lado de qualquer serviço para editar suas informações.</p>
+                <p class="text-slate-500 mt-1">Gerencie, edite, inative ou crie novos serviços públicos em tempo real.</p>
             </div>
-            <!-- Botão de Sair elegante -->
+            <!-- Botão de Sair -->
             <button onclick="fazerLogout()" class="mt-4 md:mt-0 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-lg text-sm transition-colors self-start md:self-auto">
                 🚪 Sair do Painel
+            </button>
+        </div>
+
+        <!-- BARRA DE AÇÕES: Totalizador e Botão de Novo Cadastro -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <span class="text-sm font-semibold text-slate-500">
+                Total cadastrado: <span id="total-servicos" class="text-slate-800 font-bold">0</span> serviços
+            </span>
+            <button onclick="abrirCriadorDeServico()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 text-sm">
+                ➕ Cadastrar Novo Serviço
             </button>
         </div>
         
@@ -64,11 +74,11 @@
                         <th class="p-4 font-semibold w-16">ID</th>
                         <th class="p-4 font-semibold">Serviço</th>
                         <th class="p-4 font-semibold">Secretaria</th>
-                        <th class="p-4 font-semibold text-center w-24">Editar</th>
+                        <th class="p-4 font-semibold text-center w-36">Ações</th>
                     </tr>
                 </thead>
                 <tbody id="tabela-corpo" class="divide-y divide-slate-100">
-                    <!-- O JavaScript vai colocar as linhas reais aqui dentro -->
+                    <!-- O JavaScript colocará as linhas reais aqui -->
                 </tbody>
             </table>
         </div>
@@ -76,7 +86,7 @@
 
 
     <!-- ======================================================= -->
-    <!-- 3. JANELA FLUTUANTE (MODAL) DE EDIÇÃO                   -->
+    <!-- 3. JANELA FLUTUANTE (MODAL) DE EDIÇÃO / CADASTRO        -->
     <!-- ======================================================= -->
     <div id="modal-edicao" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto hidden">
         <div id="modal-conteudo" class="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 md:p-8 max-h-[90vh] overflow-y-auto border border-slate-100">
@@ -88,10 +98,10 @@
             </div>
             
             <!-- Formulário com os campos -->
-            <form id="form-servico" class="space-y-5">
+            <form id="form-servico" class="space-y-6">
                 <input type="hidden" id="edit-id">
 
-                <!-- Grid de duas colunas -->
+                <!-- Título e Secretaria Padronizada -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="flex flex-col">
                         <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Título do Serviço</label>
@@ -100,78 +110,150 @@
 
                     <div class="flex flex-col">
                         <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Secretaria Responsável</label>
-                        <input type="text" id="edit-secretaria" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required>
+                        <select id="edit-secretaria" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required>
+                            <option value="">Selecione uma secretaria...</option>
+                            <option value="Gabinete do Prefeito">Gabinete do Prefeito</option>
+                            <option value="Defesa Civil">Defesa Civil</option>
+                            <option value="Secretaria de Saúde">Secretaria de Saúde</option>
+                            <option value="Secretaria de Educação">Secretaria de Educação</option>
+                            <option value="Secretaria de Desenvolvimento Social">Secretaria de Desenvolvimento Social</option>
+                            <option value="Secretaria de Agricultura e Meio Ambiente">Secretaria de Agricultura e Meio Ambiente</option>
+                            <option value="Secretaria de Infraestrutura">Secretaria de Infraestrutura</option>
+                            <option value="Secretaria de Planejamento e Administração">Secretaria de Planejamento e Administração</option>
+                            <option value="Secretaria de Fazenda">Secretaria de Fazenda</option>
+                            <option value="Secretaria de Desenvolvimento Econômico e Turismo">Secretaria de Desenvolvimento Econômico e Turismo</option>
+                        </select>
                     </div>
                 </div>
 
+                <!-- Descrições Básicas -->
                 <div class="flex flex-col">
-                    <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Descrição do Serviço</label>
-                    <textarea id="edit-descricao" class="w-full h-24 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all resize-y" required></textarea>
+                    <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">O que é? (Descrição do Serviço)</label>
+                    <textarea id="edit-descricao" class="w-full h-20 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all resize-y" required></textarea>
                 </div>
 
                 <div class="flex flex-col">
-                    <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Critérios de Elegibilidade</label>
+                    <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Quem pode solicitar? (Elegibilidade)</label>
                     <textarea id="edit-elegibilidade" class="w-full h-20 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all resize-y"></textarea>
                 </div>
 
                 <div class="flex flex-col">
-                    <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Resultado Esperado</label>
+                    <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">O que eu recebo? (Resultado Esperado)</label>
                     <input type="text" id="edit-resultado" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
                 </div>
 
-                <div class="flex flex-col w-full md:w-1/2">
-                    <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Destacar na Página Inicial?</label>
-                    <select id="edit-destaque" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
-                        <option value="true">Sim (Destaque)</option>
-                        <option value="false">Não (Normal)</option>
-                    </select>
+                <!-- SUBSEÇÃO: ONDE SOLICITAR (CANAIS DE ACESSO ESTRUTURADOS) -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                    <h3 class="text-xs font-bold text-[#002B5E] uppercase tracking-wider mb-2">📍 Onde Solicitar? (Canais de Atendimento)</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Presencial -->
+                        <div class="space-y-2 border-b md:border-b-0 md:border-r border-slate-200 pb-3 md:pb-0 md:pr-4">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 uppercase tracking-wide">
+                                <input type="checkbox" id="chk-presencial" onchange="toggleCanal('presencial')" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                                Atendimento Presencial
+                            </label>
+                            <div id="div-presencial" class="hidden">
+                                <textarea id="input-presencial" class="w-full h-16 p-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Av. Helmuto Simm, nº 100, Sala 05 (Segunda a Sexta, das 08:00 às 17:00)"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Telefone -->
+                        <div class="space-y-2 pb-3 md:pb-0">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 uppercase tracking-wide">
+                                <input type="checkbox" id="chk-telefone" onchange="toggleCanal('telefone')" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                                Telefone
+                            </label>
+                            <div id="div-telefone" class="hidden">
+                                <input type="text" id="input-telefone" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: (55) 99938-4238 (Plantão 24h)">
+                            </div>
+                        </div>
+
+                        <!-- E-mail -->
+                        <div class="space-y-2 border-t border-slate-200 pt-3 md:border-t-0 md:border-r md:pr-4">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 uppercase tracking-wide">
+                                <input type="checkbox" id="chk-email" onchange="toggleCanal('email')" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                                E-mail
+                            </label>
+                            <div id="div-email" class="hidden">
+                                <input type="email" id="input-email" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: defesacivil@horizontina.rs.gov.br">
+                            </div>
+                        </div>
+
+                        <!-- Online (Link Web) -->
+                        <div class="space-y-2 border-t border-slate-200 pt-3 md:border-t-0">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 uppercase tracking-wide">
+                                <input type="checkbox" id="chk-web" onchange="toggleCanal('web')" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                                Online (Atendimento Digital)
+                            </label>
+                            <div id="div-web" class="hidden">
+                                <input type="url" id="input-web" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: https://horizontina.atende.net">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- SUBSEÇÃO: PRAZOS -->
                 <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-[#002B5E] space-y-3">
-                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">Prazos de Atendimento</h3>
+                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">⏱️ Prazos de Atendimento</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div class="flex flex-col">
                             <label class="text-[10px] font-semibold text-slate-500 mb-1 uppercase">Espera na Fila</label>
-                            <input type="text" id="edit-prazo-espera" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" id="edit-prazo-espera" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Imediato">
                         </div>
                         <div class="flex flex-col">
                             <label class="text-[10px] font-semibold text-slate-500 mb-1 uppercase">Análise Técnica</label>
-                            <input type="text" id="edit-prazo-analise" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" id="edit-prazo-analise" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Até 5 dias úteis">
                         </div>
                         <div class="flex flex-col">
-                            <label class="text-[10px] font-semibold text-slate-500 mb-1 uppercase">Prazo Total</label>
-                            <input type="text" id="edit-prazo-total" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="text-[10px] font-semibold text-slate-500 mb-1 uppercase">Prazo Total Máximo</label>
+                            <input type="text" id="edit-prazo-total" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Variável conforme demanda">
                         </div>
                     </div>
                 </div>
 
                 <!-- SUBSEÇÃO: CUSTOS -->
                 <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-emerald-600 space-y-3">
-                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">Custos do Serviço</h3>
+                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">💰 Custos do Serviço</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div class="flex flex-col">
-                            <label class="text-[10px] font-semibold text-slate-500 mb-1 uppercase">É gratuito?</label>
+                            <label class="text-[10px] font-semibold text-slate-500 mb-1 uppercase">Este serviço é gratuito?</label>
                             <select id="edit-custo-gratuito" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="true">Sim, é gratuito</option>
                                 <option value="false">Não, possui taxas</option>
                             </select>
                         </div>
                         <div class="flex flex-col">
-                            <label class="text-[10px] font-semibold text-slate-500 mb-1 uppercase">Explicação sobre Taxas</label>
-                            <input type="text" id="edit-custo-descricao" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="text-[10px] font-semibold text-slate-500 mb-1 uppercase">Explicação/Texto sobre Custos</label>
+                            <input type="text" id="edit-custo-descricao" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Sem custos para o cidadão.">
                         </div>
                     </div>
                 </div>
 
-                <!-- SUBSEÇÃO: DOCUMENTOS -->
+                <!-- SUBSEÇÃO: DOCUMENTOS EXIGIDOS -->
                 <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-amber-500 flex flex-col">
-                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-1">Documentos Necessários</h3>
-                    <p class="text-[11px] text-slate-500 mb-2">Digite um documento em cada linha. O site organizará em tópicos automaticamente.</p>
-                    <textarea id="edit-documentos" class="w-full h-24 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y" placeholder="Exemplo:&#10;RG original&#10;Comprovante de residência"></textarea>
+                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-1">📄 Documentação Exigida</h3>
+                    <p class="text-[11px] text-slate-500 mb-2">Digite cada documento em uma linha. Se não houver, deixe em branco.</p>
+                    <textarea id="edit-documentos" class="w-full h-20 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y" placeholder="Exemplo:&#10;RG original&#10;Comprovante de residência"></textarea>
                 </div>
 
-                <!-- Botão de Salvar -->
+                <!-- SUBSEÇÃO: ETAPAS DO PROCESSO (DYNAMIC LIST MANAGER) -->
+                <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-violet-600 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">👣 Etapas do Processo</h3>
+                        <button type="button" onclick="adicionarHTMLNovaEtapa()" class="px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs rounded transition-all">
+                            ➕ Adicionar Etapa
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-slate-500">Crie o passo a passo que o cidadão precisa seguir para concluir este serviço.</p>
+                    
+                    <!-- Container das etapas dinâmicas -->
+                    <div id="container-etapas" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                        <!-- Gerado automaticamente pelo JS -->
+                    </div>
+                </div>
+
+                <!-- Botão de Envio -->
                 <button type="submit" id="btn-submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
                     💾 Salvar Alterações
                 </button>
@@ -181,7 +263,7 @@
     </div>
 
     <!-- ======================================================= -->
-    <!-- JAVASCRIPT: CÉREBRO INTEGRADO COM AUTENTICAÇÃO         -->
+    <!-- JAVASCRIPT: CÉREBRO INTEGRADO COM CADASTRO E LOGIN    -->
     <!-- ======================================================= -->
     <script>
         // Configurações oficiais do seu Firebase
@@ -199,36 +281,98 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
+        // 🛡️ CHAVES DE ACESSO ADMINISTRADOR MASTER (Apenas você terá a lixeira vermelha!)
+        // Substitua a linha antiga por esta:
+const EMAILS_ADMINISTRADORES = [
+    "diegoconte@horizontina.rs.gov.br",
+    "raquelcallegaro@horizontina.rs.gov.br",
+    ]
+        let emailUsuarioLogado = "";
+
         let bancoDeDadosLocal = {};
 
         // -------------------------------------------------------------
-        // SEGURANÇA 1: VIGIA DO ESTADO DE LOGIN (Fica de olho se o usuário está logado)
+        // VISUAL: CONTROLADOR DE EXIBIÇÃO DE CANAIS
+        // -------------------------------------------------------------
+        function toggleCanal(tipo) {
+            const chk = document.getElementById(`chk-${tipo}`);
+            const div = document.getElementById(`div-${tipo}`);
+            const input = document.getElementById(`input-${tipo}`);
+            
+            if (chk.checked) {
+                div.classList.remove('hidden');
+            } else {
+                div.classList.add('hidden');
+                input.value = ""; 
+            }
+        }
+
+        // -------------------------------------------------------------
+        // ETAPAS: GERENCIADOR DINÂMICO DE LINHAS NO FORMULÁRIO
+        // -------------------------------------------------------------
+        function adicionarHTMLNovaEtapa(titulo = "", descricao = "") {
+            const container = document.getElementById('container-etapas');
+            const totalEtapas = container.children.length + 1;
+
+            const divEtapa = document.createElement('div');
+            divEtapa.className = "bloco-etapa bg-white p-3 rounded-lg border border-slate-200 shadow-sm relative space-y-2";
+            divEtapa.innerHTML = `
+                <div class="flex items-center justify-between border-b border-slate-100 pb-1">
+                    <span class="text-xs font-bold text-violet-600 uppercase tracking-wide">Etapa <span class="numero-etapa">${totalEtapas}</span></span>
+                    <button type="button" onclick="removerEtapaHTML(this)" class="text-[10px] text-red-500 hover:text-red-700 font-bold">
+                        🗑️ Remover
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 gap-2">
+                    <input type="text" class="etapa-titulo w-full p-2 bg-slate-50 border border-slate-100 rounded text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-violet-500" placeholder="Título da Etapa (Ex: Alerta de Incêndio)" value="${titulo}" required>
+                    <textarea class="etapa-descricao w-full h-12 p-2 bg-slate-50 border border-slate-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-violet-500 resize-none" placeholder="Descrição rápida (Ex: O cidadão telefona avisando...)" required>${descricao}</textarea>
+                </div>
+            `;
+            container.appendChild(divEtapa);
+            ordenarNumerosDasEtapas();
+        }
+
+        function removerEtapaHTML(botao) {
+            botao.closest('.bloco-etapa').remove();
+            ordenarNumerosDasEtapas();
+        }
+
+        function ordenarNumerosDasEtapas() {
+            const container = document.getElementById('container-etapas');
+            const blocos = container.querySelectorAll('.bloco-etapa');
+            blocos.forEach((bloco, index) => {
+                bloco.querySelector('.numero-etapa').innerText = index + 1;
+            });
+        }
+
+        // -------------------------------------------------------------
+        // SEGURANÇA 1: VIGIA DO ESTADO DE LOGIN
         // -------------------------------------------------------------
         auth.onAuthStateChanged(usuario => {
             const loginBox = document.getElementById('login-container');
             const painelBox = document.getElementById('painel-container');
 
             if (usuario) {
-                // Usuário está logado!
-                loginBox.classList.add('hidden'); // Esconde tela de login
-                painelBox.classList.remove('hidden'); // Mostra a tabela de controle
-                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10"; // Ajusta o fundo
+                emailUsuarioLogado = usuario.email; // Salva o e-mail logado
+                loginBox.classList.add('hidden');
+                painelBox.classList.remove('hidden');
+                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10";
                 
-                carregarServicosDoFirebase(); // Busca os dados reais na nuvem
+                carregarServicosDoFirebase();
             } else {
-                // Usuário deslogado!
-                painelBox.classList.add('hidden'); // Esconde a tabela
-                loginBox.classList.remove('hidden'); // Mostra a tela de login
-                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 flex flex-col justify-center items-center"; // Centraliza o login
+                emailUsuarioLogado = "";
+                painelBox.classList.add('hidden');
+                loginBox.classList.remove('hidden');
+                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 flex flex-col justify-center items-center";
             }
         });
 
         // -------------------------------------------------------------
-        // SEGURANÇA 2: EXECUTAR O LOGIN AO ENVIAR O FORMULÁRIO
+        // SEGURANÇA 2: EXECUTAR LOGIN
         // -------------------------------------------------------------
         document.getElementById('form-login').onsubmit = async (evento) => {
             evento.preventDefault();
-            const email = document.getElementById('login-email').value;
+            const email = document.getElementById('login-email').value.trim();
             const senha = document.getElementById('login-senha').value;
             const btn = document.getElementById('btn-login');
 
@@ -236,11 +380,10 @@
             btn.innerText = "⏳ Verificando credenciais...";
 
             try {
-                // Envia as informações de login para validação da Google
                 await auth.signInWithEmailAndPassword(email, senha);
             } catch (erro) {
                 console.error("Erro no login:", erro);
-                alert("❌ Usuário ou senha incorretos! Tente novamente.");
+                alert("❌ Erro no Firebase: " + erro.message);
             } finally {
                 btn.disabled = false;
                 btn.innerText = "🔑 Entrar no Painel";
@@ -248,7 +391,7 @@
         };
 
         // -------------------------------------------------------------
-        // SEGURANÇA 3: FUNÇÃO DE SAÍDA (LOGOUT)
+        // SEGURANÇA 3: LOGOUT (SAIR)
         // -------------------------------------------------------------
         async function fazerLogout() {
             if (confirm("Deseja realmente sair do Painel de Controle?")) {
@@ -257,7 +400,7 @@
         }
 
         // -------------------------------------------------------------
-        // ENGRENAGEM 1: CARREGAR DADOS DO FIREBASE (Só roda se logado)
+        // ENGRENAGEM 1: CARREGAR DADOS DO FIREBASE
         // -------------------------------------------------------------
         async function carregarServicosDoFirebase() {
             const corpoTabela = document.getElementById('tabela-corpo');
@@ -298,25 +441,55 @@
         }
 
         // -------------------------------------------------------------
-        // ENGRENAGEM 2: DESENHAR OS SERVIÇOS REAIS NA TABELA
+        // ENGRENAGEM 2: DESENHAR OS SERVIÇOS REAIS E BOTOÕES DINÂMICOS
         // -------------------------------------------------------------
         function desenharTabelaReal() {
             const corpoTabela = document.getElementById('tabela-corpo');
             corpoTabela.innerHTML = "";
 
             const listaOrdenada = Object.values(bancoDeDadosLocal).sort((a, b) => a.id - b.id);
+            document.getElementById('total-servicos').innerText = listaOrdenada.length;
+
+            // Identifica se quem está logado é o administrador master do site
+            // Como deve ficar:
+            const ehAdminMaster = EMAILS_ADMINISTRADORES.map(e => e.toLowerCase()).includes(emailUsuarioLogado.toLowerCase());
 
             listaOrdenada.forEach(serv => {
+                const statusAtivo = serv.ativo !== false; // padrão é true se não existir a chave no banco
+                
+                // 🚫 Botão de Alternar Status (Ativo / Inativo) - Todos os usuários usam
+                const botaoAlternarStatus = statusAtivo 
+                    ? `<button type="button" onclick="alternarStatusServico(${serv.id}, false)" class="text-lg hover:scale-125 transition-transform duration-150 active:scale-95 inline-block mr-3 text-amber-500" title="Inativar (Esconder do site público)">🚫</button>`
+                    : `<button type="button" onclick="alternarStatusServico(${serv.id}, true)" class="text-lg hover:scale-125 transition-transform duration-150 active:scale-95 inline-block mr-3 text-emerald-500" title="Reativar (Mostrar no site público)">🟢</button>`;
+
+                // 🗑️ Botão Nuclear de Exclusão Física - Aparece APENAS para o Administrador Master
+                const botaoExcluirDefinitivo = ehAdminMaster
+                    ? `<button type="button" onclick="excluirServicoPermanente(${serv.id}, '${serv.titulo.replace(/'/g, "\\'")}')" class="text-lg hover:scale-125 transition-transform duration-150 active:scale-95 inline-block text-red-500 hover:text-red-700" title="Excluir Definitivamente do Banco de Dados">🗑️</button>`
+                    : ``;
+
+                // Badge colorido para o status
+                const statusBadge = statusAtivo 
+                    ? `<span class="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded-full uppercase tracking-wide">Ativo</span>`
+                    : `<span class="px-2.5 py-0.5 bg-slate-200 text-slate-600 text-[10px] font-bold rounded-full uppercase tracking-wide">Inativo (Oculto)</span>`;
+
                 const linha = document.createElement('tr');
                 linha.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
                 linha.innerHTML = `
                     <td class="p-4 font-bold text-slate-900">ID ${serv.id}</td>
-                    <td class="p-4 text-slate-700 font-semibold">${serv.titulo}</td>
+                    <td class="p-4">
+                        <div class="font-semibold text-slate-700">${serv.titulo}</div>
+                        <div class="mt-1.5">${statusBadge}</div>
+                    </td>
                     <td class="p-4 text-slate-500">${serv.secretaria}</td>
-                    <td class="p-4 text-center">
-                        <button type="button" onclick="abrirEditorDeServico(${serv.id})" class="text-lg hover:scale-125 transition-transform duration-150 active:scale-95">
+                    <td class="p-4 text-center whitespace-nowrap">
+                        <!-- Editar (Liberado a todos) -->
+                        <button type="button" onclick="abrirEditorDeServico(${serv.id})" class="text-lg hover:scale-125 transition-transform duration-150 active:scale-95 inline-block mr-3" title="Editar">
                             ✏️
                         </button>
+                        <!-- Inativar/Reativar (Liberado a todos) -->
+                        ${botaoAlternarStatus}
+                        <!-- Excluir Permanentemente (Somente você!) -->
+                        ${botaoExcluirDefinitivo}
                     </td>
                 `;
                 corpoTabela.appendChild(linha);
@@ -324,31 +497,183 @@
         }
 
         // -------------------------------------------------------------
-        // ENGRENAGEM 3: PREENCHER E ABRIR O FORMULÁRIO (MODAL)
+        // ENGRENAGEM 2.4: INATIVAR OU REATIVAR SERVIÇO (EXCLUSÃO LÓGICA)
+        // -------------------------------------------------------------
+        async function alternarStatusServico(id, novoStatus) {
+            const acaoText = novoStatus ? "REATIVAR" : "INATIVAR";
+            const confirmacao = confirm(`Deseja realmente ${acaoText} o serviço ID ${id}?\n\n${novoStatus ? "Ele voltará a aparecer no portal do cidadão imediatamente!" : "Ele ficará invisível no site, mas continuará guardado aqui neste painel de controle."}`);
+            if (!confirmacao) return;
+
+            try {
+                const referenciaDoc = db.collection('catalogo').doc('todosOsServicos');
+                
+                // Atualiza localmente
+                bancoDeDadosLocal[`ID_${id}`].ativo = novoStatus;
+                const servicoAtualizado = bancoDeDadosLocal[`ID_${id}`];
+
+                // Grava no Firebase
+                await referenciaDoc.set({
+                    [`ID_${id}`]: servicoAtualizado
+                }, { merge: true });
+
+                desenharTabelaReal();
+                alert(`✅ Sucesso! O serviço foi ${novoStatus ? "ativado" : "inativado"}.`);
+
+            } catch (erro) {
+                console.error("Erro ao inativar/ativar:", erro);
+                alert("❌ Erro ao atualizar o status do serviço no Firebase.");
+            }
+        }
+
+        // -------------------------------------------------------------
+        // ENGRENAGEM 2.5: EXCLUIR DEFINITIVAMENTE DO BANCO (SOMENTE ADMIN MASTER)
+        // -------------------------------------------------------------
+        async function excluirServicoPermanente(id, titulo) {
+            const confirmacao = confirm(`⚠️ ALERTA DE ADMINISTRADOR MASTER: Tem certeza de que deseja EXCLUIR DEFINITIVAMENTE o serviço "${titulo}" (ID ${id})?\n\nEssa ação é irreversível e apagará fisicamente os dados do servidor da Google. Use apenas para limpar testes!`);
+            if (!confirmacao) return;
+
+            try {
+                const referenciaDoc = db.collection('catalogo').doc('todosOsServicos');
+                
+                // Deleta a chave ID_XX do documento unificado do Firebase
+                await referenciaDoc.update({
+                    [`ID_${id}`]: firebase.firestore.FieldValue.delete()
+                });
+
+                // Deleta da memória local
+                delete bancoDeDadosLocal[`ID_${id}`];
+                desenharTabelaReal();
+
+                alert("🗑️ Sucesso! O serviço foi apagado definitivamente do banco de dados.");
+
+            } catch (erro) {
+                console.error("Erro ao excluir permanentemente:", erro);
+                alert("❌ Erro crítico ao tentar deletar o registro definitivo.");
+            }
+        }
+
+        // -------------------------------------------------------------
+        // ENGRENAGEM 3.1: INSTANCIAR REGISTRO DE NOVO SERVIÇO (CADASTRO)
+        // -------------------------------------------------------------
+        function abrirCriadorDeServico() {
+            const idsExistentes = Object.values(bancoDeDadosLocal).map(serv => Number(serv.id) || 0);
+            const proximoId = idsExistentes.length > 0 ? Math.max(...idsExistentes) + 1 : 1;
+
+            document.getElementById('modal-titulo-servico').innerText = `Cadastrar Novo Serviço (ID ${proximoId})`;
+            document.getElementById('btn-submit').innerText = "➕ Cadastrar Serviço";
+
+            // Limpa dados gerais
+            document.getElementById('edit-id').value = proximoId;
+            document.getElementById('edit-titulo').value = "";
+            document.getElementById('edit-secretaria').value = "";
+            document.getElementById('edit-descricao').value = "";
+            document.getElementById('edit-elegibilidade').value = "";
+            document.getElementById('edit-resultado').value = "";
+            
+            // Limpa Canais
+            document.getElementById('chk-presencial').checked = false;
+            document.getElementById('chk-telefone').checked = false;
+            document.getElementById('chk-email').checked = false;
+            document.getElementById('chk-web').checked = false;
+            toggleCanal('presencial');
+            toggleCanal('telefone');
+            toggleCanal('email');
+            toggleCanal('web');
+
+            // Limpa Prazos e Custos
+            document.getElementById('edit-prazo-espera').value = "";
+            document.getElementById('edit-prazo-analise').value = "";
+            document.getElementById('edit-prazo-total').value = "";
+            document.getElementById('edit-custo-gratuito').value = "true";
+            document.getElementById('edit-custo-descricao').value = "";
+            document.getElementById('edit-documentos').value = "";
+
+            // Limpa e prepara uma única etapa padrão para preenchimento
+            document.getElementById('container-etapas').innerHTML = "";
+            adicionarHTMLNovaEtapa("Solicitação do Serviço", "Explique o primeiro passo que o cidadão deve dar para dar início a este atendimento.");
+
+            document.getElementById('modal-edicao').classList.remove('hidden');
+        }
+
+        // -------------------------------------------------------------
+        // ENGRENAGEM 3.2: PREENCHER E ABRIR O FORMULÁRIO (EDIÇÃO)
         // -------------------------------------------------------------
         function abrirEditorDeServico(id) {
             const servico = bancoDeDadosLocal[`ID_${id}`];
             if (!servico) return;
 
             document.getElementById('modal-titulo-servico').innerText = `Editar: ${servico.titulo}`;
+            document.getElementById('btn-submit').innerText = "💾 Salvar Alterações";
 
+            // Popular básicos
             document.getElementById('edit-id').value = servico.id;
             document.getElementById('edit-titulo').value = servico.titulo || "";
             document.getElementById('edit-secretaria').value = servico.secretaria || "";
             document.getElementById('edit-descricao').value = servico.descricao || "";
             document.getElementById('edit-elegibilidade').value = servico.elegibilidade || "";
             document.getElementById('edit-resultado').value = servico.resultado || "";
-            document.getElementById('edit-destaque').value = String(servico.destaque);
 
+            // Reset checkboxes e campos de canais antes de popular
+            document.getElementById('chk-presencial').checked = false;
+            document.getElementById('input-presencial').value = "";
+            document.getElementById('chk-telefone').checked = false;
+            document.getElementById('input-telefone').value = "";
+            document.getElementById('chk-email').checked = false;
+            document.getElementById('input-email').value = "";
+            document.getElementById('chk-web').checked = false;
+            document.getElementById('input-web').value = "";
+
+            // Popular Canais (suportando array conforme o index.html)
+            const canaisLista = servico.canais || [];
+            if (Array.isArray(canaisLista)) {
+                canaisLista.forEach(c => {
+                    if (c.tipo === "Presencial") {
+                        document.getElementById('chk-presencial').checked = true;
+                        document.getElementById('input-presencial').value = c.local || "";
+                    } else if (c.tipo === "Telefone") {
+                        document.getElementById('chk-telefone').checked = true;
+                        document.getElementById('input-telefone').value = c.local || "";
+                    } else if (c.tipo === "E-mail") {
+                        document.getElementById('chk-email').checked = true;
+                        document.getElementById('input-email').value = c.local || "";
+                    } else if (c.tipo === "Online") {
+                        document.getElementById('chk-web').checked = true;
+                        document.getElementById('input-web').value = c.link || "";
+                    }
+                });
+            }
+            
+            // Ativa/desativa as caixas de texto visíveis
+            toggleCanal('presencial');
+            toggleCanal('telefone');
+            toggleCanal('email');
+            toggleCanal('web');
+
+            // Popular Prazos e Custos
             document.getElementById('edit-prazo-espera').value = servico.prazos?.espera || "";
             document.getElementById('edit-prazo-analise').value = servico.prazos?.analise || "";
             document.getElementById('edit-prazo-total').value = servico.prazos?.total || "";
-
             document.getElementById('edit-custo-gratuito').value = String(servico.custo?.gratuito);
             document.getElementById('edit-custo-descricao').value = servico.custo?.descricao || "";
 
+            // Popular Documentos
             const documentosFormatados = servico.documentos ? servico.documentos.join("\n") : "";
             document.getElementById('edit-documentos').value = documentosFormatados;
+
+            // Popular Etapas de forma dinâmica
+            const containerEtapas = document.getElementById('container-etapas');
+            containerEtapas.innerHTML = "";
+            
+            const etapasLista = servico.etapas || [];
+            if (etapasLista.length > 0) {
+                etapasLista.forEach(etapa => {
+                    const titEtapa = etapa.nome || etapa.titulo || "";
+                    const descEtapa = etapa.desc || etapa.descricao || "";
+                    adicionarHTMLNovaEtapa(titEtapa, descEtapa);
+                });
+            } else {
+                adicionarHTMLNovaEtapa("Solicitação do Serviço", "Explique o primeiro passo que o cidadão deve dar para dar início a este atendimento.");
+            }
 
             document.getElementById('modal-edicao').classList.remove('hidden');
         }
@@ -361,7 +686,7 @@
         }
 
         // -------------------------------------------------------------
-        // ENGRENAGEM 5: COLETAR TEXTOS E SALVAR NO FIREBASE
+        // ENGRENAGEM 5: COLETAR E GRAVAR (SALVA NOVO OU EDITA EXISTENTE)
         // -------------------------------------------------------------
         async function salvarAlteracoes(evento) {
             evento.preventDefault();
@@ -369,32 +694,95 @@
             const id = document.getElementById('edit-id').value;
             const botaoSalvar = document.getElementById('btn-submit');
 
+            // 1. Validar se pelo menos um canal de atendimento foi selecionado
+            const chkPresencial = document.getElementById('chk-presencial').checked;
+            const chkTelefone = document.getElementById('chk-telefone').checked;
+            const chkEmail = document.getElementById('chk-email').checked;
+            const chkWeb = document.getElementById('chk-web').checked;
+
+            if (!chkPresencial && !chkTelefone && !chkEmail && !chkWeb) {
+                alert("⚠️ Erro de Validação: Selecione pelo menos um Canal de Atendimento (Onde solicitar)!");
+                return;
+            }
+
+            // 2. Mapear as Etapas no formato exato que o index.html precisa: 'nome' e 'desc'
+            const blocosEtapas = document.querySelectorAll('.bloco-etapa');
+            const etapasArray = [];
+            blocosEtapas.forEach(bloco => {
+                const tit = bloco.querySelector('.etapa-titulo').value.trim();
+                const desc = bloco.querySelector('.etapa-descricao').value.trim();
+                if (tit !== "" || desc !== "") {
+                    etapasArray.push({
+                        nome: tit, 
+                        desc: desc 
+                    });
+                }
+            });
+
+            if (etapasArray.length === 0) {
+                alert("⚠️ Erro de Validação: O serviço precisa de pelo menos 1 etapa!");
+                return;
+            }
+
             botaoSalvar.disabled = true;
-            botaoSalvar.innerText = "⏳ Gravando alterações no Firebase...";
+            botaoSalvar.innerText = "⏳ Gravando dados no Firebase...";
 
             const servicoOriginal = bancoDeDadosLocal[`ID_${id}`];
 
+            // 3. Mapear os canais salvando como ARRAY de objetos
+            const canaisArray = [];
+            if (chkPresencial) {
+                canaisArray.push({
+                    tipo: "Presencial",
+                    local: document.getElementById('input-presencial').value.trim()
+                });
+            }
+            if (chkTelefone) {
+                canaisArray.push({
+                    tipo: "Telefone",
+                    local: document.getElementById('input-telefone').value.trim()
+                });
+            }
+            if (chkEmail) {
+                canaisArray.push({
+                    tipo: "E-mail",
+                    local: document.getElementById('input-email').value.trim()
+                });
+            }
+            if (chkWeb) {
+                canaisArray.push({
+                    tipo: "Online",
+                    local: "Autoatendimento via Internet",
+                    link: document.getElementById('input-web').value.trim()
+                });
+            }
+
             const servicoAtualizado = {
                 ...servicoOriginal,
-                titulo: document.getElementById('edit-titulo').value,
+                id: Number(id),
+                // Se for serviço novo, começa ativo por padrão. Se for edição, mantém o status que já estava
+                ativo: servicoOriginal ? (servicoOriginal.ativo !== false) : true,
+                titulo: document.getElementById('edit-titulo').value.trim(),
                 secretaria: document.getElementById('edit-secretaria').value,
-                descricao: document.getElementById('edit-descricao').value,
-                elegibilidade: document.getElementById('edit-elegibilidade').value,
-                resultado: document.getElementById('edit-resultado').value,
-                destaque: document.getElementById('edit-destaque').value === "true",
+                descricao: document.getElementById('edit-descricao').value.trim(),
+                elegibilidade: document.getElementById('edit-elegibilidade').value.trim(),
+                resultado: document.getElementById('edit-resultado').value.trim(),
+                destaque: servicoOriginal?.destaque || false,
                 prazos: {
-                    espera: document.getElementById('edit-prazo-espera').value,
-                    analise: document.getElementById('edit-prazo-analise').value,
-                    total: document.getElementById('edit-prazo-total').value
+                    espera: document.getElementById('edit-prazo-espera').value.trim(),
+                    analise: document.getElementById('edit-prazo-analise').value.trim(),
+                    total: document.getElementById('edit-prazo-total').value.trim()
                 },
                 custo: {
                     gratuito: document.getElementById('edit-custo-gratuito').value === "true",
-                    descricao: document.getElementById('edit-custo-descricao').value
+                    descricao: document.getElementById('edit-custo-descricao').value.trim()
                 },
+                canais: canaisArray, 
                 documentos: document.getElementById('edit-documentos').value
                     .split("\n")
                     .map(linha => { return linha.trim(); })
-                    .filter(linha => { return linha !== ""; })
+                    .filter(linha => { return linha !== ""; }),
+                etapas: etapasArray
             };
 
             try {
@@ -407,16 +795,15 @@
                 bancoDeDadosLocal[`ID_${id}`] = servicoAtualizado;
                 desenharTabelaReal();
 
-                alert("✅ Serviço atualizado com sucesso no Firebase!");
+                alert("✅ Sucesso! O catálogo do Firebase foi atualizado.");
                 fecharEditorDeServico();
 
             } catch (erro) {
-                console.error("Erro no login:", erro);
-                alert("❌ Erro no Firebase: " + erro.message); // Mostra o erro real!
-            }
-             finally {
+                console.error("Erro ao salvar:", erro);
+                alert("❌ Erro ao gravar no Firebase. Verifique o console.");
+            } finally {
                 botaoSalvar.disabled = false;
-                botaoSalvar.innerText = "💾 Salvar Alterações";
+                botaoSalvar.innerText = servicoOriginal ? "💾 Salvar Alterações" : "➕ Cadastrar Serviço";
             }
         }
 

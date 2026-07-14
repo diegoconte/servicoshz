@@ -449,7 +449,7 @@ async function carregarServicosDaNuvem() {
             
             if (dadosDoFirebase) {
                 // Transforma as pastas ID_XX de volta em uma lista simples para o site rodar
-                const listaConvertida = Object.values(dadosDoFirebase);
+                const listaConvertida = Object.values(dadosDoFirebase).filter(s => s.ativo !== false);
                 
                 bdServicos.length = 0; // Garante que a lista comece limpa
                 bdServicos.push(...listaConvertida); // Abastece o site com os dados da nuvem
@@ -468,7 +468,7 @@ async function carregarServicosDaNuvem() {
 }
        // 1. Suas credenciais oficiais da Google (Copiadas da sua imagem!)
 const firebaseConfig = {
-    apiKey: "AIzaSyAZk6WrwIHn3iRjT41Ju0GToc01XJhFrtE",
+    apiKey: "AIzaSyAZk6WrwIHn3iRjT41Ju0GTocO1XJhFrtE",
     authDomain: "carta-servicos-horizontina.firebaseapp.com",
     projectId: "carta-servicos-horizontina",
     storageBucket: "carta-servicos-horizontina.firebasestorage.app",
