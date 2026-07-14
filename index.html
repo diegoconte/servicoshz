@@ -91,6 +91,26 @@
             <button onclick="alternarContraste()" class="hover:text-gray-600" aria-label="Alto Contraste"><i class="fas fa-adjust"></i></button>
         </div>
     </div>
+```[cite: 1]
+
+---
+
+#### Como deve ficar com o botão inserido (Substitua todo o bloco acima por este):
+```html
+    <!-- Topo de Acessibilidade (Com Botão de Login Admin integrado) -->
+    <div class="w-full bg-white py-2 px-4 flex justify-end items-center gap-4 text-sm border-b border-gray-200">
+        <!-- Botões de Acessibilidade (Ocultos em telas muito pequenas) -->
+        <div class="flex items-center gap-3 mr-4 hidden sm:flex">
+            <button onclick="alterarFonte('aumentar')" class="hover:underline font-bold" aria-label="Aumentar texto">A+</button>
+            <button onclick="alterarFonte('diminuir')" class="hover:underline font-bold" aria-label="Diminuir texto">A-</button>
+            <button onclick="alternarContraste()" class="hover:text-gray-600" aria-label="Alto Contraste"><i class="fas fa-adjust"></i></button>
+        </div>
+        
+        <!-- 🔑 Botão de Entrada para Área Restrita (Sempre visível no topo direito) -->
+        <a href="admin.html" class="flex items-center gap-1.5 text-xs text-gray-500 hover:text-blue-800 font-bold transition-colors border-l pl-4 border-gray-200" title="Área Restrita - Painel de Controle">
+            <i class="fas fa-key text-yellow-500"></i> Painel Admin
+        </a>
+    </div>
 
     <!-- Cabeçalho Principal -->
     <header class="bg-white border-b border-gray-200">
