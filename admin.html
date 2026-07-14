@@ -544,6 +544,11 @@
                 }, { merge: true });
 
                 desenharTabelaReal();
+                // Registrar auditoria
+const emailLimpo = emailUsuarioLogado.toLowerCase().replace(/\./g, '_').replace(/@/g, '_at_');
+db.collection('estatisticas').doc('auditoria').set({
+    [emailLimpo]: firebase.firestore.FieldValue.increment(1)
+}, { merge: true });
 
                 // Disparando o relatório de inativação/reativação por e-mail!
                 const descAcao = novoStatus ? "Reativação de Serviço" : "Inativação de Serviço (Ocultado)";
@@ -864,6 +869,11 @@
                 await db.collection('catalogo').doc('todosOsServicos').set(dadoParaEnviar, { merge: true });
 
                 bancoDeDadosLocal[`ID_${id}`] = servicoAtualizado;
+                // Registrar auditoria
+const emailLimpo = emailUsuarioLogado.toLowerCase().replace(/\./g, '_').replace(/@/g, '_at_');
+await db.collection('estatisticas').doc('auditoria').set({
+    [emailLimpo]: firebase.firestore.FieldValue.increment(1)
+}, { merge: true });
                 desenharTabelaReal();
 
                 // Dispara o e-mail de notificação de forma assíncrona para não travar a tela do usuário

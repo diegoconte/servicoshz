@@ -18,7 +18,7 @@
 <body class="bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10 flex flex-col justify-center items-center">
 
     <!-- ======================================================= -->
-    <!-- 1. TELA DE LOGIN (Aparece primeiro por segurança)        -->
+    <!-- 1. TELA DE LOGIN                                         -->
     <!-- ======================================================= -->
     <div id="login-container" class="max-w-md w-full bg-white p-8 rounded-2xl shadow-md border border-slate-200">
         <div class="text-center mb-6">
@@ -65,9 +65,8 @@
             </div>
         </div>
 
-        <!-- 📊 LINHA 1: CARD DE MÉTRICAS RÁPIDAS (KPIs) -->
+        <!-- KPIs Principais -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <!-- Total de Serviços -->
             <div class="bg-blue-50 p-5 rounded-xl border border-blue-100">
                 <span class="text-xs font-bold text-blue-600 uppercase tracking-wider block">Serviços Cadastrados</span>
                 <span id="stat-total-servicos" class="text-3xl font-extrabold text-blue-900 block mt-2">0</span>
@@ -76,32 +75,27 @@
                 </span>
             </div>
 
-            <!-- Total de Acessos -->
             <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-100">
-                <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider block">Total de Acessos (Cliques)</span>
-                <span id="stat-total-cliques" class="text-3xl font-extrabold text-emerald-900 block mt-2">0</span>
-                <span class="text-[11px] text-emerald-500 mt-1 block">Registrados na nuvem</span>
+                <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider block">Acessos ao Portal (Visitas)</span>
+                <span id="stat-total-acessos" class="text-3xl font-extrabold text-emerald-900 block mt-2">0</span>
+                <span class="text-[11px] text-emerald-500 mt-1 block">Acessos únicos por sessão</span>
             </div>
 
-            <!-- Média de Cliques -->
             <div class="bg-violet-50 p-5 rounded-xl border border-violet-100">
-                <span class="text-xs font-bold text-violet-600 uppercase tracking-wider block">Média de Cliques</span>
-                <span id="stat-media-cliques" class="text-3xl font-extrabold text-violet-900 block mt-2">0</span>
-                <span class="text-[11px] text-violet-500 mt-1 block">Por serviço cadastrado</span>
+                <span class="text-xs font-bold text-violet-600 uppercase tracking-wider block">Cliques em Serviços</span>
+                <span id="stat-total-cliques" class="text-3xl font-extrabold text-violet-900 block mt-2">0</span>
+                <span class="text-[11px] text-violet-500 mt-1 block">Interações com o catálogo</span>
             </div>
 
-            <!-- Dispositivo Campeão -->
             <div class="bg-amber-50 p-5 rounded-xl border border-amber-100">
-                <span class="text-xs font-bold text-amber-600 uppercase tracking-wider block">Principal Dispositivo</span>
-                <span id="stat-dispositivo-lider" class="text-xl font-extrabold text-amber-900 block mt-3 uppercase">Carregando...</span>
-                <span id="stat-dispositivo-detalhe" class="text-[11px] text-amber-500 mt-1 block">Detectando acessos anônimos</span>
+                <span class="text-xs font-bold text-amber-600 uppercase tracking-wider block">Média de Cliques / Visita</span>
+                <span id="stat-media-cliques" class="text-3xl font-extrabold text-amber-900 block mt-2">0</span>
+                <span id="stat-media-detalhe" class="text-[11px] text-amber-500 mt-1 block">Cliques por usuário</span>
             </div>
         </div>
 
-        <!-- 📊 LINHA 2: GRÁFICOS PRINCIPAIS -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Gráfico 1: Top 5 Serviços Mais Procurados -->
+        <!-- 📊 GRÁFICOS: SEÇÃO 1 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 lg:col-span-2">
                 <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
                     🔥 Top 5 Serviços Mais Acessados (Cliques)
@@ -111,7 +105,6 @@
                 </div>
             </div>
 
-            <!-- Gráfico 2: Divisão por Dispositivo (Celular vs Desktop) -->
             <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
                 <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
                     📱 Acessos por Dispositivo (LGPD)
@@ -120,25 +113,47 @@
                     <canvas id="chart-dispositivos"></canvas>
                 </div>
             </div>
+        </div>
 
-            <!-- Gráfico 3: Concentração de Serviços por Secretaria -->
-            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 lg:col-span-3 mt-2">
+        <!-- 📊 GRÁFICOS: SEÇÃO 2 (NOVOS GRÁFICOS!) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- NOVO: Gráfico de Acessos por Mês (12 meses ordenados!) -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 lg:col-span-2">
                 <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
-                    🏛️ Serviços Cadastrados por Secretaria Municipal
+                    📅 Histórico de Acessos Mensais (Visitas)
                 </h3>
-                <div class="h-96 relative flex items-center justify-center">
-                    <canvas id="chart-secretarias"></canvas>
+                <div class="h-80 relative flex items-center justify-center">
+                    <canvas id="chart-mensal"></canvas>
                 </div>
             </div>
 
+            <!-- NOVO: Gráfico de Alterações por Usuário (Auditoria) -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
+                    ✍️ Histórico de Alterações por Usuário
+                </h3>
+                <div class="h-80 relative flex items-center justify-center">
+                    <canvas id="chart-auditoria"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribuição por Secretarias -->
+        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 w-full mb-4">
+            <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
+                🏛️ Serviços Cadastrados por Secretaria Municipal
+            </h3>
+            <div class="h-96 relative flex items-center justify-center">
+                <canvas id="chart-secretarias"></canvas>
+            </div>
         </div>
     </div>
 
     <!-- ======================================================= -->
-    <!-- JAVASCRIPT: BUSCA DE DADOS E CARREGAMENTO DE GRÁFICOS   -->
+    <!-- JAVASCRIPT: CÉREBRO ANALÍTICO COMPLETO                  -->
     <!-- ======================================================= -->
     <script>
-        // Configurações oficiais do seu Firebase[cite: 2, 3]
+        // Configurações do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAZk6WrwIHn3iRjT41Ju0GTocO1XJhFrtE",
             authDomain: "carta-servicos-horizontina.firebaseapp.com",
@@ -146,99 +161,90 @@
             storageBucket: "carta-servicos-horizontina.firebasestorage.app",
             messagingSenderId: "782471493827",
             appId: "1:782471493827:web:96548c54f925a80a404a76"
-        }; //[cite: 2, 3]
+        };
 
-        // Inicializa o Firebase
-        firebase.initializeApp(firebaseConfig); //
-        const db = firebase.firestore(); //
-        const auth = firebase.auth(); //[cite: 3]
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
 
         let databaseServicos = {};
         let databaseCliques = {};
         let databaseDispositivos = {};
+        let databaseAcessosMensais = {};
+        let databaseAuditoria = {};
 
-        // -------------------------------------------------------------
-        // VIGIA DO ESTADO DE LOGIN[cite: 3]
-        // -------------------------------------------------------------
+        // VIGIA DE ESTADO DE LOGIN
         auth.onAuthStateChanged(usuario => {
             const loginBox = document.getElementById('login-container');
             const dashboardBox = document.getElementById('dashboard-container');
 
             if (usuario) {
-                loginBox.classList.add('hidden'); //[cite: 3]
-                dashboardBox.classList.remove('hidden'); //[cite: 3]
-                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10"; //[cite: 3]
+                loginBox.classList.add('hidden');
+                dashboardBox.classList.remove('hidden');
+                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10";
                 
                 carregarEstatísticasDoFirebase();
             } else {
-                dashboardBox.classList.add('hidden'); //[cite: 3]
-                loginBox.classList.remove('hidden'); //[cite: 3]
-                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 flex flex-col justify-center items-center"; //[cite: 3]
+                dashboardBox.classList.add('hidden');
+                loginBox.classList.remove('hidden');
+                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 flex flex-col justify-center items-center";
             }
         });
 
-        // -------------------------------------------------------------
-        // EXECUTAR LOGIN[cite: 3]
-        // -------------------------------------------------------------
+        // EFETUAR LOGIN
         document.getElementById('form-login').onsubmit = async (evento) => {
-            evento.preventDefault(); //[cite: 3]
-            const email = document.getElementById('login-email').value.trim(); //[cite: 3]
-            const senha = document.getElementById('login-senha').value; //[cite: 3]
-            const btn = document.getElementById('btn-login'); //[cite: 3]
+            evento.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const senha = document.getElementById('login-senha').value;
+            const btn = document.getElementById('btn-login');
 
-            btn.disabled = true; //[cite: 3]
-            btn.innerText = "⏳ Acessando painel..."; //[cite: 3]
+            btn.disabled = true;
+            btn.innerText = "⏳ Acessando painel...";
 
             try {
-                await auth.signInWithEmailAndPassword(email, senha); //[cite: 3]
+                await auth.signInWithEmailAndPassword(email, senha);
             } catch (erro) {
-                console.error("Erro no login:", erro); //[cite: 3]
-                alert("❌ Erro no Firebase: " + erro.message); //[cite: 3]
+                console.error("Erro no login:", erro);
+                alert("❌ Erro no Firebase: " + erro.message);
             } finally {
-                btn.disabled = false; //[cite: 3]
-                btn.innerText = "🔑 Entrar no Dashboard"; //[cite: 3]
+                btn.disabled = false;
+                btn.innerText = "🔑 Entrar no Dashboard";
             }
         };
 
-        // -------------------------------------------------------------
-        // LOGOUT (SAIR)[cite: 3]
-        // -------------------------------------------------------------
         async function fazerLogout() {
             if (confirm("Deseja realmente sair do Dashboard?")) {
-                await auth.signOut(); //[cite: 3]
+                await auth.signOut();
             }
         }
 
-        // -------------------------------------------------------------
-        // BUSCADOR GERAL DE DADOS (PARALELO)
-        // -------------------------------------------------------------
+        // BUSCADOR GERAL PARALELO (OTIMIZADO)
         async function carregarEstatísticasDoFirebase() {
             try {
-                // Dispara as requisições em paralelo para carregar o Dashboard voando!
-                const [docServicos, docCliques, docDispositivos] = await Promise.all([
-                    db.collection('catalogo').doc('todosOsServicos').get(), //[cite: 2, 3]
-                    db.collection('estatisticas').doc('todosOsCliques').get(), //[cite: 2]
-                    db.collection('estatisticas').doc('perfilAcessos').get()
+                const [docServicos, docCliques, docDispositivos, docMensal, docAuditoria] = await Promise.all([
+                    db.collection('catalogo').doc('todosOsServicos').get(),
+                    db.collection('estatisticas').doc('todosOsCliques').get(),
+                    db.collection('estatisticas').doc('perfilAcessos').get(),
+                    db.collection('estatisticas').doc('acessosMensais').get(),
+                    db.collection('estatisticas').doc('auditoria').get()
                 ]);
 
                 databaseServicos = docServicos.exists ? docServicos.data() : {};
                 databaseCliques = docCliques.exists ? docCliques.data() : {};
                 databaseDispositivos = docDispositivos.exists ? docDispositivos.data() : {};
+                databaseAcessosMensais = docMensal.exists ? docMensal.data() : {};
+                databaseAuditoria = docAuditoria.exists ? docAuditoria.data() : {};
 
                 processarEMontarDashboard();
             } catch (erro) {
-                console.error("Falha ao montar as métricas:", erro);
-                alert("Ocorreu um erro de conexão ao carregar as métricas.");
+                console.error("Falha ao carregar as métricas do Firebase:", erro);
             }
         }
 
-        // -------------------------------------------------------------
-        // CÉREBRO DE CÁLCULO E PLOTAGEM DE GRÁFICOS
-        // -------------------------------------------------------------
         function processarEMontarDashboard() {
             const listaServicos = Object.values(databaseServicos);
 
-            // 1. Volumes Gerais
+            // 1. KPIs Gerais
             const totalServicos = listaServicos.length;
             const ativos = listaServicos.filter(s => s.ativo !== false).length;
             const inativos = totalServicos - ativos;
@@ -247,40 +253,26 @@
             document.getElementById('stat-ativos').innerText = ativos;
             document.getElementById('stat-inativos').innerText = inativos;
 
-            // 2. Cliques e Engajamento[cite: 2]
-            let totalCliques = 0;
-            listaServicos.forEach(s => {
-                totalCliques += (databaseCliques[s.id] || 0); //[cite: 2]
-            });
-            const mediaCliques = totalServicos > 0 ? (totalCliques / totalServicos).toFixed(1) : 0;
-
-            document.getElementById('stat-total-cliques').innerText = totalCliques;
-            document.getElementById('stat-media-cliques').innerText = mediaCliques;
-
-            // 3. Métricas de Dispositivos (Anônimo)
             const celularAcessos = databaseDispositivos["Celular/Tablet"] || 0;
             const desktopAcessos = databaseDispositivos["Computador/Desktop"] || 0;
-            
-            let liderDispositivo = "Sem Acessos";
-            let liderTexto = "Nenhum dado capturado ainda";
+            const totalAcessosVisitas = celularAcessos + desktopAcessos;
+            document.getElementById('stat-total-acessos').innerText = totalAcessosVisitas;
 
-            if (celularAcessos > 0 || desktopAcessos > 0) {
-                if (celularAcessos >= desktopAcessos) {
-                    liderDispositivo = "Celular 📱";
-                    liderTexto = `Celular lidera com ${celularAcessos} acessos`;
-                } else {
-                    liderDispositivo = "Computador 💻";
-                    liderTexto = `Desktop lidera com ${desktopAcessos} acessos`;
-                }
-            }
-            document.getElementById('stat-dispositivo-lider').innerText = liderDispositivo;
-            document.getElementById('stat-dispositivo-detalhe').innerText = liderTexto;
+            let totalCliques = 0;
+            listaServicos.forEach(s => {
+                totalCliques += (databaseCliques[s.id] || 0);
+            });
+            document.getElementById('stat-total-cliques').innerText = totalCliques;
+
+            const mediaCliquesPorVisita = totalAcessosVisitas > 0 ? (totalCliques / totalAcessosVisitas).toFixed(1) : 0;
+            document.getElementById('stat-media-cliques').innerText = mediaCliquesPorVisita;
+            document.getElementById('stat-media-detalhe').innerText = `Média de ${mediaCliquesPorVisita} cliques por visita`;
 
             // ---------------------------------------------------------
-            // GRÁFICO 1: TOP 5 SERVIÇOS MAIS ACESSADOS[cite: 2]
+            // GRÁFICO 1: TOP 5 SERVIÇOS MAIS ACESSADOS
             // ---------------------------------------------------------
             const top5Servicos = [...listaServicos]
-                .sort((a, b) => (databaseCliques[b.id] || 0) - (databaseCliques[a.id] || 0)) //[cite: 2]
+                .sort((a, b) => (databaseCliques[b.id] || 0) - (databaseCliques[a.id] || 0))
                 .slice(0, 5);
 
             new Chart(document.getElementById('chart-populares'), {
@@ -289,8 +281,8 @@
                     labels: top5Servicos.map(s => `ID ${s.id}: ${s.titulo.substring(0, 20)}...`),
                     datasets: [{
                         label: 'Quantidade de Cliques',
-                        data: top5Servicos.map(s => databaseCliques[s.id] || 0), //[cite: 2]
-                        backgroundColor: '#002B5E', //[cite: 2]
+                        data: top5Servicos.map(s => databaseCliques[s.id] || 0),
+                        backgroundColor: '#002B5E',
                         borderRadius: 6
                     }]
                 },
@@ -311,7 +303,7 @@
                     labels: ['Celular / Tablet', 'Computador / Desktop'],
                     datasets: [{
                         data: [celularAcessos, desktopAcessos],
-                        backgroundColor: ['#f59e0b', '#002B5E'] //[cite: 2]
+                        backgroundColor: ['#f59e0b', '#002B5E']
                     }]
                 },
                 options: {
@@ -322,31 +314,17 @@
             });
 
             // ---------------------------------------------------------
-            // GRÁFICO 3: CONCENTRAÇÃO POR SECRETARIA[cite: 3]
+            // GRÁFICO 3: CONCENTRAÇÃO POR SECRETARIA
             // ---------------------------------------------------------
-            // Secretarias oficiais do seu admin.html[cite: 3]
-            const secretariasOficiais = [
-                "Gabinete do Prefeito",
-                "Defesa Civil",
-                "Secretaria de Saúde",
-                "Secretaria de Educação",
-                "Secretaria de Desenvolvimento Social",
-                "Secretaria de Agricultura e Meio Ambiente",
-                "Secretaria de Infraestrutura",
-                "Secretaria de Planejamento e Administração",
-                "Secretaria de Fazenda",
-                "Secretaria de Desenvolvimento Econômico e Turismo"
-            ]; //[cite: 3]
-
-            // Conta os serviços reais associados a cada uma delas[cite: 2]
-            const distribuicaoSecretarias = secretariasOficiais.map(sec => {
-                return listaServicos.filter(s => s.secretaria === sec).length; //[cite: 2]
+            const secretariasNoBanco = [...new Set(listaServicos.map(s => s.secretaria))].sort();
+            const distribuicaoSecretarias = secretariasNoBanco.map(sec => {
+                return listaServicos.filter(s => s.secretaria === sec).length;
             });
 
             new Chart(document.getElementById('chart-secretarias'), {
                 type: 'bar',
                 data: {
-                    labels: secretariasOficiais.map(s => s.replace("Secretaria de ", "")),
+                    labels: secretariasNoBanco.map(s => s.replace("Secretaria de ", "").replace("Secretaria Municipal de ", "")),
                     datasets: [{
                         label: 'Serviços Cadastrados',
                         data: distribuicaoSecretarias,
@@ -355,11 +333,72 @@
                     }]
                 },
                 options: {
-                    indexAxis: 'y', // Gráfico de barras horizontais
+                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+
+            // ---------------------------------------------------------
+            // NOVO GRÁFICO 4: ACESSOS POR MÊS (ORDEM CRONOLÓGICA)
+            // ---------------------------------------------------------
+            const mesesOrdem = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const dadosMensaisOrdenados = mesesOrdem.map(mes => databaseAcessosMensais[mes] || 0);
+
+            new Chart(document.getElementById('chart-mensal'), {
+                type: 'line',
+                data: {
+                    labels: mesesOrdem,
+                    datasets: [{
+                        label: 'Visitas ao Site',
+                        data: dadosMensaisOrdenados,
+                        borderColor: '#0284c7',
+                        backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#0284c7'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+
+            // ---------------------------------------------------------
+            // NOVO GRÁFICO 5: ALTERAÇÕES POR USUÁRIO (AUDITORIA)
+            // ---------------------------------------------------------
+            const chavesAuditoria = Object.keys(databaseAuditoria);
+            
+            // Converte os e-mails limpos de volta para a grafia original do rótulo do gráfico
+            const labelsUsuarios = chavesAuditoria.map(key => {
+                return key.replace(/_at_/g, '@').replace(/_/g, '.');
+            });
+
+            const dadosAuditoria = chavesAuditoria.map(key => databaseAuditoria[key] || 0);
+
+            new Chart(document.getElementById('chart-auditoria'), {
+                type: 'bar',
+                data: {
+                    labels: labelsUsuarios.length > 0 ? labelsUsuarios : ["Sem dados de alteração"],
+                    datasets: [{
+                        label: 'Alterações Realizadas',
+                        data: dadosAuditoria.length > 0 ? dadosAuditoria : [0],
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
         }

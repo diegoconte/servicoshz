@@ -1062,23 +1062,33 @@ function registrarTermoBuscadoNoFirebase(termo) {
         }
     }, 1500);
 }
-// 📱 RASTREADOR DE DISPOSITIVOS E AMBIENTE (100% ANÔNIMO)
+// 📊 ESTATÍSTICAS: RASTREADOR DE DISPOSITIVOS E MESES (LGPD)
+// =============================================================
 function rastrearAmbienteDoCidadao() {
     try {
         const larguraTela = window.innerWidth;
         const tipoDispositivo = larguraTela < 768 ? "Celular/Tablet" : "Computador/Desktop";
         
-        // Verifica se já contabilizou esse acesso nesta sessão para não inflar os dados por cliques em F5
+        // Se o usuário já foi contabilizado nesta sessão, ignora para evitar inflar com F5
         if (sessionStorage.getItem('ambienteRastreado') === 'sim') return;
 
+        // 1. Grava o dispositivo
         db.collection('estatisticas').doc('perfilAcessos').set({
             [tipoDispositivo]: firebase.firestore.FieldValue.increment(1)
         }, { merge: true });
 
+        // 2. Grava o acesso no mês correspondente
+        const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const mesAtual = meses[new Date().getMonth()]; // Pega o mês atual da máquina do usuário
+
+        db.collection('estatisticas').doc('acessosMensais').set({
+            [mesAtual]: firebase.firestore.FieldValue.increment(1)
+        }, { merge: true });
+
         sessionStorage.setItem('ambienteRastreado', 'sim');
-        console.log("📊 [MÉTRICA] Ambiente do cidadão computado:", tipoDispositivo);
+        console.log("📊 [MÉTRICA] Acesso computado para o dispositivo:", tipoDispositivo, "no mês de:", mesAtual);
     } catch (e) {
-        console.log("Erro silencioso de métrica:", e);
+        console.log("Erro silencioso de métrica (Ambiente/Mensal):", e);
     }
 }
     </script>
