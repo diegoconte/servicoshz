@@ -9,6 +9,9 @@
     <!-- Módulo de Autenticação do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
+    <!-- Carteiro Digital EmailJS (Adicionado para disparar os relatórios) -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
     <!-- O Tailwind CSS que pinta nossa tela -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -281,15 +284,38 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // 🛡️ CHAVES DE ACESSO ADMINISTRADOR MASTER (Apenas você terá a lixeira vermelha!)
-        // Substitua a linha antiga por esta:
-const EMAILS_ADMINISTRADORES = [
-    "diegoconte@horizontina.rs.gov.br",
-    "raquelcallegaro@horizontina.rs.gov.br",
-    ]
+        // 🛡️ CONFIGURAÇÃO DE PRIVILÉGIOS MASTER
+        const EMAILS_ADMINISTRADORES = [
+            "diegoconte@horizontina.rs.gov.br",
+            "raquelcallegaro@horizontina.rs.gov.br"
+        ]; 
         let emailUsuarioLogado = "";
 
+        // 🔑 Inicializa o EmailJS com a sua Public Key real
+        emailjs.init("N73BvpXvytn4cs4xN");
+
         let bancoDeDadosLocal = {};
+
+        // -------------------------------------------------------------
+        // DISPARADOR DE RELATÓRIOS POR E-MAIL (EMAILJS)
+        // -------------------------------------------------------------
+        async function enviarRelatorioPorEmail(acao, idServico, detalhesAlteracao) {
+            const templateParams = {
+                usuario: emailUsuarioLogado || "Usuário não identificado",
+                data_hora: new Date().toLocaleString("pt-BR"),
+                acao: acao, // Ex: "Criação de Novo Serviço", "Edição de Serviço", "Inativação de Serviço", etc.
+                id_servico: idServico,
+                detalhes: detalhesAlteracao
+            };
+
+            try {
+                // Utilizando as suas chaves reais de Service ID e Template ID
+                await emailjs.send("service_hd5fuga", "template_l6vcu0y", templateParams);
+                console.log("✉️ [EMAILJS] Relatório de alteração disparado com sucesso para Diego e Raquel!");
+            } catch (erro) {
+                console.error("❌ [EMAILJS] Falha crítica ao enviar relatório por e-mail:", erro);
+            }
+        }
 
         // -------------------------------------------------------------
         // VISUAL: CONTROLADOR DE EXIBIÇÃO DE CANAIS
@@ -353,7 +379,7 @@ const EMAILS_ADMINISTRADORES = [
             const painelBox = document.getElementById('painel-container');
 
             if (usuario) {
-                emailUsuarioLogado = usuario.email; // Salva o e-mail logado
+                emailUsuarioLogado = usuario.email; 
                 loginBox.classList.add('hidden');
                 painelBox.classList.remove('hidden');
                 document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10";
@@ -450,19 +476,18 @@ const EMAILS_ADMINISTRADORES = [
             const listaOrdenada = Object.values(bancoDeDadosLocal).sort((a, b) => a.id - b.id);
             document.getElementById('total-servicos').innerText = listaOrdenada.length;
 
-            // Identifica se quem está logado é o administrador master do site
-            // Como deve ficar:
+            // Identifica se quem está logado faz parte do time de Administradores Master
             const ehAdminMaster = EMAILS_ADMINISTRADORES.map(e => e.toLowerCase()).includes(emailUsuarioLogado.toLowerCase());
 
             listaOrdenada.forEach(serv => {
-                const statusAtivo = serv.ativo !== false; // padrão é true se não existir a chave no banco
+                const statusAtivo = serv.ativo !== false; 
                 
-                // 🚫 Botão de Alternar Status (Ativo / Inativo) - Todos os usuários usam
+                // 🚫 Botão de Alternar Status (Ativo / Inativo)
                 const botaoAlternarStatus = statusAtivo 
                     ? `<button type="button" onclick="alternarStatusServico(${serv.id}, false)" class="text-lg hover:scale-125 transition-transform duration-150 active:scale-95 inline-block mr-3 text-amber-500" title="Inativar (Esconder do site público)">🚫</button>`
                     : `<button type="button" onclick="alternarStatusServico(${serv.id}, true)" class="text-lg hover:scale-125 transition-transform duration-150 active:scale-95 inline-block mr-3 text-emerald-500" title="Reativar (Mostrar no site público)">🟢</button>`;
 
-                // 🗑️ Botão Nuclear de Exclusão Física - Aparece APENAS para o Administrador Master
+                // 🗑️ Botão de Exclusão Física (Somente se for Administrador Master!)
                 const botaoExcluirDefinitivo = ehAdminMaster
                     ? `<button type="button" onclick="excluirServicoPermanente(${serv.id}, '${serv.titulo.replace(/'/g, "\\'")}')" class="text-lg hover:scale-125 transition-transform duration-150 active:scale-95 inline-block text-red-500 hover:text-red-700" title="Excluir Definitivamente do Banco de Dados">🗑️</button>`
                     : ``;
@@ -488,7 +513,7 @@ const EMAILS_ADMINISTRADORES = [
                         </button>
                         <!-- Inativar/Reativar (Liberado a todos) -->
                         ${botaoAlternarStatus}
-                        <!-- Excluir Permanentemente (Somente você!) -->
+                        <!-- Excluir Permanentemente (Somente administradores!) -->
                         ${botaoExcluirDefinitivo}
                     </td>
                 `;
@@ -497,7 +522,7 @@ const EMAILS_ADMINISTRADORES = [
         }
 
         // -------------------------------------------------------------
-        // ENGRENAGEM 2.4: INATIVAR OU REATIVAR SERVIÇO (EXCLUSÃO LÓGICA)
+        // ENGRENAGEM 2.4: INATIVAR OU REATIVAR SERVIÇO (EXCLUSÃO LÓGICA) + E-MAIL
         // -------------------------------------------------------------
         async function alternarStatusServico(id, novoStatus) {
             const acaoText = novoStatus ? "REATIVAR" : "INATIVAR";
@@ -507,16 +532,20 @@ const EMAILS_ADMINISTRADORES = [
             try {
                 const referenciaDoc = db.collection('catalogo').doc('todosOsServicos');
                 
-                // Atualiza localmente
                 bancoDeDadosLocal[`ID_${id}`].ativo = novoStatus;
                 const servicoAtualizado = bancoDeDadosLocal[`ID_${id}`];
 
-                // Grava no Firebase
                 await referenciaDoc.set({
                     [`ID_${id}`]: servicoAtualizado
                 }, { merge: true });
 
                 desenharTabelaReal();
+
+                // Disparando o relatório de inativação/reativação por e-mail!
+                const descAcao = novoStatus ? "Reativação de Serviço" : "Inativação de Serviço (Ocultado)";
+                const detalhes = `O status do serviço "${servicoAtualizado.titulo}" foi alterado para: ${novoStatus ? "ATIVO (Visível no site público)" : "INATIVO (Oculto no site público)"}.`;
+                enviarRelatorioPorEmail(descAcao, id, detalhes);
+
                 alert(`✅ Sucesso! O serviço foi ${novoStatus ? "ativado" : "inativado"}.`);
 
             } catch (erro) {
@@ -526,7 +555,7 @@ const EMAILS_ADMINISTRADORES = [
         }
 
         // -------------------------------------------------------------
-        // ENGRENAGEM 2.5: EXCLUIR DEFINITIVAMENTE DO BANCO (SOMENTE ADMIN MASTER)
+        // ENGRENAGEM 2.5: EXCLUIR DEFINITIVAMENTE DO BANCO (SOMENTE ADMIN MASTER) + E-MAIL
         // -------------------------------------------------------------
         async function excluirServicoPermanente(id, titulo) {
             const confirmacao = confirm(`⚠️ ALERTA DE ADMINISTRADOR MASTER: Tem certeza de que deseja EXCLUIR DEFINITIVAMENTE o serviço "${titulo}" (ID ${id})?\n\nEssa ação é irreversível e apagará fisicamente os dados do servidor da Google. Use apenas para limpar testes!`);
@@ -535,14 +564,16 @@ const EMAILS_ADMINISTRADORES = [
             try {
                 const referenciaDoc = db.collection('catalogo').doc('todosOsServicos');
                 
-                // Deleta a chave ID_XX do documento unificado do Firebase
                 await referenciaDoc.update({
                     [`ID_${id}`]: firebase.firestore.FieldValue.delete()
                 });
 
-                // Deleta da memória local
                 delete bancoDeDadosLocal[`ID_${id}`];
                 desenharTabelaReal();
+
+                // Disparando o relatório de exclusão física!
+                const detalhes = `O administrador apagou DEFINITIVAMENTE todos os dados estruturados do serviço "${titulo}" (ID ${id}) do servidor do Firebase.`;
+                enviarRelatorioPorEmail("Exclusão Física Permanente", id, detalhes);
 
                 alert("🗑️ Sucesso! O serviço foi apagado definitivamente do banco de dados.");
 
@@ -660,7 +691,7 @@ const EMAILS_ADMINISTRADORES = [
             const documentosFormatados = servico.documentos ? servico.documentos.join("\n") : "";
             document.getElementById('edit-documentos').value = documentosFormatados;
 
-            // Popular Etapas de forma dinâmica
+            // Popular Etapas
             const containerEtapas = document.getElementById('container-etapas');
             containerEtapas.innerHTML = "";
             
@@ -686,7 +717,7 @@ const EMAILS_ADMINISTRADORES = [
         }
 
         // -------------------------------------------------------------
-        // ENGRENAGEM 5: COLETAR E GRAVAR (SALVA NOVO OU EDITA EXISTENTE)
+        // ENGRENAGEM 5: COLETAR, COMPARAR, GRAVAR + ENVIAR E-MAIL
         // -------------------------------------------------------------
         async function salvarAlteracoes(evento) {
             evento.preventDefault();
@@ -705,7 +736,7 @@ const EMAILS_ADMINISTRADORES = [
                 return;
             }
 
-            // 2. Mapear as Etapas no formato exato que o index.html precisa: 'nome' e 'desc'
+            // 2. Mapear as Etapas no formato exato do index.html ('nome' e 'desc')
             const blocosEtapas = document.querySelectorAll('.bloco-etapa');
             const etapasArray = [];
             blocosEtapas.forEach(bloco => {
@@ -760,7 +791,6 @@ const EMAILS_ADMINISTRADORES = [
             const servicoAtualizado = {
                 ...servicoOriginal,
                 id: Number(id),
-                // Se for serviço novo, começa ativo por padrão. Se for edição, mantém o status que já estava
                 ativo: servicoOriginal ? (servicoOriginal.ativo !== false) : true,
                 titulo: document.getElementById('edit-titulo').value.trim(),
                 secretaria: document.getElementById('edit-secretaria').value,
@@ -785,6 +815,43 @@ const EMAILS_ADMINISTRADORES = [
                 etapas: etapasArray
             };
 
+            // 📊 4. COMPARADOR AUTOMÁTICO DE ALTERAÇÕES PARA O E-MAIL!
+            let relatorioDetalhes = "";
+            let tipoAcao = "Edição de Serviço";
+
+            if (servicoOriginal) {
+                let mudancas = [];
+                if (servicoOriginal.titulo !== servicoAtualizado.titulo) {
+                    mudancas.push(`• Título: de "${servicoOriginal.titulo}" para "${servicoAtualizado.titulo}"`);
+                }
+                if (servicoOriginal.secretaria !== servicoAtualizado.secretaria) {
+                    mudancas.push(`• Secretaria: de "${servicoOriginal.secretaria}" para "${servicoAtualizado.secretaria}"`);
+                }
+                if (servicoOriginal.descricao !== servicoAtualizado.descricao) {
+                    mudancas.push(`• Descrição: Alterada.`);
+                }
+                if (servicoOriginal.elegibilidade !== servicoAtualizado.elegibilidade) {
+                    mudancas.push(`• Elegibilidade: Alterada.`);
+                }
+                if (servicoOriginal.resultado !== servicoAtualizado.resultado) {
+                    mudancas.push(`• Resultado Esperado: de "${servicoOriginal.resultado || 'vazio'}" para "${servicoAtualizado.resultado || 'vazio'}"`);
+                }
+                if (JSON.stringify(servicoOriginal.canais) !== JSON.stringify(servicoAtualizado.canais)) {
+                    mudancas.push(`• Canais de Atendimento: Modificados.`);
+                }
+                if (JSON.stringify(servicoOriginal.prazos) !== JSON.stringify(servicoAtualizado.prazos)) {
+                    mudancas.push(`• Prazos de Espera/Análise: Modificados.`);
+                }
+                if (JSON.stringify(servicoOriginal.etapas) !== JSON.stringify(servicoAtualizado.etapas)) {
+                    mudancas.push(`• Etapas do Processo: Atualizadas.`);
+                }
+
+                relatorioDetalhes = mudancas.length > 0 ? mudancas.join("\n") : "Nenhuma alteração de texto foi detectada nos campos principais.";
+            } else {
+                tipoAcao = "Criação de Novo Serviço";
+                relatorioDetalhes = `O serviço "${servicoAtualizado.titulo}" foi cadastrado do zero.\n\n• Secretaria: ${servicoAtualizado.secretaria}\n• Descrição: ${servicoAtualizado.descricao}`;
+            }
+
             try {
                 const dadoParaEnviar = {
                     [`ID_${id}`]: servicoAtualizado
@@ -794,6 +861,9 @@ const EMAILS_ADMINISTRADORES = [
 
                 bancoDeDadosLocal[`ID_${id}`] = servicoAtualizado;
                 desenharTabelaReal();
+
+                // Dispara o e-mail de notificação de forma assíncrona para não travar a tela do usuário
+                enviarRelatorioPorEmail(tipoAcao, id, relatorioDetalhes);
 
                 alert("✅ Sucesso! O catálogo do Firebase foi atualizado.");
                 fecharEditorDeServico();
