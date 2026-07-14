@@ -411,9 +411,10 @@
                 fecharEditorDeServico();
 
             } catch (erro) {
-                console.error("Erro ao salvar:", erro);
-                alert("❌ Erro ao gravar no Firebase. Verifique sua conexão.");
-            } finally {
+                console.error("Erro no login:", erro);
+                alert("❌ Erro no Firebase: " + erro.message); // Mostra o erro real!
+            }
+             finally {
                 botaoSalvar.disabled = false;
                 botaoSalvar.innerText = "💾 Salvar Alterações";
             }
