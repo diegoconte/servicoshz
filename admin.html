@@ -6,16 +6,55 @@
     <!-- Conexão oficial com o Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- Adicionamos o módulo de Autenticação do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <!-- O Tailwind CSS que pinta nossa tela -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10">
+<body class="bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10 flex flex-col justify-center items-center">
 
-    <!-- 1. CONTAINER PRINCIPAL -->
-    <div id="painel-container" class="max-w-5xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
-        <h1 class="text-2xl md:text-3xl font-bold text-[#002B5E] tracking-tight">Painel de Controle - Editor de Serviços</h1>
-        <p class="text-slate-500 mt-1 mb-8">Clique no lápis (✏️) ao lado de qualquer serviço para editar suas informações.</p>
+    <!-- ======================================================= -->
+    <!-- 1. TELA DE LOGIN (Aparece primeiro)                     -->
+    <!-- ======================================================= -->
+    <div id="login-container" class="max-w-md w-full bg-white p-8 rounded-2xl shadow-md border border-slate-200">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-[#002B5E]">Acesso Restrito</h1>
+            <p class="text-slate-500 text-sm mt-1">Identifique-se para gerenciar a Carta de Serviços</p>
+        </div>
+
+        <form id="form-login" class="space-y-4">
+            <div class="flex flex-col">
+                <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">E-mail</label>
+                <input type="email" id="login-email" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required>
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Senha</label>
+                <input type="password" id="login-senha" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required>
+            </div>
+
+            <button type="submit" id="btn-login" class="w-full bg-[#002B5E] hover:bg-[#001D40] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all">
+                🔑 Entrar no Painel
+            </button>
+        </form>
+    </div>
+
+
+    <!-- ======================================================= -->
+    <!-- 2. CONTAINER PRINCIPAL (Começa escondido com 'hidden')  -->
+    <!-- ======================================================= -->
+    <div id="painel-container" class="max-w-5xl w-full bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-5 mb-8">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-[#002B5E] tracking-tight">Painel de Controle - Editor de Serviços</h1>
+                <p class="text-slate-500 mt-1">Clique no lápis (✏️) ao lado de qualquer serviço para editar suas informações.</p>
+            </div>
+            <!-- Botão de Sair elegante -->
+            <button onclick="fazerLogout()" class="mt-4 md:mt-0 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-lg text-sm transition-colors self-start md:self-auto">
+                🚪 Sair do Painel
+            </button>
+        </div>
         
         <!-- Tabela elegante e limpa -->
         <div class="overflow-x-auto rounded-xl border border-slate-200">
@@ -35,7 +74,10 @@
         </div>
     </div>
 
-    <!-- 2. JANELA FLUTUANTE (MODAL) DE EDIÇÃO -->
+
+    <!-- ======================================================= -->
+    <!-- 3. JANELA FLUTUANTE (MODAL) DE EDIÇÃO                   -->
+    <!-- ======================================================= -->
     <div id="modal-edicao" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto hidden">
         <div id="modal-conteudo" class="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 md:p-8 max-h-[90vh] overflow-y-auto border border-slate-100">
             
@@ -47,7 +89,6 @@
             
             <!-- Formulário com os campos -->
             <form id="form-servico" class="space-y-5">
-                
                 <input type="hidden" id="edit-id">
 
                 <!-- Grid de duas colunas -->
@@ -140,7 +181,7 @@
     </div>
 
     <!-- ======================================================= -->
-    <!-- JAVASCRIPT: CÉREBRO INTEGRADO (LEITURA E ESCRITA)      -->
+    <!-- JAVASCRIPT: CÉREBRO INTEGRADO COM AUTENTICAÇÃO         -->
     <!-- ======================================================= -->
     <script>
         // Configurações oficiais do seu Firebase
@@ -153,17 +194,72 @@
             appId: "1:782471493827:web:96548c54f925a80a404a76"
         };
 
-        // Inicializa o Firebase e o Firestore
+        // Inicializa o Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
 
-        // Nosso banco de dados temporário na memória do navegador
         let bancoDeDadosLocal = {};
 
         // -------------------------------------------------------------
-        // ENGRENAGEM 1: CARREGAR DADOS DO FIREBASE AO ABRIR A PÁGINA
+        // SEGURANÇA 1: VIGIA DO ESTADO DE LOGIN (Fica de olho se o usuário está logado)
         // -------------------------------------------------------------
-        window.onload = async () => {
+        auth.onAuthStateChanged(usuario => {
+            const loginBox = document.getElementById('login-container');
+            const painelBox = document.getElementById('painel-container');
+
+            if (usuario) {
+                // Usuário está logado!
+                loginBox.classList.add('hidden'); // Esconde tela de login
+                painelBox.classList.remove('hidden'); // Mostra a tabela de controle
+                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10"; // Ajusta o fundo
+                
+                carregarServicosDoFirebase(); // Busca os dados reais na nuvem
+            } else {
+                // Usuário deslogado!
+                painelBox.classList.add('hidden'); // Esconde a tabela
+                loginBox.classList.remove('hidden'); // Mostra a tela de login
+                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 flex flex-col justify-center items-center"; // Centraliza o login
+            }
+        });
+
+        // -------------------------------------------------------------
+        // SEGURANÇA 2: EXECUTAR O LOGIN AO ENVIAR O FORMULÁRIO
+        // -------------------------------------------------------------
+        document.getElementById('form-login').onsubmit = async (evento) => {
+            evento.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const senha = document.getElementById('login-senha').value;
+            const btn = document.getElementById('btn-login');
+
+            btn.disabled = true;
+            btn.innerText = "⏳ Verificando credenciais...";
+
+            try {
+                // Envia as informações de login para validação da Google
+                await auth.signInWithEmailAndPassword(email, senha);
+            } catch (erro) {
+                console.error("Erro no login:", erro);
+                alert("❌ Usuário ou senha incorretos! Tente novamente.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "🔑 Entrar no Painel";
+            }
+        };
+
+        // -------------------------------------------------------------
+        // SEGURANÇA 3: FUNÇÃO DE SAÍDA (LOGOUT)
+        // -------------------------------------------------------------
+        async function fazerLogout() {
+            if (confirm("Deseja realmente sair do Painel de Controle?")) {
+                await auth.signOut();
+            }
+        }
+
+        // -------------------------------------------------------------
+        // ENGRENAGEM 1: CARREGAR DADOS DO FIREBASE (Só roda se logado)
+        // -------------------------------------------------------------
+        async function carregarServicosDoFirebase() {
             const corpoTabela = document.getElementById('tabela-corpo');
             
             corpoTabela.innerHTML = `
@@ -178,8 +274,8 @@
                 const doc = await db.collection('catalogo').doc('todosOsServicos').get();
                 
                 if (doc.exists) {
-                    bancoDeDadosLocal = doc.data(); // Guarda tudo na memória local
-                    desenharTabelaReal();           // Renderiza a lista na tela
+                    bancoDeDadosLocal = doc.data();
+                    desenharTabelaReal();
                 } else {
                     corpoTabela.innerHTML = `
                         <tr>
@@ -194,21 +290,20 @@
                 corpoTabela.innerHTML = `
                     <tr>
                         <td colspan="4" class="p-8 text-center text-red-500 font-semibold">
-                            ❌ Falha crítica de conexão. Verifique o console (F12).
+                            ❌ Falha de permissão ou conexão ao carregar dados.
                         </td>
                     </tr>
                 `;
             }
-        };
+        }
 
         // -------------------------------------------------------------
         // ENGRENAGEM 2: DESENHAR OS SERVIÇOS REAIS NA TABELA
         // -------------------------------------------------------------
         function desenharTabelaReal() {
             const corpoTabela = document.getElementById('tabela-corpo');
-            corpoTabela.innerHTML = ""; // Limpa a tabela
+            corpoTabela.innerHTML = "";
 
-            // Converte o objeto de IDs em lista e ordena por ID
             const listaOrdenada = Object.values(bancoDeDadosLocal).sort((a, b) => a.id - b.id);
 
             listaOrdenada.forEach(serv => {
@@ -237,7 +332,6 @@
 
             document.getElementById('modal-titulo-servico').innerText = `Editar: ${servico.titulo}`;
 
-            // Preenche dados básicos
             document.getElementById('edit-id').value = servico.id;
             document.getElementById('edit-titulo').value = servico.titulo || "";
             document.getElementById('edit-secretaria').value = servico.secretaria || "";
@@ -246,20 +340,16 @@
             document.getElementById('edit-resultado').value = servico.resultado || "";
             document.getElementById('edit-destaque').value = String(servico.destaque);
 
-            // Preenche Prazos
             document.getElementById('edit-prazo-espera').value = servico.prazos?.espera || "";
             document.getElementById('edit-prazo-analise').value = servico.prazos?.analise || "";
             document.getElementById('edit-prazo-total').value = servico.prazos?.total || "";
 
-            // Preenche Custos
             document.getElementById('edit-custo-gratuito').value = String(servico.custo?.gratuito);
             document.getElementById('edit-custo-descricao').value = servico.custo?.descricao || "";
 
-            // Transforma array de documentos em linhas de texto
             const documentosFormatados = servico.documentos ? servico.documentos.join("\n") : "";
             document.getElementById('edit-documentos').value = documentosFormatados;
 
-            // Mostra o formulário
             document.getElementById('modal-edicao').classList.remove('hidden');
         }
 
@@ -274,7 +364,7 @@
         // ENGRENAGEM 5: COLETAR TEXTOS E SALVAR NO FIREBASE
         // -------------------------------------------------------------
         async function salvarAlteracoes(evento) {
-            evento.preventDefault(); // Impede o recarregamento da página
+            evento.preventDefault();
 
             const id = document.getElementById('edit-id').value;
             const botaoSalvar = document.getElementById('btn-submit');
@@ -284,7 +374,6 @@
 
             const servicoOriginal = bancoDeDadosLocal[`ID_${id}`];
 
-            // Junta tudo o que foi editado com os dados antigos
             const servicoAtualizado = {
                 ...servicoOriginal,
                 titulo: document.getElementById('edit-titulo').value,
@@ -304,8 +393,8 @@
                 },
                 documentos: document.getElementById('edit-documentos').value
                     .split("\n")
-                    .map(linha => linha.trim())
-                    .filter(linha => linha !== "")
+                    .map(linha => { return linha.trim(); })
+                    .filter(linha => { return linha !== ""; })
             };
 
             try {
@@ -313,10 +402,8 @@
                     [`ID_${id}`]: servicoAtualizado
                 };
 
-                // Envia as alterações usando mesclagem (merge: true)
                 await db.collection('catalogo').doc('todosOsServicos').set(dadoParaEnviar, { merge: true });
 
-                // Atualiza a tabela imediatamente
                 bancoDeDadosLocal[`ID_${id}`] = servicoAtualizado;
                 desenharTabelaReal();
 
