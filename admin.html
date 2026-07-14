@@ -41,6 +41,50 @@
                 🔑 Entrar no Painel
             </button>
         </form>
+        
+        <!-- Botão para alternar para a tela de solicitação de acesso -->
+        <div class="text-center mt-6 pt-4 border-t border-slate-100">
+            <button onclick="alternarFormularios('solicitar')" class="text-xs text-blue-600 hover:text-blue-800 hover:underline font-bold transition-all">
+                Não tem uma conta? Solicite acesso aqui
+            </button>
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- 1B. NOVO: TELA DE SOLICITAÇÃO DE ACESSO (Oculta por padrão) -->
+    <!-- ======================================================= -->
+    <div id="solicitar-container" class="max-w-md w-full bg-white p-8 rounded-2xl shadow-md border border-slate-200 hidden">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-[#002B5E]">Solicitar Permissão</h1>
+            <p class="text-slate-500 text-sm mt-1">Preencha os dados abaixo para pedir acesso ao painel.</p>
+        </div>
+
+        <form id="form-solicitar" class="space-y-4">
+            <div class="flex flex-col">
+                <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Nome Completo</label>
+                <input type="text" id="solicitar-nome" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required placeholder="Ex: João da Silva">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">E-mail Corporativo</label>
+                <input type="email" id="solicitar-email" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required placeholder="exemplo@horizontina.rs.gov.br">
+            </div>
+
+            <div class="flex flex-col">
+                <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Sua Secretaria / Setor</label>
+                <input type="text" id="solicitar-secretaria" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required placeholder="Ex: Secretaria de Saúde">
+            </div>
+
+            <button type="submit" id="btn-solicitar" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all">
+                ✉️ Enviar Solicitação
+            </button>
+        </form>
+        
+        <div class="text-center mt-6 pt-4 border-t border-slate-100">
+            <button onclick="alternarFormularios('login')" class="text-xs text-slate-500 hover:text-slate-700 font-bold hover:underline transition-all">
+                Voltar para a tela de Login
+            </button>
+        </div>
     </div>
 
 
@@ -60,19 +104,19 @@
         </div>
 
         <!-- BARRA DE AÇÕES: Totalizador, Atalho de Dashboard e Novo Cadastro -->
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-    <div class="flex items-center gap-4">
-        <span class="text-sm font-semibold text-slate-500">
-            Total cadastrado: <span id="total-servicos" class="text-slate-800 font-bold">0</span> serviços
-        </span>
-        <a href="dashboard.html" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-xs rounded-xl transition-all">
-            📈 Ver Dashboard
-        </a>
-    </div>
-    <button onclick="abrirCriadorDeServico()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 text-sm">
-        ➕ Cadastrar Novo Serviço
-    </button>
-</div>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-semibold text-slate-500">
+                    Total cadastrado: <span id="total-servicos" class="text-slate-800 font-bold">0</span> serviços
+                </span>
+                <a href="dashboard.html" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-xs rounded-xl transition-all">
+                    📈 Ver Dashboard
+                </a>
+            </div>
+            <button onclick="abrirCriadorDeServico()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 text-sm">
+                ➕ Cadastrar Novo Serviço
+            </button>
+        </div>
         
         <!-- Tabela elegante e limpa -->
         <div class="overflow-x-auto rounded-xl border border-slate-200">
@@ -121,14 +165,15 @@
                         <select id="edit-secretaria" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required>
                             <option value="">Selecione uma secretaria...</option>
                             <option value="Gabinete do Prefeito">Gabinete do Prefeito</option>
+                            <option value="Defesa Civil">Defesa Civil</option>
                             <option value="Secretaria de Saúde">Secretaria de Saúde</option>
                             <option value="Secretaria de Educação">Secretaria de Educação</option>
                             <option value="Secretaria de Desenvolvimento Social">Secretaria de Desenvolvimento Social</option>
-                            <option value="Secretaria de Desenvolvimento Rural">Secretaria de Desenvolvimento Rural</option>
+                            <option value="Secretaria de Agricultura e Meio Ambiente">Secretaria de Agricultura e Meio Ambiente</option>
                             <option value="Secretaria de Infraestrutura">Secretaria de Infraestrutura</option>
                             <option value="Secretaria de Planejamento e Administração">Secretaria de Planejamento e Administração</option>
                             <option value="Secretaria de Fazenda">Secretaria de Fazenda</option>
-                            <option value="Secretaria de Desenvolvimento Econômico">Secretaria de Desenvolvimento Econômico</option>
+                            <option value="Secretaria de Desenvolvimento Econômico e Turismo">Secretaria de Desenvolvimento Econômico e Turismo</option>
                         </select>
                     </div>
                 </div>
@@ -301,19 +346,75 @@
         let bancoDeDadosLocal = {};
 
         // -------------------------------------------------------------
+        // NOVO: ALTERNAR ENTRE LOGIN E SOLICITAÇÃO DE ACESSO
+        // -------------------------------------------------------------
+        function alternarFormularios(tela) {
+            const loginBox = document.getElementById('login-container');
+            const solicitarBox = document.getElementById('solicitar-container');
+            
+            if (tela === 'solicitar') {
+                loginBox.classList.add('hidden');
+                solicitarBox.classList.remove('hidden');
+            } else {
+                solicitarBox.classList.add('hidden');
+                loginBox.classList.remove('hidden');
+            }
+        }
+
+        // -------------------------------------------------------------
+        // NOVO: TRATAR O ENVIO DA SOLICITAÇÃO DE ACESSO
+        // -------------------------------------------------------------
+        document.getElementById('form-solicitar').onsubmit = async (evento) => {
+            evento.preventDefault();
+            
+            const nome = document.getElementById('solicitar-nome').value.trim();
+            const email = document.getElementById('solicitar-email').value.trim();
+            const secretaria = document.getElementById('solicitar-secretaria').value.trim();
+            const btn = document.getElementById('btn-solicitar');
+
+            btn.disabled = true;
+            btn.innerText = "⏳ Enviando solicitação...";
+
+            // Monta o detalhamento que será inserido no seu template do EmailJS
+            const detalhesSolicitacao = `Solicitante: ${nome}\nSetor/Secretaria: ${secretaria}\nE-mail para Cadastro: ${email}\n\nEste servidor está solicitando permissão de acesso ao Painel Administrativo da Carta de Serviços de Horizontina. Se aprovado, cadastre este e-mail no Firebase Auth.`;
+
+            const templateParams = {
+                usuario: email,
+                data_hora: new Date().toLocaleString("pt-BR"),
+                acao: "Solicitação de Acesso",
+                id_servico: "PENDENTE",
+                detalhes: detalhesSolicitacao
+            };
+
+            try {
+                // Envia direto para o e-mail do Diego e da Raquel usando seu serviço ativo
+                await emailjs.send("service_hd5fuga", "template_l6vcu0y", templateParams);
+                
+                alert("✉️ Solicitação enviada com sucesso! Diego e Raquel foram notificados e avaliarão o seu acesso em breve.");
+                document.getElementById('form-solicitar').reset();
+                alternarFormularios('login');
+            } catch (erro) {
+                console.error("Falha ao processar e-mail de solicitação:", erro);
+                alert("❌ Ocorreu um erro ao enviar sua solicitação de acesso. Tente novamente mais tarde.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "✉️ Enviar Solicitação";
+            }
+        };
+
+        // -------------------------------------------------------------
         // DISPARADOR DE RELATÓRIOS POR E-MAIL (EMAILJS)
         // -------------------------------------------------------------
         async function enviarRelatorioPorEmail(acao, idServico, detalhesAlteracao) {
             const templateParams = {
                 usuario: emailUsuarioLogado || "Usuário não identificado",
                 data_hora: new Date().toLocaleString("pt-BR"),
-                acao: acao, // Ex: "Criação de Novo Serviço", "Edição de Serviço", "Inativação de Serviço", etc.
+                acao: acao, 
                 id_servico: idServico,
                 detalhes: detalhesAlteracao
             };
 
             try {
-                // Utilizando as suas chaves reais de Service ID e Template ID
                 await emailjs.send("service_hd5fuga", "template_l6vcu0y", templateParams);
                 console.log("✉️ [EMAILJS] Relatório de alteração disparado com sucesso para Diego e Raquel!");
             } catch (erro) {
@@ -380,11 +481,13 @@
         // -------------------------------------------------------------
         auth.onAuthStateChanged(usuario => {
             const loginBox = document.getElementById('login-container');
+            const solicitarBox = document.getElementById('solicitar-container');
             const painelBox = document.getElementById('painel-container');
 
             if (usuario) {
                 emailUsuarioLogado = usuario.email; 
                 loginBox.classList.add('hidden');
+                solicitarBox.classList.add('hidden');
                 painelBox.classList.remove('hidden');
                 document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10";
                 
@@ -392,6 +495,7 @@
             } else {
                 emailUsuarioLogado = "";
                 painelBox.classList.add('hidden');
+                solicitarBox.classList.add('hidden');
                 loginBox.classList.remove('hidden');
                 document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 flex flex-col justify-center items-center";
             }
@@ -544,11 +648,12 @@
                 }, { merge: true });
 
                 desenharTabelaReal();
+
                 // Registrar auditoria
-const emailLimpo = emailUsuarioLogado.toLowerCase().replace(/\./g, '_').replace(/@/g, '_at_');
-db.collection('estatisticas').doc('auditoria').set({
-    [emailLimpo]: firebase.firestore.FieldValue.increment(1)
-}, { merge: true });
+                const emailLimpo = emailUsuarioLogado.toLowerCase().replace(/\./g, '_').replace(/@/g, '_at_');
+                db.collection('estatisticas').doc('auditoria').set({
+                    [emailLimpo]: firebase.firestore.FieldValue.increment(1)
+                }, { merge: true });
 
                 // Disparando o relatório de inativação/reativação por e-mail!
                 const descAcao = novoStatus ? "Reativação de Serviço" : "Inativação de Serviço (Ocultado)";
@@ -579,6 +684,12 @@ db.collection('estatisticas').doc('auditoria').set({
 
                 delete bancoDeDadosLocal[`ID_${id}`];
                 desenharTabelaReal();
+
+                // Registrar auditoria
+                const emailLimpo = emailUsuarioLogado.toLowerCase().replace(/\./g, '_').replace(/@/g, '_at_');
+                db.collection('estatisticas').doc('auditoria').set({
+                    [emailLimpo]: firebase.firestore.FieldValue.increment(1)
+                }, { merge: true });
 
                 // Disparando o relatório de exclusão física!
                 const detalhes = `O administrador apagou DEFINITIVAMENTE todos os dados estruturados do serviço "${titulo}" (ID ${id}) do servidor do Firebase.`;
@@ -869,12 +980,13 @@ db.collection('estatisticas').doc('auditoria').set({
                 await db.collection('catalogo').doc('todosOsServicos').set(dadoParaEnviar, { merge: true });
 
                 bancoDeDadosLocal[`ID_${id}`] = servicoAtualizado;
-                // Registrar auditoria
-const emailLimpo = emailUsuarioLogado.toLowerCase().replace(/\./g, '_').replace(/@/g, '_at_');
-await db.collection('estatisticas').doc('auditoria').set({
-    [emailLimpo]: firebase.firestore.FieldValue.increment(1)
-}, { merge: true });
                 desenharTabelaReal();
+
+                // Registrar auditoria
+                const emailLimpo = emailUsuarioLogado.toLowerCase().replace(/\./g, '_').replace(/@/g, '_at_');
+                await db.collection('estatisticas').doc('auditoria').set({
+                    [emailLimpo]: firebase.firestore.FieldValue.increment(1)
+                }, { merge: true });
 
                 // Dispara o e-mail de notificação de forma assíncrona para não travar a tela do usuário
                 enviarRelatorioPorEmail(tipoAcao, id, relatorioDetalhes);
