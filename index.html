@@ -676,6 +676,9 @@ async function carregarCliquesGlobais() {
     aplicarFiltros();
 }
         function aplicarFiltros() {
+     // rastrear termos digitados:
+    const termoDigitado = document.getElementById('input-busca').value;
+    registrarTermoBuscadoNoFirebase(termoDigitado);
     // 1. Remove os acentos do que o usuário digitou
     const termoBusca = removerAcentos(document.getElementById('input-busca').value.toLowerCase());
     
@@ -1003,18 +1006,26 @@ async function carregarCliquesGlobais() {
             }
         }
 
-        // Aguarda TODOS os arquivos das secretarias carregarem 100% na memória
-        // Inicialização do site assim que a página é carregada
+       // =============================================================
+        // 🔄 INICIALIZAÇÃO DO PORTAL (RODA ASSIM QUE A PÁGINA CARREGA)
+        // =============================================================
+        // Aguarda todos os elementos e scripts carregarem 100% na memória do navegador
         window.addEventListener('load', async () => {
-            // 1. Carrega as estatísticas de cliques
+            
+            // Passo 1: Busca o histórico de cliques globais do Firebase para montar o ranking dos mais procurados
             await carregarCliquesGlobais();  
             
-            // 2. BUSCA OS SERVIÇOS DO FIREBASE! (Se der erro, ele vai gritar aqui)
+            // Passo 2: Abre a conexão e baixa todo o catálogo unificado de serviços ativos direto da nuvem
             await carregarServicosDaNuvem(); 
 
-            // 3. Atualiza o site com as informações novas
+            // Passo 3: Faz a contagem de serviços recebidos e atualiza o quadradinho amarelo no topo do site
             atualizarContadorHeader();       
+            
+            // Passo 4: Renderiza os 4 cards mais acessados e exibe a tela inicial (Home) para o cidadão
             showPage('home');                
+
+            // Passo 5: [MÉTRICA LGPD] Identifica anonimamente se o cidadão usa Celular ou Computador para futuras melhorias
+            rastrearAmbienteDoCidadao();
         });
 
      // Funções de Acessibilidade (Tamanho de Fonte e Contraste)
@@ -1032,6 +1043,44 @@ async function carregarCliquesGlobais() {
         function alternarContraste() {
             document.body.classList.toggle('alto-contraste');
         }
+        // 📊 RASTREADOR DE INTENÇÃO DE BUSCA
+let timeoutBusca = null;
+function registrarTermoBuscadoNoFirebase(termo) {
+    if (!termo || termo.trim().length < 3) return;
+
+    // O "debounce" evita gravar no Firebase a cada letra digitada (espera o usuário parar de digitar por 1.5s)
+    clearTimeout(timeoutBusca);
+    timeoutBusca = setTimeout(() => {
+        try {
+            const termoLimpo = termo.toLowerCase().trim().replace(/[.$\[\]#/]/g, "_");
+            db.collection('estatisticas').doc('termosPesquisados').set({
+                [termoLimpo]: firebase.firestore.FieldValue.increment(1)
+            }, { merge: true });
+            console.log("📊 [MÉTRICA] Termo de busca computado:", termoLimpo);
+        } catch (e) {
+            console.log("Erro silencioso de métrica:", e);
+        }
+    }, 1500);
+}
+// 📱 RASTREADOR DE DISPOSITIVOS E AMBIENTE (100% ANÔNIMO)
+function rastrearAmbienteDoCidadao() {
+    try {
+        const larguraTela = window.innerWidth;
+        const tipoDispositivo = larguraTela < 768 ? "Celular/Tablet" : "Computador/Desktop";
+        
+        // Verifica se já contabilizou esse acesso nesta sessão para não inflar os dados por cliques em F5
+        if (sessionStorage.getItem('ambienteRastreado') === 'sim') return;
+
+        db.collection('estatisticas').doc('perfilAcessos').set({
+            [tipoDispositivo]: firebase.firestore.FieldValue.increment(1)
+        }, { merge: true });
+
+        sessionStorage.setItem('ambienteRastreado', 'sim');
+        console.log("📊 [MÉTRICA] Ambiente do cidadão computado:", tipoDispositivo);
+    } catch (e) {
+        console.log("Erro silencioso de métrica:", e);
+    }
+}
     </script>
 </body>
 </html>
