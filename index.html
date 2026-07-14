@@ -240,10 +240,16 @@
         <!-- ========================================== -->
         <!-- PÁGINA 3: DETALHE DO SERVIÇO (PDF MODELO)  -->
         <!-- ========================================== -->
-        <div id="page-detalhe" class="page-section hidden-section">
-            <button onclick="showPage('carta')" class="text-sp-blue font-bold hover:underline mb-6 flex items-center gap-2">
-                <i class="fas fa-arrow-left"></i> Voltar para a lista de serviços
-            </button>
+        <!-- botao de salvar ou imprimir -->
+<div id="page-detalhe" class="page-section hidden-section">
+    <div class="flex justify-between items-center mb-6">
+        <button onclick="showPage('carta')" class="text-sp-blue font-bold hover:underline flex items-center gap-2">
+            <i class="fas fa-arrow-left"></i> Voltar para a lista de serviços
+        </button>
+        <button onclick="window.print()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg text-xs transition flex items-center gap-2 no-contrast-toggle">
+            <i class="fas fa-print text-slate-500"></i> Imprimir / Salvar PDF
+        </button>
+    </div>
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <!-- Cabeçalho do Serviço -->
