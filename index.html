@@ -21,23 +21,27 @@
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-       <!-- CONEXÃO COM OS ARQUIVOS DE SERVIÇOS DAS SECRETARIAS -->
-    <!-- =================================================== -->
-    
-    <script>const bdServicos = [];</script>
-    <script src="servicos/gabinete.js"></script>
-    <script src="servicos/planejamento.js"></script>
-    <script src="servicos/administracao.js"></script>
-    <script src="servicos/fazenda.js"></script>
-    <script src="servicos/infraestrutura.js"></script>
-    <script src="servicos/saude.js"></script>
-    <script src="servicos/educacao.js"></script>
-    <script src="servicos/desenvolvimento_social.js"></script>
-    <script src="servicos/desenvolvimento_economico.js"></script>
-    <script src="servicos/desenvolvimento_rural.js"></script>
-    <script src="servicos/esporte_cultura.js"></script>
-    <script src="servicos/governo.js"></script>
+   <!-- Conexão oficial com o Firebase (Mantenha estas duas linhas!) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
+<!-- 
+    DESLIGADOS: Comentamos os arquivos locais para testar a nuvem de verdade! 
+    Se der algum erro, nós saberemos na hora.
+<script>const bdServicos = [];</script>
+<script src="servicos/gabinete.js"></script>
+<script src="servicos/planejamento.js"></script>
+<script src="servicos/administracao.js"></script>
+<script src="servicos/fazenda.js"></script>
+<script src="servicos/infraestrutura.js"></script>
+<script src="servicos/saude.js"></script>
+<script src="servicos/educacao.js"></script>
+<script src="servicos/desenvolvimento_social.js"></script>
+<script src="servicos/desenvolvimento_economico.js"></script>
+<script src="servicos/desenvolvimento_rural.js"></script>
+<script src="servicos/esporte_cultura.js"></script>
+<script src="servicos/governo.js"></script>
+-->
     <style>
         .page-section { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn {
@@ -429,6 +433,39 @@
 
     <!-- BANCO DE DADOS SIMULADO & LÓGICA -->
     <script>
+        // O container que vai receber os serviços vindos direto da Google
+let bdServicos = [];
+
+// Função que busca o catálogo do Firebase e converte de volta para o site
+async function carregarServicosDaNuvem() {
+    try {
+        console.log("☁️ [FIREBASE] Buscando catálogo de serviços na nuvem...");
+        
+        // Busca o documento único organizado por IDs no Firebase
+        const doc = await db.collection('catalogo').doc('todosOsServicos').get();
+        
+        if (doc.exists) {
+            const dadosDoFirebase = doc.data(); // Traz a árvore: { ID_1: {...}, ID_30: {...} }
+            
+            if (dadosDoFirebase) {
+                // Transforma as pastas ID_XX de volta em uma lista simples para o site rodar
+                const listaConvertida = Object.values(dadosDoFirebase);
+                
+                bdServicos.length = 0; // Garante que a lista comece limpa
+                bdServicos.push(...listaConvertida); // Abastece o site com os dados da nuvem
+                
+                console.log("✅ [FIREBASE] Sucesso! " + bdServicos.length + " serviços carregados da nuvem.");
+            } else {
+                console.warn("⚠️ O documento existe, mas está vazio no Firebase.");
+            }
+        } else {
+            console.error("❌ Erro: O documento 'todosOsServicos' não foi encontrado no Firebase.");
+        }
+    } catch (erro) {
+        console.error("❌ Falha crítica ao conectar com o Firebase:", erro);
+        alert("Não foi possível carregar os serviços do site. Verifique sua conexão.");
+    }
+}
        // 1. Suas credenciais oficiais da Google (Copiadas da sua imagem!)
 const firebaseConfig = {
     apiKey: "AIzaSyAZk6WrwIHn3iRjT41Ju0GToc01XJhFrtE",
@@ -955,10 +992,17 @@ async function carregarCliquesGlobais() {
         }
 
         // Aguarda TODOS os arquivos das secretarias carregarem 100% na memória
+        // Inicialização do site assim que a página é carregada
         window.addEventListener('load', async () => {
-            await carregarCliquesGlobais(); // ◄ [NOVO] Baixa os cliques da nuvem primeiro!
-            atualizarContadorHeader();       // Conta os serviços reais
-            showPage('home');                // Monta a página inicial com os destaques
+            // 1. Carrega as estatísticas de cliques
+            await carregarCliquesGlobais();  
+            
+            // 2. BUSCA OS SERVIÇOS DO FIREBASE! (Se der erro, ele vai gritar aqui)
+            await carregarServicosDaNuvem(); 
+
+            // 3. Atualiza o site com as informações novas
+            atualizarContadorHeader();       
+            showPage('home');                
         });
 
      // Funções de Acessibilidade (Tamanho de Fonte e Contraste)
