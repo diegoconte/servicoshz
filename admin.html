@@ -51,12 +51,12 @@
     </div>
 
     <!-- ======================================================= -->
-    <!-- 1B. NOVO: TELA DE SOLICITAÇÃO DE ACESSO (Oculta por padrão) -->
+    <!-- 1B. TELA DE SOLICITAÇÃO DE ACESSO COM TERMO E CPF      -->
     <!-- ======================================================= -->
     <div id="solicitar-container" class="max-w-md w-full bg-white p-8 rounded-2xl shadow-md border border-slate-200 hidden">
         <div class="text-center mb-6">
             <h1 class="text-2xl font-bold text-[#002B5E]">Solicitar Permissão</h1>
-            <p class="text-slate-500 text-sm mt-1">Preencha os dados abaixo para pedir acesso ao painel.</p>
+            <p class="text-slate-500 text-sm mt-1">Preencha os dados e aceite o termo para pedir acesso.</p>
         </div>
 
         <form id="form-solicitar" class="space-y-4">
@@ -65,14 +65,33 @@
                 <input type="text" id="solicitar-nome" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required placeholder="Ex: João da Silva">
             </div>
 
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex flex-col">
+                    <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">CPF</label>
+                    <input type="text" id="solicitar-cpf" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)">
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Secretaria / Setor</label>
+                    <input type="text" id="solicitar-secretaria" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required placeholder="Ex: Saúde">
+                </div>
+            </div>
+
             <div class="flex flex-col">
                 <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">E-mail Corporativo</label>
                 <input type="email" id="solicitar-email" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required placeholder="exemplo@horizontina.rs.gov.br">
             </div>
 
-            <div class="flex flex-col">
-                <label class="text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">Sua Secretaria / Setor</label>
-                <input type="text" id="solicitar-secretaria" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" required placeholder="Ex: Secretaria de Saúde">
+            <!-- Box com o Termo de Responsabilidade Legal -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-2">
+                <p class="font-bold text-[#002B5E] uppercase tracking-wider text-[10px]">⚖️ Termo de Responsabilidade</p>
+                <p class="leading-relaxed">
+                    Declaro que me responsabilizo administrativa, civil e criminalmente por todas as ações e alterações desenvolvidas por mim dentro deste painel, bem como aceito expressamente que todos os meus logs de atividades serão registrados, auditados e utilizados conforme a gestão municipal julgar necessário.
+                </p>
+                <label class="flex items-start gap-2 cursor-pointer pt-1 font-semibold text-slate-700">
+                    <input type="checkbox" id="solicitar-termo" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4 mt-0.5" required>
+                    <span>Declaro que li e aceito as condições.</span>
+                </label>
             </div>
 
             <button type="submit" id="btn-solicitar" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all">
@@ -346,7 +365,50 @@
         let bancoDeDadosLocal = {};
 
         // -------------------------------------------------------------
-        // NOVO: ALTERNAR ENTRE LOGIN E SOLICITAÇÃO DE ACESSO
+        // 🛠️ FUNÇÃO AUXILIAR: MÁSCARA AUTOMÁTICA DE CPF
+        // -------------------------------------------------------------
+        function mascaraCPF(input) {
+            let valor = input.value.replace(/\D/g, ""); // Remove tudo que não for número
+            
+            // Aplica os pontos e hífen sequencialmente conforme digitação
+            valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+            valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+            valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            
+            input.value = valor;
+        }
+        // 🛡️ VALIDADOR MATEMÁTICO DE CPF REAL
+function validarCPF(cpf) {
+    cpf = cpf.replace(/\D/g, ''); // Remove pontos e hífen para validar apenas os números
+    
+    // CPF precisa ter 11 dígitos e não pode ser uma sequência repetida (ex: 111.111.111-11)
+    if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+    let soma = 0;
+    let resto;
+
+    // Validação do primeiro dígito verificador
+    for (let i = 1; i <= 9; i++) {
+        soma = soma + parseInt(cpf.substring(i - 1, i)) * (11 - i);
+    }
+    resto = (soma * 10) % 11;
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    if (resto !== parseInt(cpf.substring(9, 10))) return false;
+
+    // Validação do segundo dígito verificador
+    soma = 0;
+    for (let i = 1; i <= 10; i++) {
+        soma = soma + parseInt(cpf.substring(i - 1, i)) * (12 - i);
+    }
+    resto = (soma * 10) % 11;
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    if (resto !== parseInt(cpf.substring(10, 11))) return false;
+
+    return true; // Se passar por todos os testes, o CPF é matematicamente válido!
+}
+
+        // -------------------------------------------------------------
+        // ALTERNAR ENTRE LOGIN E SOLICITAÇÃO DE ACESSO
         // -------------------------------------------------------------
         function alternarFormularios(tela) {
             const loginBox = document.getElementById('login-container');
@@ -362,46 +424,34 @@
         }
 
         // -------------------------------------------------------------
-        // NOVO: TRATAR O ENVIO DA SOLICITAÇÃO DE ACESSO
+       // -------------------------------------------------------------
+        // TRATAR O ENVIO DA SOLICITAÇÃO DE ACESSO (COM CPF E TERMO)
         // -------------------------------------------------------------
-        document.getElementById('form-solicitar').onsubmit = async (evento) => {
+       document.getElementById('form-solicitar').onsubmit = async (evento) => 
+       {
             evento.preventDefault();
             
             const nome = document.getElementById('solicitar-nome').value.trim();
-            const email = document.getElementById('solicitar-email').value.trim();
+            const cpf = document.getElementById('solicitar-cpf').value.trim();
             const secretaria = document.getElementById('solicitar-secretaria').value.trim();
+            const email = document.getElementById('solicitar-email').value.trim();
+            const termoAceito = document.getElementById('solicitar-termo').checked;
             const btn = document.getElementById('btn-solicitar');
 
-            btn.disabled = true;
-            btn.innerText = "⏳ Enviando solicitação...";
-
-            // Monta o detalhamento que será inserido no seu template do EmailJS
-            const detalhesSolicitacao = `Solicitante: ${nome}\nSetor/Secretaria: ${secretaria}\nE-mail para Cadastro: ${email}\n\nEste servidor está solicitando permissão de acesso ao Painel Administrativo da Carta de Serviços de Horizontina. Se aprovado, cadastre este e-mail no Firebase Auth.`;
-
-            const templateParams = {
-                usuario: email,
-                data_hora: new Date().toLocaleString("pt-BR"),
-                acao: "Solicitação de Acesso",
-                id_servico: "PENDENTE",
-                detalhes: detalhesSolicitacao
-            };
-
-            try {
-                // Envia direto para o e-mail do Diego e da Raquel usando seu serviço ativo
-                await emailjs.send("service_hd5fuga", "template_l6vcu0y", templateParams);
-                
-                alert("✉️ Solicitação enviada com sucesso! Diego e Raquel foram notificados e avaliarão o seu acesso em breve.");
-                document.getElementById('form-solicitar').reset();
-                alternarFormularios('login');
-            } catch (erro) {
-                console.error("Falha ao processar e-mail de solicitação:", erro);
-                alert("❌ Ocorreu um erro ao enviar sua solicitação de acesso. Tente novamente mais tarde.");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "✉️ Enviar Solicitação";
+            // 🛡️ Validação matemática de CPF Real
+            if (!validarCPF(cpf)) {
+                alert("⚠️ CPF Inválido! Por favor, insira um número de CPF real.");
+                document.getElementById('solicitar-cpf').focus();
+                return;
             }
-        };
 
+            if (!termoAceito) {
+                alert("⚠️ Erro de Validação: Você precisa concordar e assinar o termo de responsabilidade para enviar.");
+                return;
+            }
+
+            btn.disabled = true;
+        }
         // -------------------------------------------------------------
         // DISPARADOR DE RELATÓRIOS POR E-MAIL (EMAILJS)
         // -------------------------------------------------------------
