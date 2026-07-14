@@ -493,20 +493,38 @@ let layoutAtual = 'cards';
 function removerAcentos(texto) {
     return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
-// 2. A função que viaja até a Google e traz os dados atualizados
+// 2. A função que viaja até a Google e traz os dados de forma OTIMIZADA
 async function carregarCliquesGlobais() {
     try {
-        // Faz uma busca em toda a coleção da nuvem
-        const snapshot = await db.collection('acessosServicos').get();
+        // 1. Tenta buscar o cache temporário na memória da aba do navegador
+        const cacheLocal = sessionStorage.getItem('cliquesGlobaisCache');
         
-        // Passa de gaveta em gaveta pegando o ID do serviço e o número de cliques
-        snapshot.forEach(doc => {
-            bdCliquesGlobais[doc.id] = doc.data().cliques || 0;
-        });
+        if (cacheLocal) {
+            // Se achou o cache, transforma o texto de volta em objeto e carrega na memória
+            bdCliquesGlobais = JSON.parse(cacheLocal);
+            console.log("⚡ [CACHE] Cliques recuperados do sessionStorage (0 leituras gastas!):", bdCliquesGlobais);
+            return; // Encerra a função aqui mesmo, economizando a chamada ao Firebase!
+        }
+
+        // 2. Se NÃO havia cache, viaja até a nuvem da Google para buscar o documento único
+        console.log("☁️ [FIREBASE] Buscando cliques na nuvem (Gastando apenas 1 leitura)...");
         
-        console.log("Sucesso! Cliques globais carregados da nuvem:", bdCliquesGlobais);
+        const doc = await db.collection('estatisticas').doc('todosOsCliques').get();
+        
+        if (doc.exists) {
+            // Se o documento existe, rasga o envelope com .data() e joga na nossa mochila global
+            bdCliquesGlobais = doc.data();
+        } else {
+            // Se o documento ainda não existir (primeira vez de todas), começamos zerados
+            bdCliquesGlobais = {};
+        }
+        
+        // 3. Salva o resultado no cache da aba para que o próximo F5 não precise ir na nuvem
+        sessionStorage.setItem('cliquesGlobaisCache', JSON.stringify(bdCliquesGlobais));
+        
+        console.log("Sucesso! Cliques carregados e salvos no cache local:", bdCliquesGlobais);
     } catch (erro) {
-        // Se a internet falhar, o site não trava
+        // Se o usuário estiver sem internet, o site continua funcionando sem o ranking de populares
         console.error("Não foi possível carregar os cliques globais:", erro);
     }
 }
@@ -793,22 +811,21 @@ async function carregarCliquesGlobais() {
         // 5. Preencher e Abrir a Tela de Detalhes do Serviço
         function abrirDetalhe(id) {
             
-            // === [BLINDADO] ENVIA O CLIQUE PARA A NUVEM (FIREBASE) ===
+            // === [BLINDADO e OTIMIZADO] ENVIA O CLIQUE PARA O DOCUMENTO ÚNICO ===
             try {
-                // Forçamos o ID a virar texto (String), pois o Firebase às vezes rejeita números puros
                 const idTexto = String(id); 
                 
-                db.collection('acessosServicos').doc(idTexto).set({
-                    cliques: firebase.firestore.FieldValue.increment(1)
+                // Grava diretamente na folha única de estatísticas
+                db.collection('estatisticas').doc('todosOsCliques').set({
+                    // Usa o ID do serviço como campo e incrementa +1 diretamente na nuvem
+                    [idTexto]: firebase.firestore.FieldValue.increment(1)
                 }, { merge: true });
                 
-                console.log("Sucesso! Clique enviado para o Firebase para o ID:", idTexto);
+                console.log("Sucesso! Clique computado na nuvem para o ID:", idTexto);
             } catch (erro) {
-                // Se a Google falhar por qualquer motivo, o erro aparece aqui no console,
-                // mas o 'catch' segura o rojão e NÃO deixa o site travar!
-                console.error("Ops! O Firebase falhou, mas o site vai continuar funcionando:", erro);
+                console.error("Ops! O Firebase falhou na gravação, mas o site continua de pé:", erro);
             }
-            // =====================================================
+            // ===================================================================
 
             // --- MEMÓRIA DE CLIQUES LOCAL (LOCALSTORAGE) ---
             try {
