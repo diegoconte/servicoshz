@@ -71,7 +71,16 @@
                 <span class="text-sm font-semibold text-slate-500">Total: <span id="total-servicos" class="text-slate-800 font-bold">0</span></span>
                 <a href="dashboard.html" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-xs rounded-xl">📈 Ver Dashboard</a>
             </div>
-            <button onclick="abrirCriadorDeServico()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm">➕ Cadastrar Novo Serviço</button>
+           <div class="flex gap-2">
+    <!-- Botão de Exportar Backup (Nasce oculto, id="btn-exportar") -->
+    <button id="btn-exportar" onclick="exportarDadosJSON()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-sm transition-colors shadow-sm" title="Baixar base de dados completa em JSON">
+        📥 Exportar Backup (JSON)
+    </button>
+    <!-- Botão de Cadastrar Serviço (Sempre visível para todos logados) -->
+    <button onclick="abrirCriadorDeServico()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors shadow-sm">
+        ➕ Cadastrar Novo Serviço
+    </button>
+</div>
         </div>
         <div class="overflow-x-auto rounded-xl border border-slate-200">
             <table class="w-full text-left text-sm">
@@ -260,12 +269,23 @@
             btn.disabled = false; btn.innerText = "✉️ Enviar Solicitação";
         };
 
-        auth.onAuthStateChanged(u => {
+       auth.onAuthStateChanged(u => {
             emailUsuarioLogado = u ? u.email : "";
             document.getElementById('login-container').classList.toggle('hidden', !!u);
             document.getElementById('solicitar-container').classList.add('hidden');
             document.getElementById('painel-container').classList.toggle('hidden', !u);
-            if (u) carregarServicosDoFirebase();
+            
+            if (u) {
+                carregarServicosDoFirebase();
+                
+                // 🆕 CHECAGEM VIP: Se for o Diego ou a Raquel, revela o botão de exportar
+                const isMaster = EMAILS_ADMINISTRADORES.map(e => e.toLowerCase()).includes(emailUsuarioLogado.toLowerCase());
+                if (isMaster) {
+                    document.getElementById('btn-exportar').classList.remove('hidden');
+                } else {
+                    document.getElementById('btn-exportar').classList.add('hidden');
+                }
+            }
         });
 
         document.getElementById('form-login').onsubmit = async (e) => {
@@ -483,6 +503,43 @@
         // Ações para fechar o modal (comentários limpos para não confundir o Blockman)
         document.getElementById('botao-fechar').onclick = () => document.getElementById('modal-edicao').classList.add('hidden');
         document.getElementById('btn-cancelar').onclick = () => document.getElementById('modal-edicao').classList.add('hidden');
+    
+        // funcao que faz o bacup dos servicos
+       function exportarDadosJSON() {
+            // Verifica se a tabela já foi carregada do Firebase
+            if (Object.keys(bancoDeDadosLocal).length === 0) {
+                return alert("⚠️ Não existem dados carregados no momento para exportar.");
+            }
+            
+            // 🆕 INSERE A DATA E HORA NO TOPO DO ARQUIVO
+            const dataExata = new Date().toLocaleString('pt-BR');
+            const dadosParaExportar = {
+                "_METADADOS": `Backup gerado em ${dataExata}`,
+                ...bancoDeDadosLocal // O "..." copia todos os serviços logo abaixo da data
+            };
+            
+            // 1. Converte o novo objeto para texto (JSON formatado com recuo de 2 espaços)
+            const dadosString = JSON.stringify(dadosParaExportar, null, 2);
+            
+            // 2. Cria um arquivo "virtual" dentro do próprio navegador
+            const blob = new Blob([dadosString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            // 3. Cria um link fantasma, injeta na tela e clica nele sozinho para forçar o download
+            const linkBackup = document.createElement('a');
+            linkBackup.href = url;
+            
+            // 4. Define o nome do arquivo pegando a data de hoje automaticamente
+            const dataHoje = new Date().toISOString().slice(0, 10);
+            linkBackup.download = `backup_carta_servicos_horizontina_${dataHoje}.json`;
+            
+            document.body.appendChild(linkBackup);
+            linkBackup.click();
+            
+            // 5. Limpa a sujeira do link fantasma
+            document.body.removeChild(linkBackup);
+            URL.revokeObjectURL(url);
+        }
     </script>
 </body>
 </html>

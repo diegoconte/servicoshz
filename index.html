@@ -241,15 +241,22 @@
         <!-- PÁGINA 3: DETALHE DO SERVIÇO (PDF MODELO)  -->
         <!-- ========================================== -->
         <!-- botao de salvar ou imprimir -->
-<div id="page-detalhe" class="page-section hidden-section">
+    <div id="page-detalhe" class="page-section hidden-section">
     <div class="flex justify-between items-center mb-6">
         <button onclick="showPage('carta')" class="text-sp-blue font-bold hover:underline flex items-center gap-2">
             <i class="fas fa-arrow-left"></i> Voltar para a lista de serviços
         </button>
-        <button onclick="window.print()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg text-xs transition flex items-center gap-2 no-contrast-toggle">
-            <i class="fas fa-print text-slate-500"></i> Imprimir / Salvar PDF
-        </button>
-    </div>
+        <!-- 🆕 Agrupamento de botões na direita -->
+        <div class="flex gap-2.5">
+            <button onclick="copiarLinkDoServico()" class="bg-blue-50 hover:bg-blue-100 text-sp-blue font-bold py-2 px-4 rounded-lg text-xs transition flex items-center gap-2 no-contrast-toggle">
+                <i class="fas fa-share-alt"></i> Compartilhar Link
+            </button>
+            <button onclick="window.print()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg text-xs transition flex items-center gap-2 no-contrast-toggle">
+                <i class="fas fa-print text-slate-500"></i> Imprimir / Salvar PDF
+            </button>
+        </div>
+        </div>
+
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <!-- Cabeçalho do Serviço -->
@@ -879,6 +886,8 @@ async function carregarCliquesGlobais() {
    // 5. Preencher e Abrir a Tela de Detalhes do Serviço
         // 5. Preencher e Abrir a Tela de Detalhes do Serviço
         function abrirDetalhe(id) {
+//  ISSO AQUI FAZ O SISTEMA LEMBRAR QUAL SERVIÇO ESTÁ ABERTO PARA PODER COMPARTILHAR!
+            window.idServicoAtual = id
             
           // === [BLINDADO e OTIMIZADO] ENVIA O CLIQUE PARA O DOCUMENTO ÚNICO ===
             try {
@@ -1013,20 +1022,28 @@ async function carregarCliquesGlobais() {
         window.addEventListener('load', async () => {
             
             // Passo 1: Busca o histórico de cliques globais do Firebase para montar o ranking dos mais procurados
-            await carregarCliquesGlobais();  
-            
-            // Passo 2: Abre a conexão e baixa todo o catálogo unificado de serviços ativos direto da nuvem
-            await carregarServicosDaNuvem(); 
+    await carregarCliquesGlobais();  
+    
+    // Passo 2: Abre a conexão e baixa todo o catálogo unificado de serviços ativos direto da nuvem
+    await carregarServicosDaNuvem(); 
 
-            // Passo 3: Faz a contagem de serviços recebidos e atualiza o quadradinho amarelo no topo do site
-            atualizarContadorHeader();       
-            
-            // Passo 4: Renderiza os 4 cards mais acessados e exibe a tela inicial (Home) para o cidadão
-            showPage('home');                
+    // Passo 3: Faz a contagem de serviços recebidos e atualiza o quadradinho amarelo no topo do site
+    atualizarContadorHeader();       
+    
+    // Passo 4: Renderiza os 4 cards mais acessados e exibe a tela inicial (Home) para o cidadão
+    showPage('home');                
 
-            // Passo 5: [MÉTRICA LGPD] Identifica anonimamente se o cidadão usa Celular ou Computador para futuras melhorias
-            rastrearAmbienteDoCidadao();
-        });
+    // Passo 5: [MÉTRICA LGPD] Identifica anonimamente se o cidadão usa Celular ou Computador para futuras melhorias
+    rastrearAmbienteDoCidadao();
+
+    // 🆕 PASSO 6: CHECAR SE O CIDADÃO ENTROU POR UM LINK DIRETO DE SERVIÇO
+    const urlParams = new URLSearchParams(window.location.search);
+    const servicoIdUrl = urlParams.get('id');
+    if (servicoIdUrl) {
+        // Aguarda 500 milissegundos para garantir que a lista carregou na tela e abre o detalhe
+        setTimeout(() => abrirDetalhe(Number(servicoIdUrl)), 500);
+    }
+    });
 
      // Funções de Acessibilidade (Tamanho de Fonte e Contraste)
         let tamanhoFonteAtual = 100;
@@ -1044,8 +1061,8 @@ async function carregarCliquesGlobais() {
             document.body.classList.toggle('alto-contraste');
         }
         // 📊 RASTREADOR DE INTENÇÃO DE BUSCA
-let timeoutBusca = null;
-function registrarTermoBuscadoNoFirebase(termo) {
+       let timeoutBusca = null;
+    function registrarTermoBuscadoNoFirebase(termo) {
     if (!termo || termo.trim().length < 3) return;
 
     // O "debounce" evita gravar no Firebase a cada letra digitada (espera o usuário parar de digitar por 1.5s)
@@ -1091,6 +1108,25 @@ function rastrearAmbienteDoCidadao() {
         console.log("Erro silencioso de métrica (Ambiente/Mensal):", e);
     }
 }
+// 🔗 FUNÇÃO PARA O BOTÃO DE COMPARTILHAR LINK
+        function copiarLinkDoServico() {
+            if (!window.idServicoAtual) {
+                return alert("Erro ao identificar o serviço ativo.");
+            }
+
+            // Monta a URL exata do portal com o parâmetro do ID
+            const linkUnico = `${window.location.origin}${window.location.pathname}?id=${window.idServicoAtual}`;
+            
+            // Copia o texto para a área de transferência do usuário
+            navigator.clipboard.writeText(linkUnico)
+                .then(() => {
+                    alert("🔗 Link de compartilhamento copiado! Agora você pode colar no WhatsApp ou onde desejar.");
+                })
+                .catch(err => {
+                    console.error("Falha ao copiar link:", err);
+                    alert("Não foi possível copiar o link automaticamente. Copie o endereço do seu navegador.");
+                });
+        }
     </script>
 </body>
 </html>
