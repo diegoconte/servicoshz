@@ -360,6 +360,29 @@
                     </div>
                 </div>
             </div>
+            <!-- ============================================== -->
+            <!-- 🆕 ÁREA DE FEEDBACK (AVALIAÇÃO DO CIDADÃO)     -->
+            <!-- ============================================== -->
+            <div class="bg-gray-50 border-t border-gray-200 p-8 mt-6 text-center">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Essa informação foi útil?</h3>
+                
+                <div id="det-feedback-botoes" class="flex justify-center gap-4">
+                    <button onclick="registrarFeedback(true)" class="bg-white border border-gray-300 hover:bg-green-50 hover:border-green-500 hover:text-green-700 text-gray-700 font-bold py-2.5 px-8 rounded-full transition-colors flex items-center gap-2 shadow-sm">
+                        <i class="fas fa-thumbs-up text-green-500"></i> Sim
+                    </button>
+                    <button onclick="registrarFeedback(false)" class="bg-white border border-gray-300 hover:bg-red-50 hover:border-red-500 hover:text-red-700 text-gray-700 font-bold py-2.5 px-8 rounded-full transition-colors flex items-center gap-2 shadow-sm">
+                        <i class="fas fa-thumbs-down text-red-500"></i> Não
+                    </button>
+                </div>
+                
+                <div id="det-feedback-mensagem" class="hidden text-green-600 font-bold text-lg mt-2 animate-pulse">
+                    <i class="fas fa-check-circle"></i> Obrigado pela sua avaliação!
+                </div>
+            </div>
+            <!-- FIM DA ÁREA DE FEEDBACK -->
+
+        </div> <!-- Esse é o fechamento do bg-white rounded-xl original do seu código -->
+    </div> <!-- Esse é o fechamento do page-detalhe -->
         </div>
         <div id="page-acompanhar" class="page-section hidden-section">
             <h2 class="text-3xl font-bold text-center mb-6 text-gray-900">Acompanhe a sua Solicitação</h2>
@@ -886,6 +909,9 @@ async function carregarCliquesGlobais() {
    // 5. Preencher e Abrir a Tela de Detalhes do Serviço
         // 5. Preencher e Abrir a Tela de Detalhes do Serviço
         function abrirDetalhe(id) {
+            // Reseta a área de feedback sempre que abrir um serviço novo
+            document.getElementById('det-feedback-botoes').classList.remove('hidden');
+            document.getElementById('det-feedback-mensagem').classList.add('hidden');
 //  ISSO AQUI FAZ O SISTEMA LEMBRAR QUAL SERVIÇO ESTÁ ABERTO PARA PODER COMPARTILHAR!
             window.idServicoAtual = id
             
@@ -1126,6 +1152,29 @@ function rastrearAmbienteDoCidadao() {
                     console.error("Falha ao copiar link:", err);
                     alert("Não foi possível copiar o link automaticamente. Copie o endereço do seu navegador.");
                 });
+        }
+    // 📊 FUNÇÃO QUE GRAVA A AVALIAÇÃO DE UTILIDADE NO FIREBASE
+        function registrarFeedback(isUtil) {
+            if (!window.idServicoAtual) return;
+            
+            // Define a palavra 'sim' ou 'nao' dependendo de onde o cidadão clicou
+            const tipo = isUtil ? 'sim' : 'nao';
+            const idTexto = `ID_${window.idServicoAtual}`;
+
+            // Troca os botões pela mensagem de agradecimento para ele não clicar duas vezes
+            document.getElementById('det-feedback-botoes').classList.add('hidden');
+            document.getElementById('det-feedback-mensagem').classList.remove('hidden');
+
+            // Envia silenciosamente para o Firebase
+            try {
+                db.collection('estatisticas').doc('feedbackServicos').set({
+                    [idTexto]: {
+                        [tipo]: firebase.firestore.FieldValue.increment(1) // Soma +1 voto
+                    }
+                }, { merge: true });
+            } catch (erro) {
+                console.error("Erro ao registrar a avaliação:", erro);
+            }
         }
     </script>
 </body>
