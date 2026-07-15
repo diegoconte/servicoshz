@@ -4,7 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Atendimento e Carta de Serviços - Horizontina</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ========================================================== -->
+    <!-- 📱 CARTÃO DE VISITA PARA WHATSAPP E REDES (OPEN GRAPH)     -->
+    <!-- ========================================================== -->
+    <meta property="og:title" content="Carta de Serviços ao Cidadão - Horizontina">
+    <meta property="og:description" content="Encontre serviços, informações, telefones úteis e formulários oficiais da Prefeitura Municipal de Horizontina de forma rápida e fácil.">
+    <!-- Imagem que vai aparecer no WhatsApp (Usando o Brasão que já temos no site) -->
+    <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/2/27/Bras%C3%A3o_de_Horizontina%2C_RS.png">
+    <meta property="og:image:width" content="600">
+    <meta property="og:image:height" content="600">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Prefeitura de Horizontina">
+    
+    <!-- Cor da aba no navegador do celular (Android) -->
+    <meta name="theme-color" content="#002B5E">
+    <!-- ========================================================== -->
+
+   <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -99,20 +115,29 @@
     </div>
 
     <!-- Cabeçalho Principal -->
+<!-- Cabeçalho Principal -->
     <header class="bg-white border-b border-gray-200">
         <div class="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            
+            <!-- LADO ESQUERDO: Brasão e Título -->
             <div class="flex items-center gap-4 cursor-pointer" onclick="showPage('home')">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/27/Bras%C3%A3o_de_Horizontina%2C_RS.png" alt="Brasão de Horizontina" class="h-20 w-auto">
                 <div>
-                    <h1 class="text-sm font-bold text-gray-800 leading-tight">PREFEITURA DE</h1>
+                    <h1 class="text-base font-bold text-gray-800 leading-tight">MUNICÍPIO DE</h1>
                     <h2 class="text-2xl font-extrabold text-sp-blue leading-tight uppercase">Horizontina</h2>
                     <div class="flex items-center gap-1 mt-1">
-                        <div class="flex items-center gap-1 mt-1">
-    <span id="contador-header-num" class="bg-sp-yellow text-black font-bold text-xs px-1 rounded">0</span>
-    <span id="contador-header-txt" class="text-sm font-semibold text-gray-600">CARTAS DE SERVIÇOS</span>
-</div>
+                        <span id="contador-header-num" class="bg-sp-yellow text-black font-bold text-xs px-1 rounded">0</span>
+                        <span id="contador-header-txt" class="text-sm font-semibold text-gray-600">CARTAS DE SERVIÇOS</span>
+                    </div>
                 </div>
             </div>
+
+            <!-- LADO DIREITO: Selos Time Brasil e CGU -->
+            <div class="flex-shrink-0 flex items-center gap-4">
+                <img src="https://timebrasil.cgu.gov.br/assets/logo-timebrasil-lean-0e32e6b6.png" alt="Selo Time Brasil CGU" class="h-14 md:h-16 w-auto object-contain" title="Programa Time Brasil - CGU">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAABHCAYAAADlY75oAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABWRJREFUeNrsXY1V4zgQFnkUQAeYCvBWQEIDm60goYIlFZBUAFQQUwHQQPBWgK+C9XaQq+BOE8ln2It/4hlZ1ub73hvg8SJrpPlmNPqxohQAAAAAAAAAAAAAAAAAAAAAAHI4cfr06Dqmn1pi+5+rik/+sL9TLbnKN7m3Homuz6y+JPT3uW3D7yAdf2nZasm86/1HE8sYZarlq5axNUwXbC3JiHAvzg1mHGBmdY4ZT+LpHV3/w6h7petbMvqAyt51Lp9vPnHpVNAw37XMhUxdEJTkXj+fIsKjNdZW0AnmVu/Ikd5ErCctybFFsxHTOJGWZ/3XuyCp9oGIu9byU9d3v6uXp/dy9ywyvhyp9tZkowDp/aZlfizEOmUY59Z22lmP+lJdVO/fWpYddC4IGnvo67GVBMSqHkLWNtyHA+MI90irh0gsQ6o3Tx7PIdXa8VANdM6xQCpAnFggFeAoYj0HSKolSDXkHMsYaBwYqcaKs9hXj2Kl/SPinmfHgRPLrBfdBdiutTCRXrS8KlpVr1ugNYQmkl0FN2vuOWKthesrDET7aukeEkfWMJc2SkYdh8BISN+VlofWq/2mTemujNGFhuKvx0iy0wbvG/dmILPlkVvDFDoUe3jzVkONmWR8F9CX9Pimdcp4T9kkihZEjdNIbnkFHbFmAs8nw9x0NpApR7Kw3n/XEI2mArkO1TcR25MsnYbasDruWWG5QSthoEzIOLSRe7EzkMl79oEbrbY2Um2d9Lar5wYUsaYCBpo46ch881Az0eAuiaxwpsplxKo+kNcWCw/eyc0H80rSAmLEipkGSjy05ZJZ/hF0GDaxnjy1hTsMpqCDyxyLe4jOn4F4ereZZJiZ6YxZz+RYk3cusbIAiZUeUMdYAZ2HQkypgYERCwBALKBPYvGGMrPH6AMcvZE3OScWfwvG14HAjOkQEejgfijMGc+ceWpLziwf+tGWK8/lWxGL4/2xp+HwB7P8bADkSD2OFLGk3iNHRrq3JyRCMUrhENMWdax+k2QgEevMnl/rkgaIH62uItaLAPvdvBxKxqfX7P+fG+aKvzi7rnUIOiFKF298FNktLK5D3/VcrlLvUUUH5gIRYL57/UoqctHwSvcf1L8x9MT2enrNrf9oKzMBoTzx0PshzOen0nrXrWNJ7PaT0u+dcy4yMDXcEOqtxbJAorjLJYa0vsiVCjxj3Zpc5nNrF3qfNFT8Lrh8kNmIUn9vlBnvSeru2EorN3O59zyVIIIuGo8AGad5az933fTV56nt7+zTElLZvzMls35Hz/9yKLEO6zQeyyPVfiO5jlhExJ+CyWiuyreLsv/2Qsub/8gBbgWJJRVF+sLNPudrvtHPJMq3A2tMWnv8xMzungdphmZiSTuGS5CTXew7eNBmr3Cl/B2F6Wo8ijBhHjM2RgrlNOtj1WmWUcuGfhNIivs20CI4hyh1Xwage1Z35+moZUMpz5gMiFxtk85JsOSi3GW4zry1+ikesQy5soGRq+2wEia5TH8vBqrdoumwwqhDY78EZSgil5kOJwGSK2mKDEOZBfKI9XlYfAjMSDeB5orJQEaK4iXkVg46YkSBhW1w3vtSg6m362zxwmP0yjvqnXrWO7HLCmnbAjLfTNHuwg6ut7zY6W0mpHNkdZ734Omk+9MhhhmA3gWhOl07IP2VJzRbo60CiVtfchudXm2kcYPyAhTSW3L7qtA9daR3pD5/vYzkiPCqzLdpdB5+TxwaLLYNvlTldk1UQaDcevZf1iiZl8s5ym0a0vu8Qe/CCAWRflm9U+UD5W2C5x8cZNxAoGHoDgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/Bv4VYABt19cPRu8a5QAAAABJRU5ErkJggg==" alt="Logo CGU" class="h-14 md:h-16 w-auto object-contain" title="Controladoria-Geral da União">
+            </div>
+
         </div>
     </header>
 
