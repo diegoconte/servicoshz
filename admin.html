@@ -125,14 +125,16 @@
                 </div>
 
                 <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-[#002B5E] grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-500 uppercase">Fila</label><input type="text" id="edit-prazo-espera" class="w-full px-3 py-1.5 bg-white border rounded-lg text-sm"></div>
-                    <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-500 uppercase">Análise</label><input type="text" id="edit-prazo-analise" class="w-full px-3 py-1.5 bg-white border rounded-lg text-sm"></div>
-                    <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-500 uppercase">Prazo Máximo</label><input type="text" id="edit-prazo-total" class="w-full px-3 py-1.5 bg-white border rounded-lg text-sm"></div>
+                    <h3 class="text-xs font-bold text-[#002B5E] col-span-1 md:col-span-3">📅 PRAZOS MÁXIMOS PARA A CONCLUSÃO DO SERVIÇO</h3>
+                         <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-500 uppercase">Prazo Fila</label><input type="text" id="edit-prazo-espera" class="w-full px-3 py-1.5 bg-white border rounded-lg text-sm" placeholder="Dias"></div>
+                         <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-500 uppercase">Prazo Análise</label><input type="text" id="edit-prazo-analise" class="w-full px-3 py-1.5 bg-white border rounded-lg text-sm" placeholder="Dias"></div>
+                         <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-500 uppercase">Prazo Máximo</label><input type="text" id="edit-prazo-total" class="w-full px-3 py-1.5 bg-white border rounded-lg text-sm" placeholder="Dias"></div>
                 </div>
 
                 <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-emerald-600 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <h2 class="text-xs font-bold text-[#002B5E] col-span-1 md:col-span-3">💰 CUSTOS/TAXAS DO SERVIÇO</h2>
                     <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-500 uppercase">Gratuito?</label><select id="edit-custo-gratuito" class="w-full px-3 py-1.5 bg-white border rounded-lg text-sm"><option value="true">Sim</option><option value="false">Não</option></select></div>
-                    <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-500 uppercase">Taxas (Se houver)</label><input type="text" id="edit-custo-descricao" class="w-full px-3 py-1.5 bg-white border rounded-lg text-sm"></div>
+                    <div class="flex flex-col"><label class="text-[10px] font-bold text-slate-500 uppercase">Taxas (Se houver)</label><input type="text" id="edit-custo-descricao" class="w-full px-3 py-1.5 bg-white border rounded-lg text-sm" placeholder="Valor da Taxa ou formato de calculo"></div>
                 </div>
 
                 <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-amber-500 flex flex-col"><label class="text-sm font-bold text-slate-700 uppercase mb-1">📄 Documentos (Um por linha)</label><textarea id="edit-documentos" class="w-full h-20 px-3 py-2 bg-white border rounded-lg text-sm" placeholder="RG original&#10;Comprovante de residência"></textarea></div>
@@ -141,7 +143,17 @@
                     <div class="flex items-center justify-between"><h3 class="text-sm font-bold text-slate-700 uppercase">👣 Etapas</h3><button type="button" onclick="adicionarHTMLNovaEtapa()" class="px-3 py-1 bg-violet-600 text-white font-bold text-xs rounded">➕ Adicionar Etapa</button></div>
                     <div id="container-etapas" class="space-y-3 max-h-80 overflow-y-auto"></div>
                 </div>
-                <button type="submit" id="btn-submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-md">💾 Salvar Alterações</button>
+                <!-- Container Flexbox para alinhar lado a lado com espaço (gap-4) -->
+        <div class="flex flex-col sm:flex-row gap-4 pt-4">
+         <!-- Botão Cancelar (tipo "button" para não disparar o envio do formulário) -->
+            <button type="button" id="btn-cancelar" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl shadow-md transition-colors text-center">
+        ❌ Cancelar
+            </button>
+        <!-- Botão Salvar (tipo "submit" que grava no Firebase) -->
+             <button type="submit" id="btn-submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors">
+        💾 Salvar Alterações
+            </button>
+        </div>
             </form>
         </div>
     </div>
@@ -353,65 +365,124 @@
         }
 
         document.getElementById('form-servico').onsubmit = async (e) => {
-            e.preventDefault();
-            const idNovo = Number(document.getElementById('edit-id').value), btn = document.getElementById('btn-submit');
-            const isEdicao = (idOriginalEdicao !== null);
-            
-            if (!isEdicao && bancoDeDadosLocal[`ID_${idNovo}`]) {
-                return alert(`⚠️ Erro: O ID ${idNovo} já está ocupado pelo serviço "${bancoDeDadosLocal['ID_'+idNovo].titulo}". Digite outro número!`);
-            }
-            if (isEdicao && idNovo !== idOriginalEdicao && bancoDeDadosLocal[`ID_${idNovo}`]) {
-                return alert(`⚠️ Erro: Você não pode mudar para o ID ${idNovo}, pois ele já está sendo usado por "${bancoDeDadosLocal['ID_'+idNovo].titulo}".`);
-            }
+    e.preventDefault();
+    
+    const idNovo = Number(document.getElementById('edit-id').value);
+    const btn = document.getElementById('btn-submit');
+    const isEdicao = (idOriginalEdicao !== null);
+    
+    // Validações de ID duplicado
+    if (!isEdicao && bancoDeDadosLocal[`ID_${idNovo}`]) {
+        return alert(`Erro: O ID ${idNovo} ja esta ocupado pelo servico "${bancoDeDadosLocal['ID_' + idNovo].titulo}". Digite outro numero!`);
+    }
+    if (isEdicao && idNovo !== idOriginalEdicao && bancoDeDadosLocal[`ID_${idNovo}`]) {
+        return alert(`Erro: Voce nao pode mudar para o ID ${idNovo}, pois ele ja esta sendo usado por "${bancoDeDadosLocal['ID_' + idNovo].titulo}".`);
+    }
 
-            const canais = [];
-            ['presencial','telefone','email'].forEach(t => { if(document.getElementById(`chk-${t}`).checked) canais.push({ tipo: t.charAt(0).toUpperCase()+t.slice(1), local: document.getElementById(`input-${t}`).value.trim() }); });
-            if(document.getElementById('chk-web').checked) canais.push({ tipo: "Online", local: "Internet", link: document.getElementById('input-web').value.trim() });
-            if (canais.length === 0) return alert("⚠️ Selecione ao menos um canal!");
+    // Canais de atendimento
+    const canais = [];
+    ['presencial', 'telefone', 'email'].forEach(t => { 
+        if (document.getElementById(`chk-${t}`).checked) {
+            canais.push({ 
+                tipo: t.charAt(0).toUpperCase() + t.slice(1), 
+                local: document.getElementById(`input-${t}`).value.trim() 
+            }); 
+        }
+    });
+    
+    if (document.getElementById('chk-web').checked) {
+        canais.push({ 
+            tipo: "Online", 
+            local: "Internet", 
+            link: document.getElementById('input-web').value.trim() 
+        });
+    }
+    
+    if (canais.length === 0) {
+        return alert("Selecione ao menos um canal de atendimento!");
+    }
 
-            const etapas = [];
-            document.querySelectorAll('#container-etapas .bloco-etapa').forEach(b => {
-                etapas.push({ nome: b.querySelector('.etapa-titulo').value.trim(), desc: b.querySelector('.etapa-descricao').value.trim() });
-            });
-            if (etapas.length === 0) return alert("⚠️ Requer ao menos 1 etapa!");
+    // Etapas do serviço
+    const etapas = [];
+    document.querySelectorAll('#container-etapas .bloco-etapa').forEach(b => {
+        etapas.push({ 
+            nome: b.querySelector('.etapa-titulo').value.trim(), 
+            desc: b.querySelector('.etapa-descricao').value.trim() 
+        });
+    });
+    
+    if (etapas.length === 0) {
+        return alert("Requer ao menos 1 etapa!");
+    }
 
-            btn.disabled = true; btn.innerText = "⏳ Gravando...";
-            const sOrig = isEdicao ? bancoDeDadosLocal[`ID_${idOriginalEdicao}`] : null;
-            
-            const sAtual = {
-                id: idNovo, ativo: sOrig ? (sOrig.ativo !== false) : true,
-                titulo: document.getElementById('edit-titulo').value.trim(), secretaria: document.getElementById('edit-secretaria').value,
-                descricao: document.getElementById('edit-descricao').value.trim(), elegibilidade: document.getElementById('edit-elegibilidade').value.trim(),
-                resultado: document.getElementById('edit-resultado').value.trim(),
-                prazos: { espera: document.getElementById('edit-prazo-espera').value.trim(), analise: document.getElementById('edit-prazo-analise').value.trim(), total: document.getElementById('edit-prazo-total').value.trim() },
-                custo: { gratuito: document.getElementById('edit-custo-gratuito').value === "true", descricao: document.getElementById('edit-custo-descricao').value.trim() },
-                canais, etapas, documentos: document.getElementById('edit-documentos').value.split("\n").map(l => l.trim()).filter(l => l !== "")
-            };
+    // Bloquear botão durante o salvamento
+    btn.disabled = true; 
+    btn.innerText = "Gravando...";
+    
+    const sOrig = isEdicao ? bancoDeDadosLocal[`ID_${idOriginalEdicao}`] : null;
+    
+    // Montagem do objeto de dados do serviço
+    const sAtual = {
+        id: idNovo, 
+        ativo: sOrig ? (sOrig.ativo !== false) : true,
+        titulo: document.getElementById('edit-titulo').value.trim(), 
+        secretaria: document.getElementById('edit-secretaria').value,
+        descricao: document.getElementById('edit-descricao').value.trim(), 
+        elegibilidade: document.getElementById('edit-elegibilidade').value.trim(),
+        resultado: document.getElementById('edit-resultado').value.trim(),
+        prazos: { 
+            espera: document.getElementById('edit-prazo-espera').value.trim(), 
+            analise: document.getElementById('edit-prazo-analise').value.trim(), 
+            total: document.getElementById('edit-prazo-total').value.trim() 
+        },
+        custo: { 
+            gratuito: document.getElementById('edit-custo-gratuito').value === "true", 
+            descricao: document.getElementById('edit-custo-descricao').value.trim() 
+        },
+        canais: canais, 
+        etapas: etapas, 
+        documentos: document.getElementById('edit-documentos').value.split("\n").map(l => l.trim()).filter(l => l !== "")
+    };
 
-            const payload = { [`ID_${idNovo}`]: sAtual };
-            if (isEdicao && idNovo !== idOriginalEdicao) {
-                payload[`ID_${idOriginalEdicao}`] = firebase.firestore.FieldValue.delete();
-            }
+    // Preparação do payload do Firestore
+    const payload = { [`ID_${idNovo}`]: sAtual };
+    if (isEdicao && idNovo !== idOriginalEdicao) {
+        payload[`ID_${idOriginalEdicao}`] = firebase.firestore.FieldValue.delete();
+    }
 
-            try {
-                await db.collection('catalogo').doc('todosOsServicos').set(payload, { merge: true });
-                if (isEdicao && idNovo !== idOriginalEdicao) {
-                    delete bancoDeDadosLocal[`ID_${idOriginalEdicao}`];
-                }
-                bancoDeDadosLocal[`ID_${idNovo}`] = sAtual;
-                desenharTabelaReal(); await registrarAuditoria();
-                await enviarEmail(sOrig ? "Edição de Registro" : "Criação de Registro", idNovo, `Serviço gravado com ID manual ${idNovo}. ${isEdicao && idNovo !== idOriginalEdicao ? 'O ID antigo ' + idOriginalEdicao + ' foi removido.' : ''}`);
-                alert("✅ Firebase Atualizado com Sucesso!"); document.getElementById('modal-edicao').classList.add('hidden');
-            } catch (err) { alert("❌ Erro crítico ao salvar."); }
-            btn.disabled = false; btn.innerText = "💾 Salvar Alterações";
-        };
-
-        document.getElementById('botao-fechar').onclick = () => document.getElementById('modal-edicao').classList.add('hidden');
+    // Comunicação com o Firebase
+    try {
+        await db.collection('catalogo').doc('todosOsServicos').set(payload, { merge: true });
         
-        // 🛡️ CORREÇÃO DEFINITIVA DO CLIQUE FORA DO MODAL
-        window.onclick = (e) => { 
-            if (e.target === document.getElementById('modal-edicao')) document.getElementById('modal-edicao').classList.add('hidden'); 
-        };
+        if (isEdicao && idNovo !== idOriginalEdicao) {
+            delete bancoDeDadosLocal[`ID_${idOriginalEdicao}`];
+        }
+        
+        bancoDeDadosLocal[`ID_${idNovo}`] = sAtual;
+        desenharTabelaReal(); 
+        await registrarAuditoria();
+        
+        await enviarEmail(
+            sOrig ? "Edicao de Registro" : "Criacao de Registro", 
+            idNovo, 
+            `Servico gravado com ID manual ${idNovo}. ${isEdicao && idNovo !== idOriginalEdicao ? 'O ID antigo ' + idOriginalEdicao + ' foi removido.' : ''}`
+        );
+        
+        alert("Firebase Atualizado com Sucesso!"); 
+        document.getElementById('modal-edicao').classList.add('hidden');
+    } catch (err) { 
+        alert("Erro critico ao salvar."); 
+    } finally {
+        // O bloco 'finally' sempre roda no final, garantindo que o botão destrave mesmo se houver erro!
+        btn.disabled = false; 
+        btn.innerText = "Salvar Alteracoes";
+    }
+};
+            // Fechamento correto do form-servico.onsubmit
+
+        // Ações para fechar o modal (comentários limpos para não confundir o Blockman)
+        document.getElementById('botao-fechar').onclick = () => document.getElementById('modal-edicao').classList.add('hidden');
+        document.getElementById('btn-cancelar').onclick = () => document.getElementById('modal-edicao').classList.add('hidden');
     </script>
 </body>
 </html>
