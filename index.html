@@ -997,17 +997,73 @@ async function carregarCliquesGlobais() {
             const linkOnline = document.getElementById('det-link-online');
             areaOnline.classList.add('hidden'); // esconde por padrão
             
+           // 👇 SUBSTITUA O SEU LOOP DE CANAIS POR ESTE AQUI:
             serv.canais.forEach(canal => {
                 let icone = 'fa-map-marker-alt';
+                let acaoBotao = ''; // Guardará o botão do WhatsApp se for celular
+                let mapaHtml = '';  // 🆕 Guardará o iframe do mapa do Google
+
                 if(canal.tipo === 'Online') icone = 'fa-laptop';
-                if(canal.tipo === 'Telefone') icone = 'fa-phone';
+                if(canal.tipo === 'E-mail') icone = 'fa-envelope';
+
+                // Lógica do botão do WhatsApp
+                if(canal.tipo === 'Telefone') {
+                    icone = 'fa-phone';
+                    
+                    // O filtro inteligente: procura apenas a sequência que parece um telefone
+                    const filtroTelefone = canal.local.match(/(?:\+?55\s?)?\(?0?[1-9]{2}\)?\s?(?:9\d{4}|\d{4})[-\s]?\d{4}/);
+                    
+                    if (filtroTelefone) {
+                        // Extrai apenas os números desse trecho filtrado
+                        let numeroLimpo = filtroTelefone[0].replace(/\D/g, '');
+                        
+                        // Garante que o número tenha o código do Brasil (55) na frente
+                        if (!(numeroLimpo.length >= 12 && numeroLimpo.startsWith('55'))) {
+                            // Se a pessoa não digitou o código de país, a gente coloca pra ela
+                            numeroLimpo = '55' + numeroLimpo;
+                        }
+
+                        // Se tivermos um número válido (55 + DDD + Telefone), criamos o botão
+                        if (numeroLimpo.length >= 12) {
+                            const linkWhats = `https://wa.me/${numeroLimpo}?text=Olá!%20Gostaria%20de%20informações%20sobre%20o%20serviço:%20${encodeURIComponent(serv.titulo)}`;
+                            acaoBotao = `
+                                <a href="${linkWhats}" target="_blank" class="mt-2 inline-flex items-center gap-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-md transition-all w-fit">
+                                    <i class="fab fa-whatsapp text-emerald-600 text-sm"></i> Chamar no WhatsApp
+                                </a>
+                            `;
+                        }
+                    }
+                }
+
+                // 🆕 LÓGICA DO GOOGLE MAPS
+                // Se o atendimento for Presencial, pegamos o texto do endereço e jogamos no Google!
+                if(canal.tipo === 'Presencial') {
+                    // Adicionamos "Horizontina, RS" no final para o Google não mostrar uma rua igual em outro estado
+                    const enderecoBusca = encodeURIComponent(`${canal.local}, Horizontina - RS`);
+                    
+                    mapaHtml = `
+                        <div class="mt-3 w-full h-48 rounded-xl overflow-hidden border border-slate-200 shadow-inner bg-slate-50 relative">
+                            <iframe 
+                                width="100%" 
+                                height="100%" 
+                                frameborder="0" 
+                                scrolling="no" 
+                                marginheight="0" 
+                                marginwidth="0" 
+                                src="https://maps.google.com/maps?q=${enderecoBusca}&t=&z=15&ie=UTF8&iwloc=&output=embed">
+                            </iframe>
+                        </div>
+                    `;
+                }
 
                 divCanais.innerHTML += `
-                    <div class="flex gap-3 mb-2">
+                    <div class="flex gap-3 mb-4 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                         <i class="fas ${icone} text-gray-400 mt-1"></i>
-                        <div>
-                            <strong class="block">${canal.tipo}</strong>
-                            <span>${canal.local}</span>
+                        <div class="flex flex-col w-full">
+                            <strong class="block text-gray-800">${canal.tipo}</strong>
+                            <span class="text-gray-600">${canal.local}</span>
+                            ${acaoBotao}
+                            ${mapaHtml} <!-- O mapa aparece aqui se existir -->
                         </div>
                     </div>
                 `;
