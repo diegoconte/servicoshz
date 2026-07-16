@@ -794,16 +794,17 @@ async function carregarCliquesGlobais() {
         resultados.sort((a, b) => a.titulo.localeCompare(b.titulo));
     } else if (criterioOrdenacao === 'populares') {
         const historicoCliques = bdCliquesGlobais;
-        // TESTE BEM AQUI:
-        console.log("🔍 Dados usados para ordenar por Populares:", historicoCliques);
         
         resultados.sort((a, b) => {
-            const cliquesA = historicoCliques[a.id] || 0;
-            const cliquesB = historicoCliques[b.id] || 0;
+            // Tenta buscar o número de cliques de 3 formas diferentes para garantir que ache o valor no Firebase
+            const cliquesA = historicoCliques[a.id] || historicoCliques[String(a.id)] || historicoCliques[`ID_${a.id}`] || 0;
+            const cliquesB = historicoCliques[b.id] || historicoCliques[String(b.id)] || historicoCliques[`ID_${b.id}`] || 0;
             
+            // Se o número de cliques for diferente, põe o maior primeiro
             if (cliquesB !== cliquesA) {
                 return cliquesB - cliquesA;
             }
+            // Se der empate, organiza em ordem alfabética
             return a.titulo.localeCompare(b.titulo);
         });
     }
