@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Cartas de Serviços Físicas - Horizontina</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* Estilos base da tela de visualização (Fundo cinza para destacar as folhas brancas) */
+        body { background-color: #f1f5f9; }
+        
+        .servico-documento { 
+            background-color: white; 
+            margin: 0 auto 30px auto; 
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); 
+            padding: 40px; /* Espaçamento interno agradável na tela */
+            border-radius: 8px;
+            max-width: 210mm; /* Limita a largura para simular o A4 na tela */
+            font-family: sans-serif;
+        }
+
+        /* 🖨️ CONFIGURAÇÃO DE IMPRESSÃO NATIVA DO NAVEGADOR */
+        @media print {
+            body { background-color: white; }
+            body * { visibility: hidden; }
+            
+            /* Mostra apenas a área do documento */
+            #area-impressao-final, #area-impressao-final * { visibility: visible; }
+            
+            #area-impressao-final {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                background-color: white;
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact;
+            }
+
+            /* Esconde a barra de botões na hora que a caixa de impressão abre */
+            .barra-botoes-impressao { display: none !important; }
+
+            .servico-documento {
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                border: none;
+                border-radius: 0;
+                max-width: 100%;
+                /* A Regra de Ouro: Pula para a próxima página após finalizar este serviço */
+                page-break-after: always; 
+                break-after: page;
+            }
+            
+            /* Margens de segurança da impressora */
+            @page { margin: 15mm; size: A4 portrait; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen">
+
+    <div id="login-container" class="fixed inset-0 bg-slate-100 z-50 flex flex-col justify-center items-center p-4">
+        <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-md border border-slate-200">
+            <h1 class="text-2xl font-bold text-[#002B5E] text-center mb-6">Acesso Restrito - Exportação</h1>
+            <p class="text-slate-500 text-sm text-center mb-4">Faça login para acessar o gerador de documentos físicos.</p>
+            <a href="admin.html" class="block w-full bg-[#002B5E] hover:bg-[#001D40] text-white text-center font-bold py-3 px-6 rounded-xl shadow-md transition-all mb-4">
+                🔑 Ir para o Painel Admin
+            </a>
+            <button onclick="liberarModoTesteCanvas()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 text-center font-bold py-2 px-6 rounded-xl transition-all text-sm border border-slate-300">
+                👁️ Modo de Visualização (Teste Local)
+            </button>
+        </div>
+    </div>
+
+    <div id="painel-container" class="container mx-auto p-4 md:p-10 pb-32 hidden">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-300 pb-5 mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-[#002B5E]">Gerador de Cartas Físicas</h1>
+                <p class="text-slate-600 mt-1">Selecione os serviços para gerar a visualização de impressão.</p>
+            </div>
+            <div class="flex gap-3 mt-4 md:mt-0">
+                <a href="admin.html" class="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg text-sm transition-colors">
+                    ⚙️ Voltar ao Admin
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-[#002B5E]">Listagem de Serviços</h3>
+                <div class="flex gap-2">
+                    <button onclick="selecionarTodos(true)" class="text-sm text-blue-600 font-semibold hover:underline">Selecionar Todos</button>
+                    <button onclick="selecionarTodos(false)" class="text-sm text-slate-500 font-semibold hover:underline">Limpar</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-slate-200">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-100 text-slate-700 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4 w-12"><input type="checkbox" id="chk-master" onchange="selecionarTodos(this.checked)" class="rounded h-5 w-5 cursor-pointer"></th>
+                            <th class="p-4 w-24">ID</th>
+                            <th class="p-4">Título do Serviço</th>
+                            <th class="p-4">Secretaria</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-selecao" class="divide-y divide-slate-100">
+                        <tr><td colspan="4" class="p-8 text-center animate-pulse">⏳ Carregando serviços...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="barra-acao" class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-slate-300 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.1)] z-40 hidden">
+        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <span class="text-base font-semibold text-slate-600">
+                <span id="contador-selecao" class="text-[#002B5E] font-bold text-xl">0</span> serviços selecionados
+            </span>
+            <button onclick="gerarVisualizacao()" class="w-full md:w-auto bg-[#002B5E] hover:bg-blue-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all flex items-center justify-center gap-3 text-lg">
+                📄 Gerar Visualização
+            </button>
+        </div>
+    </div>
+
+    <!-- ESTA É A NOVA TELA DE PRÉ-IMPRESSÃO -->
+    <div id="area-impressao-final" class="hidden pb-20">
+        
+        <!-- Barra superior fixada com os botões (Invisível na impressão) -->
+        <div class="barra-botoes-impressao sticky top-0 bg-white border-b border-slate-300 shadow-sm p-4 z-50">
+            <div class="container mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                <button onclick="fecharImpressao()" class="px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-lg transition-colors flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i> Voltar à Seleção
+                </button>
+                <div class="text-center sm:text-left">
+                    <h2 class="font-bold text-[#002B5E]">Pré-visualização do Documento</h2>
+                    <p class="text-xs text-slate-500">Ao clicar em imprimir, você poderá enviar para a impressora ou escolher "Salvar como PDF".</p>
+                </div>
+                <button onclick="window.print()" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-lg">
+                    <i class="fas fa-print"></i> Imprimir / Salvar PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Recipiente onde os documentos serão injetados -->
+        <div id="container-paginas-a4" class="pt-8 px-4"></div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZk6WrwIHn3iRjT41Ju0GTocO1XJhFrtE",
+            authDomain: "carta-servicos-horizontina.firebaseapp.com",
+            projectId: "carta-servicos-horizontina",
+            storageBucket: "carta-servicos-horizontina.firebasestorage.app",
+            messagingSenderId: "782471493827",
+            appId: "1:782471493827:web:96548c54f925a80a404a76"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(), auth = firebase.auth();
+        let bancoDeDadosLocal = {}; 
+
+        auth.onAuthStateChanged(usuario => {
+            const painel = document.getElementById('painel-container'), login = document.getElementById('login-container');
+            if (usuario) {
+                painel.classList.remove('hidden'); login.classList.add('hidden');
+                carregarServicosParaSelecao();
+            }
+        });
+
+        function liberarModoTesteCanvas() {
+            document.getElementById('login-container').classList.add('hidden');
+            document.getElementById('painel-container').classList.remove('hidden');
+            carregarServicosParaSelecao();
+        }
+
+        async function carregarServicosParaSelecao() {
+            const tabela = document.getElementById('tabela-selecao');
+            try {
+                const doc = await db.collection('catalogo').doc('todosOsServicos').get();
+                if (doc.exists) {
+                    bancoDeDadosLocal = doc.data();
+                    desenharTabelaSelecao();
+                } else {
+                    tabela.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-500">Nenhum serviço encontrado no banco de dados.</td></tr>`;
+                }
+            } catch (err) { 
+                tabela.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-500 font-bold">❌ Falha na conexão com o servidor.</td></tr>`; 
+            }
+        }
+
+        function desenharTabelaSelecao() {
+            const tabela = document.getElementById('tabela-selecao'); tabela.innerHTML = "";
+            const lista = Object.values(bancoDeDadosLocal).filter(s => s && s.ativo !== false && s.id).sort((a, b) => parseInt(a.id) - parseInt(b.id));
+            
+            lista.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50 transition-colors border-b border-slate-100";
+                tr.innerHTML = `<td class="p-4"><input type="checkbox" class="filtro-selecao rounded h-5 w-5 cursor-pointer border-slate-300" value="${s.id}" onchange="atualizarContadorSelecao()"></td>
+                                <td class="p-4 font-bold text-slate-600">ID ${s.id}</td>
+                                <td class="p-4 font-bold text-[#002B5E] text-base">${s.titulo || 'Sem Título'}</td>
+                                <td class="p-4 text-slate-500 font-medium">${s.secretaria || 'N/A'}</td>`;
+                tabela.appendChild(tr);
+            });
+        }
+
+        function selecionarTodos(nSt) {
+            document.querySelectorAll('.filtro-selecao').forEach(cb => cb.checked = nSt);
+            document.getElementById('chk-master').checked = nSt;
+            atualizarContadorSelecao();
+        }
+
+        function atualizarContadorSelecao() {
+            const selecionados = document.querySelectorAll('.filtro-selecao:checked').length;
+            document.getElementById('contador-selecao').innerText = selecionados;
+            document.getElementById('barra-acao').classList.toggle('hidden', selecionados === 0);
+        }
+
+        function fecharImpressao() {
+            document.getElementById('area-impressao-final').classList.add('hidden');
+            document.getElementById('painel-container').classList.remove('hidden');
+            document.getElementById('barra-acao').classList.remove('hidden');
+        }
+
+        function criarTemplateDocumento(s) {
+            // Badges
+            let badgesHtml = "";
+            if (s.custo && s.custo.gratuito) badgesHtml += `<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-white text-[#002B5E] font-bold rounded-lg text-xs shadow-sm"><i class="fas fa-check text-green-600"></i> Serviço Gratuito</span> `;
+            else badgesHtml += `<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-white text-[#002B5E] font-bold rounded-lg text-xs shadow-sm"><i class="fas fa-dollar-sign text-yellow-600"></i> Possui Custos</span> `;
+            if (s.canais && s.canais.some(c => c.tipo === "Online")) badgesHtml += `<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-yellow-400 text-black font-bold rounded-lg text-xs shadow-sm"><i class="fas fa-laptop"></i> Disponível Online</span>`;
+
+            // Listas com fontes legíveis
+            const documentosList = (s.documentos && s.documentos.length > 0) ? 
+                s.documentos.map(d => `<li class="mb-1">${d}</li>`).join('') : 
+                '<li class="text-slate-500 italic">Não informado ou não se aplica.</li>';
+            
+            const etapasHtml = (s.etapas && s.etapas.length > 0) ? s.etapas.map((e, index) => `
+                <div class="flex gap-4 mb-4 last:mb-0">
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-slate-200 text-[#002B5E] font-bold flex items-center justify-center shrink-0 border border-slate-300">${index + 1}</div>
+                    </div>
+                    <div class="pt-1">
+                        <h5 class="font-bold text-slate-800 text-base mb-1">${e.nome || 'Etapa'}</h5>
+                        <p class="text-sm text-slate-600 leading-relaxed">${e.desc || ''}</p>
+                    </div>
+                </div>
+            `).join('') : '<p class="text-sm text-slate-500 italic">Nenhuma etapa detalhada.</p>';
+
+            const canaisHtml = (s.canais && s.canais.length > 0) ? s.canais.map(c => {
+                let icone = 'fa-map-marker-alt';
+                if (c.tipo === 'Online') icone = 'fa-laptop';
+                if (c.tipo === 'Telefone') icone = 'fa-phone';
+                if (c.tipo === 'E-mail') icone = 'fa-envelope';
+                return `
+                <div class="flex gap-3 items-start border-b border-slate-200 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0">
+                    <i class="fas ${icone} text-slate-400 mt-1 text-sm w-4 text-center"></i>
+                    <div class="text-sm text-slate-700 leading-relaxed">
+                        <strong class="block text-slate-800">${c.tipo}</strong>
+                        ${c.local || c.link || ""}
+                    </div>
+                </div>
+                `;
+            }).join('') : '<p class="text-sm text-slate-500 italic">Nenhum canal informado.</p>';
+
+            // Estrutura do Documento com fontes maiores (text-sm e text-base)
+            return `
+                <div class="servico-documento">
+                    <!-- Cabeçalho Institucional -->
+                    <div class="flex items-center gap-4 border-b-2 border-slate-200 pb-4 mb-6">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/27/Bras%C3%A3o_de_Horizontina%2C_RS.png" alt="Brasão Horizontina" class="h-14 w-auto">
+                        <div>
+                            <h5 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">MUNICÍPIO DE HORIZONTINA / RS</h5>
+                            <h3 class="text-xl font-extrabold text-[#002B5E] tracking-tight">Carta de Serviços ao Cidadão</h3>
+                        </div>
+                    </div>
+
+                    <!-- Bloco Azul de Título -->
+                    <div class="p-6 rounded-xl mb-6 shadow-sm" style="background-color: #002B5E !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                        <span class="text-xs font-bold uppercase tracking-widest text-blue-300 block w-full mb-2">
+                            ID ${s.id || '-'} | ${s.secretaria || 'Secretaria Geral'}
+                        </span>
+                        <h2 class="text-2xl font-bold leading-tight mb-4">${s.titulo || 'Serviço sem título'}</h2>
+                        <div class="flex flex-wrap gap-2">${badgesHtml}</div>
+                    </div>
+
+                    <!-- Informações Principais (Linha Única) -->
+                    <div class="mb-6 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h4 class="font-bold text-[#002B5E] text-base uppercase flex items-center gap-2 mb-2"><i class="fas fa-info-circle"></i> O que é?</h4>
+                        <p class="text-sm leading-relaxed text-slate-700 mb-6">${s.descricao || 'Informação indisponível.'}</p>
+                        
+                        <h4 class="font-bold text-[#002B5E] text-base uppercase flex items-center gap-2 mb-2"><i class="fas fa-users"></i> Quem pode solicitar?</h4>
+                        <p class="text-sm leading-relaxed text-slate-700">${s.elegibilidade || 'Qualquer cidadão.'}</p>
+                    </div>
+
+                    <!-- Divisão em Colunas para o resto dos dados -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        
+                        <!-- Coluna 1 -->
+                        <div class="flex flex-col gap-6">
+                            <div>
+                                <h4 class="font-bold text-[#002B5E] border-b-2 border-slate-200 pb-2 mb-3 text-base uppercase flex items-center gap-2"><i class="fas fa-file-alt"></i> Documentação Exigida</h4>
+                                <ul class="list-disc list-inside text-sm leading-relaxed text-slate-700 space-y-1">${documentosList}</ul>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-bold text-[#002B5E] border-b-2 border-slate-200 pb-2 mb-4 text-base uppercase flex items-center gap-2"><i class="fas fa-shoe-prints"></i> Etapas do Processo</h4>
+                                <div>${etapasHtml}</div>
+                            </div>
+                        </div>
+
+                        <!-- Coluna 2 -->
+                        <div class="flex flex-col gap-6">
+                            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl">
+                                <h4 class="font-bold text-[#002B5E] border-b border-slate-200 pb-2 mb-3 text-sm uppercase flex items-center gap-2"><i class="fas fa-map-marker-alt text-red-500"></i> Onde solicitar?</h4>
+                                <div>${canaisHtml}</div>
+                            </div>
+
+                            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl">
+                                <h4 class="font-bold text-[#002B5E] border-b border-slate-200 pb-2 mb-3 text-sm uppercase flex items-center gap-2"><i class="far fa-clock text-orange-500"></i> Prazos Máximos</h4>
+                                <div class="text-sm text-slate-700 leading-relaxed space-y-2">
+                                    <p class="flex flex-col"><span class="text-slate-500 text-xs uppercase font-bold">Espera no local:</span> <strong class="text-slate-800">${s.prazos?.espera || '-'}</strong></p>
+                                    <p class="flex flex-col"><span class="text-slate-500 text-xs uppercase font-bold">Prazo de Análise:</span> <strong class="text-slate-800">${s.prazos?.analise || '-'}</strong></p>
+                                    <p class="flex flex-col"><span class="text-slate-500 text-xs uppercase font-bold">Prazo Total Máximo:</span> <strong class="text-slate-800">${s.prazos?.total || '-'}</strong></p>
+                                </div>
+                            </div>
+
+                             <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl">
+                                <h4 class="font-bold text-[#002B5E] border-b border-slate-200 pb-2 mb-3 text-sm uppercase flex items-center gap-2"><i class="fas fa-coins text-yellow-600"></i> Custos e Taxas</h4>
+                                <p class="text-sm text-slate-700 leading-relaxed">${s.custo?.descricao || (s.custo?.gratuito ? 'Este serviço é totalmente gratuito para o cidadão.' : 'Informação não detalhada.')}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rodapé Oficial -->
+                    <div class="border-t-2 border-slate-200 pt-4 mt-8 flex flex-col items-center justify-center text-slate-500 text-xs leading-relaxed font-semibold text-center">
+                        <p>Ouvidoria Municipal: 0800-XXX-XXXX | Portal Oficial: horizontina.rs.gov.br</p>
+                        <p class="mt-1 font-normal text-slate-400">Documento de transparência gerado em: ${new Date().toLocaleDateString('pt-BR')}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function gerarVisualizacao() {
+            const selecionados = Array.from(document.querySelectorAll('.filtro-selecao:checked')).map(cb => parseInt(cb.value));
+            if(selecionados.length === 0) return;
+
+            const containerFinal = document.getElementById('container-paginas-a4');
+            const areaImpressao = document.getElementById('area-impressao-final');
+            const painel = document.getElementById('painel-container');
+            const barraAcao = document.getElementById('barra-acao');
+            
+            // Limpa o contêiner e esconde o painel principal
+            containerFinal.innerHTML = "";
+            painel.classList.add('hidden');
+            barraAcao.classList.add('hidden');
+
+            // Injeta o HTML preenchido de cada serviço
+            selecionados.forEach(id => {
+                const servico = Object.values(bancoDeDadosLocal).find(s => s.id === id);
+                if (servico) {
+                    containerFinal.innerHTML += criarTemplateDocumento(servico);
+                }
+            });
+
+            // Mostra a nova tela de visualização
+            areaImpressao.classList.remove('hidden'); 
+            
+            // Sobe a tela para o topo
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
