@@ -200,7 +200,6 @@
     <!-- JAVASCRIPT: CÉREBRO ANALÍTICO COMPLETO                  -->
     <!-- ======================================================= -->
     <script>
-        // Configurações do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAZk6WrwIHn3iRjT41Ju0GTocO1XJhFrtE",
             authDomain: "carta-servicos-horizontina.firebaseapp.com",
@@ -214,13 +213,23 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
+        // Variáveis Globais de Banco
         let databaseServicos = {};
         let databaseCliques = {};
         let databaseDispositivos = {};
         let databaseAcessosMensais = {};
         let databaseAuditoria = {};
 
-        // VIGIA DE ESTADO DE LOGIN
+        // Variáveis de Instância dos Gráficos (Para podermos destruí-las antes de recriar)
+        let chartInstPopulares = null;
+        let chartInstDispositivos = null;
+        let chartInstMensal = null;
+        let chartInstAuditoria = null;
+        let chartInstSecretarias = null;
+        
+        // Vigia de Conexão em Tempo Real
+        let ouvinteDeLogs = null; 
+
         auth.onAuthStateChanged(usuario => {
             const loginBox = document.getElementById('login-container');
             const dashboardBox = document.getElementById('dashboard-container');
@@ -230,18 +239,23 @@
                 dashboardBox.classList.remove('hidden');
                 document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10 flex flex-col items-center";
                 
-                carregarEstatísticasDoFirebase();
+                carregarEstatisticasDoFirebase();
                 carregarTabelaDeFeedback();
-                carregarTabelaLogs(); // Puxa o Log de Acessos em Tempo Real
+                carregarTabelaLogs(); 
                 
             } else {
                 dashboardBox.classList.add('hidden');
                 loginBox.classList.remove('hidden');
                 document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 flex flex-col justify-center items-center";
+                
+                // DESLIGA O VIGIA DA TABELA QUANDO O USUÁRIO SAIR
+                if (ouvinteDeLogs) {
+                    ouvinteDeLogs(); 
+                    ouvinteDeLogs = null;
+                }
             }
         });
 
-        // EFETUAR LOGIN
         document.getElementById('form-login').onsubmit = async (evento) => {
             evento.preventDefault();
             const email = document.getElementById('login-email').value.trim();
@@ -255,7 +269,15 @@
                 await auth.signInWithEmailAndPassword(email, senha);
             } catch (erro) {
                 console.error("Erro no login:", erro);
-                alert("❌ Erro no Firebase: " + erro.message);
+                
+                let mensagem = "Erro desconhecido ao acessar.";
+                if (erro.code === 'auth/wrong-password') mensagem = "A senha digitada está incorreta. Tente novamente.";
+                else if (erro.code === 'auth/user-not-found') mensagem = "Este e-mail não possui cadastro no sistema.";
+                else if (erro.code === 'auth/invalid-email') mensagem = "Formato de e-mail inválido.";
+                else if (erro.code === 'auth/too-many-requests') mensagem = "Acesso bloqueado temporariamente por segurança. Tente mais tarde.";
+                else mensagem = erro.message;
+
+                alert("❌ " + mensagem);
             } finally {
                 btn.disabled = false;
                 btn.innerText = "🔑 Entrar no Dashboard";
@@ -268,8 +290,7 @@
             }
         }
 
-        // BUSCADOR GERAL PARALELO (OTIMIZADO)
-        async function carregarEstatísticasDoFirebase() {
+        async function carregarEstatisticasDoFirebase() {
             try {
                 const [docServicos, docCliques, docDispositivos, docMensal, docAuditoria] = await Promise.all([
                     db.collection('catalogo').doc('todosOsServicos').get(),
@@ -291,46 +312,52 @@
             }
         }
 
-        // 📊 TABELA DE LOGS (QUEM ACESSOU, QUE HORAS, O QUE FEZ)
         function carregarTabelaLogs() {
             const tabela = document.getElementById('tabela-logs');
             
-            // Puxa os 50 registros mais recentes em tempo real
-            db.collection('registros_atividades')
-              .orderBy('timestamp', 'desc')
-              .limit(50)
-              .onSnapshot((snapshot) => {
-                  tabela.innerHTML = "";
-                  if (snapshot.empty) {
-                      tabela.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500">Nenhum registro de atividade encontrado.</td></tr>`;
-                      return;
-                  }
+            // Destrói o ouvinte antigo antes de criar um novo
+            if (ouvinteDeLogs) {
+                ouvinteDeLogs();
+            }
+            
+            try {
+                // Puxa os 50 registros mais recentes em tempo real
+                ouvinteDeLogs = db.collection('registros_atividades')
+                  .orderBy('timestamp', 'desc')
+                  .limit(50)
+                  .onSnapshot((snapshot) => {
+                      tabela.innerHTML = "";
+                      if (snapshot.empty) {
+                          tabela.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500">Nenhum registro de atividade encontrado.</td></tr>`;
+                          return;
+                      }
 
-                  snapshot.forEach(doc => {
-                      const log = doc.data();
-                      const tr = document.createElement('tr');
-                      tr.className = "hover:bg-blue-50 transition-colors border-b border-slate-100";
-                      
-                      // Destaca cores baseadas na ação (Login vs Criou vs Excluiu)
-                      let corAcao = "text-slate-700 font-medium";
-                      if (log.acao.includes("Login")) corAcao = "text-blue-600 font-bold";
-                      if (log.acao.includes("Excluiu")) corAcao = "text-red-600 font-bold";
-                      if (log.acao.includes("Criou")) corAcao = "text-emerald-600 font-bold";
+                      snapshot.forEach(doc => {
+                          const log = doc.data();
+                          const tr = document.createElement('tr');
+                          tr.className = "hover:bg-blue-50 transition-colors border-b border-slate-100";
+                          
+                          let corAcao = "text-slate-700 font-medium";
+                          if (log.acao && log.acao.includes("Login")) corAcao = "text-blue-600 font-bold";
+                          if (log.acao && log.acao.includes("Excluiu")) corAcao = "text-red-600 font-bold";
+                          if (log.acao && log.acao.includes("Criou")) corAcao = "text-emerald-600 font-bold";
 
-                      tr.innerHTML = `
-                          <td class="p-4 text-xs font-semibold text-slate-500 whitespace-nowrap"><i class="far fa-clock mr-1"></i> ${log.dataHora}</td>
-                          <td class="p-4 font-bold text-slate-800">${log.email}</td>
-                          <td class="p-4 ${corAcao}">${log.acao}</td>
-                      `;
-                      tabela.appendChild(tr);
+                          tr.innerHTML = `
+                              <td class="p-4 text-xs font-semibold text-slate-500 whitespace-nowrap"><i class="far fa-clock mr-1"></i> ${log.dataHora || 'Sem data'}</td>
+                              <td class="p-4 font-bold text-slate-800">${log.email || 'Usuário'}</td>
+                              <td class="p-4 ${corAcao}">${log.acao || 'Ação não registrada'}</td>
+                          `;
+                          tabela.appendChild(tr);
+                      });
+                  }, (erro) => {
+                      console.error("Erro no Listener de Logs. Possível falta de publicação das regras de segurança:", erro);
+                      tabela.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-amber-600 font-bold">⚠️ Aguardando liberação de permissão (Regras do Firestore).</td></tr>`;
                   });
-              }, (erro) => {
-                  console.error("Erro ao puxar tabela de logs:", erro);
-                  tabela.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-red-500">Falha ao carregar histórico em tempo real.</td></tr>`;
-              });
+            } catch (err) {
+                console.error("Falha ao montar tabela de logs", err);
+            }
         }
 
-        // 📊 TABELA DE FEEDBACK DO CIDADÃO
         async function carregarTabelaDeFeedback() {
             try {
                 const container = document.getElementById('tabela-feedback');
@@ -344,7 +371,6 @@
                 const dadosFirebase = docFeedback.data();
                 container.innerHTML = '';
                 
-                // Converte os dados brutos em uma lista organizada
                 const listaAvaliacoes = Object.keys(dadosFirebase).map(chaveID => {
                     const idNumerico = parseInt(chaveID.replace('ID_', ''));
                     const servLocal = databaseServicos[`ID_${idNumerico}`];
@@ -381,7 +407,6 @@
             } catch (erro) { console.error("Erro ao carregar feedback:", erro); }
         }
 
-        // PROCESSAMENTO DOS GRÁFICOS RESTANTES
         function processarEMontarDashboard() {
             const listaServicos = Object.values(databaseServicos);
 
@@ -409,6 +434,15 @@
             document.getElementById('stat-media-cliques').innerText = mediaCliquesPorVisita;
             document.getElementById('stat-media-detalhe').innerText = `Média de ${mediaCliquesPorVisita} cliques por visita`;
 
+            // =========================================================
+            // DESTRUIÇÃO DE GRÁFICOS ANTIGOS (Evita o erro Canvas is in use)
+            // =========================================================
+            if (chartInstPopulares) chartInstPopulares.destroy();
+            if (chartInstDispositivos) chartInstDispositivos.destroy();
+            if (chartInstMensal) chartInstMensal.destroy();
+            if (chartInstAuditoria) chartInstAuditoria.destroy();
+            if (chartInstSecretarias) chartInstSecretarias.destroy();
+
             // ---------------------------------------------------------
             // GRÁFICO 1: TOP 5 SERVIÇOS MAIS ACESSADOS
             // ---------------------------------------------------------
@@ -416,7 +450,7 @@
                 .sort((a, b) => (databaseCliques[b.id] || 0) - (databaseCliques[a.id] || 0))
                 .slice(0, 5);
 
-            new Chart(document.getElementById('chart-populares'), {
+            chartInstPopulares = new Chart(document.getElementById('chart-populares'), {
                 type: 'bar',
                 data: {
                     labels: top5Servicos.map(s => `ID ${s.id}: ${s.titulo.substring(0, 20)}...`),
@@ -436,7 +470,7 @@
             // ---------------------------------------------------------
             // GRÁFICO 2: DISPOSITIVOS
             // ---------------------------------------------------------
-            new Chart(document.getElementById('chart-dispositivos'), {
+            chartInstDispositivos = new Chart(document.getElementById('chart-dispositivos'), {
                 type: 'doughnut',
                 data: {
                     labels: ['Celular / Tablet', 'Computador / Desktop'],
@@ -454,7 +488,7 @@
             const secretariasNoBanco = [...new Set(listaServicos.map(s => s.secretaria))].sort();
             const distribuicaoSecretarias = secretariasNoBanco.map(sec => listaServicos.filter(s => s.secretaria === sec).length);
 
-            new Chart(document.getElementById('chart-secretarias'), {
+            chartInstSecretarias = new Chart(document.getElementById('chart-secretarias'), {
                 type: 'bar',
                 data: {
                     labels: secretariasNoBanco.map(s => s.replace("Secretaria de ", "").replace("Secretaria Municipal de ", "")),
@@ -477,7 +511,7 @@
             const mesesOrdem = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const dadosMensaisOrdenados = mesesOrdem.map(mes => databaseAcessosMensais[mes] || 0);
 
-            new Chart(document.getElementById('chart-mensal'), {
+            chartInstMensal = new Chart(document.getElementById('chart-mensal'), {
                 type: 'line',
                 data: {
                     labels: mesesOrdem,
@@ -495,13 +529,13 @@
             });
 
             // ---------------------------------------------------------
-            // GRÁFICO 5: ALTERAÇÕES POR USUÁRIO (AUDITORIA GRÁFICO)
+            // GRÁFICO 5: ALTERAÇÕES POR USUÁRIO
             // ---------------------------------------------------------
             const chavesAuditoria = Object.keys(databaseAuditoria);
             const labelsUsuarios = chavesAuditoria.map(key => key.replace(/_at_/g, '@').replace(/_/g, '.'));
             const dadosAuditoria = chavesAuditoria.map(key => databaseAuditoria[key] || 0);
 
-            new Chart(document.getElementById('chart-auditoria'), {
+            chartInstAuditoria = new Chart(document.getElementById('chart-auditoria'), {
                 type: 'bar',
                 data: {
                     labels: labelsUsuarios.length > 0 ? labelsUsuarios : ["Sem dados"],
