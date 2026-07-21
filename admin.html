@@ -388,7 +388,11 @@
             const isMaster = EMAILS_ADMINISTRADORES.map(e => e.toLowerCase()).includes(emailUsuarioLogado.toLowerCase());
             document.getElementById('edit-id').disabled = !isMaster;
 
-            const ids = Object.values(bancoDeDadosLocal).map(s => Number(s.id) || 0), prox = ids.length > 0 ? Math.max(...ids) + 1 : 1;
+            // Calcula qual será o próximo ID livre preenchendo os buracos
+            const ids = Object.values(bancoDeDadosLocal).map(s => Number(s.id) || 0);
+            let prox = 1;
+            while (ids.includes(prox)) { prox++; }
+
             document.getElementById('modal-titulo-servico').innerText = `Cadastrar Novo Serviço`;
             document.getElementById('form-servico').reset();
             document.getElementById('edit-id').value = prox;
@@ -401,7 +405,6 @@
             adicionarHTMLNovaEtapa("Solicitação do Serviço", "Explique o primeiro passo.");
             document.getElementById('modal-edicao').classList.remove('hidden');
         }
-
         function abrirEditorDeServico(id) {
             const s = bancoDeDadosLocal[`ID_${id}`]; if (!s) return;
             idOriginalEdicao = Number(id);
