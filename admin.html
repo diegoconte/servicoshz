@@ -8,6 +8,17 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* 🎨 ANIMAÇÃO MÁGICA PARA O GRADIENTE DOS BOTÕES */
+        .btn-gradient-animado {
+            background-size: 200% auto;
+            transition: 0.5s;
+        }
+        .btn-gradient-animado:hover {
+            background-position: right center;
+        }
+    </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10 flex flex-col justify-center items-center">
 
@@ -41,7 +52,6 @@
             </div>
             <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">E-mail Corporativo</label><input type="email" id="solicitar-email" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" required></div>
             
-            <!-- 🆕 NOVOS CAMPOS: SENHA E CONFIRMAÇÃO DE SENHA -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">Senha Desejada</label><input type="password" id="solicitar-senha" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" required minlength="6" placeholder="Mín. 6 caracteres"></div>
                 <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1 uppercase">Confirmar Senha</label><input type="password" id="solicitar-confirmar-senha" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm" required minlength="6" placeholder="Repita a senha"></div>
@@ -58,7 +68,7 @@
     </div>
 
     <!-- 2. CONTAINER PRINCIPAL -->
-    <div id="painel-container" class="max-w-5xl w-full bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
+    <div id="painel-container" class="max-w-6xl w-full bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-5 mb-6">
             <div>
                 <h1 class="text-2xl md:text-3xl font-bold text-[#002B5E]">Editor de Serviços</h1>
@@ -66,30 +76,37 @@
             </div>
             <button onclick="fazerLogout()" class="mt-4 md:mt-0 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-lg text-sm">🚪 Sair do Painel</button>
         </div>
-        <div class="flex sm:items-center sm:justify-between gap-4 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div class="flex items-center gap-4">
-                <span class="text-sm font-semibold text-slate-500">Total: <span id="total-servicos" class="text-slate-800 font-bold">0</span></span>
-                <a href="dashboard.html" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-xs rounded-xl">📈 Ver Dashboard</a>
+                <span class="text-sm font-semibold text-slate-500">Total: <span id="total-servicos" class="text-slate-800 font-bold text-lg">0</span></span>
+                <a href="dashboard.html" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-xs rounded-xl transition-colors">📈 Ver Dashboard</a>
             </div>
-           <div class="flex gap-2">
-
-    <!-- Botão de Exportar carta em a4 -->        
-            <a href="gerador_cartas_a4.html" class="bg-blue-100 hover:bg-emerald-700 text-gray-900 font-bold py-2 px-6 rounded-lg shadow-sm transition-all flex items-center gap-2 inline-block">
+           <div class="flex flex-wrap gap-2">
+            <!-- Botão de Exportar carta em a4 -->        
+            <a href="exportar-cartas.html" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-sm transition-colors shadow-sm flex items-center gap-2">
                 <i class="fas fa-print"></i> Gerar Cartas Físicas
             </a>
-    <!-- Botão de Exportar Backup (Nasce oculto, id="btn-exportar") -->
-    <button id="btn-exportar" onclick="exportarDadosJSON()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-sm transition-colors shadow-sm" title="Baixar base de dados completa em JSON">
-        📥 Exportar Backup (JSON)
-    </button>
-    <!-- Botão de Cadastrar Serviço (Sempre visível para todos logados) -->
-    <button onclick="abrirCriadorDeServico()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors shadow-sm">
-        ➕ Cadastrar Novo Serviço
-    </button>
-</div>
+            <!-- Botão de Exportar Backup (Nasce oculto) -->
+            <button id="btn-exportar" onclick="exportarDadosJSON()" class="hidden bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-colors shadow-sm" title="Baixar base de dados completa em JSON">
+                📥 Exportar Backup
+            </button>
+            <!-- Botão de Cadastrar Serviço -->
+            <button onclick="abrirCriadorDeServico()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors shadow-sm">
+                ➕ Cadastrar Serviço
+            </button>
+            </div>
         </div>
+        
         <div class="overflow-x-auto rounded-xl border border-slate-200">
             <table class="w-full text-left text-sm">
-                <thead><tr class="bg-[#002B5E] text-white"><th class="p-4 font-semibold w-16">ID</th><th class="p-4 font-semibold">Serviço</th><th class="p-4 font-semibold">Secretaria</th><th class="p-4 font-semibold text-center w-36">Ações</th></tr></thead>
+                <thead>
+                    <tr class="bg-[#002B5E] text-white">
+                        <th class="p-4 font-semibold w-16">ID</th>
+                        <th class="p-4 font-semibold">Serviço</th>
+                        <th class="p-4 font-semibold">Secretaria</th>
+                        <th class="p-4 font-semibold text-center w-64">Ações / Status</th>
+                    </tr>
+                </thead>
                 <tbody id="tabela-corpo" class="divide-y divide-slate-100"></tbody>
             </table>
         </div>
@@ -97,9 +114,18 @@
 
     <!-- 3. MODAL DE EDIÇÃO / CADASTRO -->
     <div id="modal-edicao" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 md:p-8 max-h-[90vh] overflow-y-auto border">
-            <div class="flex justify-between items-center border-b pb-4 mb-6"><h2 id="modal-titulo-servico" class="text-xl font-bold text-[#002B5E]">Editar Serviço</h2><span id="botao-fechar" class="text-3xl font-light text-slate-400 hover:text-slate-600 cursor-pointer">&times;</span></div>
+        <div class="bg-white rounded-2xl shadow-xl max-w-3xl w-full p-6 md:p-8 max-h-[90vh] overflow-y-auto border">
+            <div class="flex justify-between items-center border-b pb-4 mb-6">
+                <h2 id="modal-titulo-servico" class="text-xl font-bold text-[#002B5E]">Editar Serviço</h2>
+                <span id="botao-fechar" class="text-3xl font-light text-slate-400 hover:text-slate-600 cursor-pointer">&times;</span>
+            </div>
+            
             <form id="form-servico" class="space-y-6">
+                <!-- AVISO DE NOVO SERVIÇO -->
+                <div id="aviso-inativo" class="hidden bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-lg text-sm text-amber-800 font-medium">
+                    ⚠️ Atenção: Este novo serviço será salvo como <b>INATIVO</b> por padrão. Você poderá ativá-lo na lista principal após concluir a edição.
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="flex flex-col md:col-span-1">
                         <label class="text-xs font-bold text-slate-700 mb-1 uppercase">Número ID</label>
@@ -110,19 +136,25 @@
                         <input type="text" id="edit-titulo" class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm" required>
                     </div>
                 </div>
-                <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1">Secretaria</label><select id="edit-secretaria" class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm" required><option value="">
-                    Selecione...</option>
-                <option value="Gabinete do Prefeito">Gabinete do Prefeito</option>
-                <option value="Secretaria de Saúde">Secretaria de Saúde</option>
-                <option value="Secretaria de Educação">Secretaria de Educação</option>
-                <option value="Secretaria de Desenvolvimento Social e Habitação">Secretaria de Desenvolvimento Social e Habitação</option>
-                <option value="Secretaria de Desenvolvimento Rural">Secretaria de Desenvolvimento Rural</option>
-                <option value="Secretaria de Infraestrutura, Logística e Trânsito">Secretaria de Infraestrutura, Logística e Trânsito</option>
-                <option value="Secretaria de Planejamento e Gestão de Projetos">Secretaria de Planejamento e Gestão de Projetos</option>
-                <option value="Secretaria de Fazenda">Secretaria de Fazenda</option>
-                <option value="Secretaria de Desenvolvimento Econômico">Secretaria de Desenvolvimento Econômico</option>
-                <option value="Secretaria de Administração">Secretaria de Administração</option>
-            </select></div>
+                
+                <div class="flex flex-col">
+                    <label class="text-xs font-semibold text-slate-600 mb-1">Secretaria</label>
+                    <select id="edit-secretaria" class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm" required>
+                        <option value="">Selecione...</option>
+                        <option value="Gabinete do Prefeito">Gabinete do Prefeito</option>
+                        <option value="Secretaria de Saúde">Secretaria de Saúde</option>
+                        <option value="Secretaria de Educação">Secretaria de Educação</option>
+                        <option value="Secretaria de Desenvolvimento Social e Habitação">Secretaria de Desenvolvimento Social e Habitação</option>
+                        <option value="Secretaria de Desenvolvimento Rural">Secretaria de Desenvolvimento Rural</option>
+                        <option value="Secretaria de Infraestrutura, Logística e Trânsito">Secretaria de Infraestrutura, Logística e Trânsito</option>
+                        <!-- ✅ SECRETARIA DE PLANEJAMENTO CORRIGIDA -->
+                        <option value="Secretaria de Planejamento e Gestão de Projetos">Secretaria de Planejamento e Gestão de Projetos</option>
+                        <option value="Secretaria de Fazenda">Secretaria de Fazenda</option>
+                        <option value="Secretaria de Desenvolvimento Econômico">Secretaria de Desenvolvimento Econômico</option>
+                        <option value="Secretaria de Administração">Secretaria de Administração</option>
+                    </select>
+                </div>
+                
                 <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1">O que é?</label><textarea id="edit-descricao" class="w-full h-20 px-3 py-2 bg-slate-50 border rounded-lg text-sm" required></textarea></div>
                 <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1">Quem pode solicitar?</label><textarea id="edit-elegibilidade" class="w-full h-20 px-3 py-2 bg-slate-50 border rounded-lg text-sm"></textarea></div>
                 <div class="flex flex-col"><label class="text-xs font-semibold text-slate-600 mb-1">O que eu recebo?</label><input type="text" id="edit-resultado" class="w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm"></div>
@@ -154,25 +186,22 @@
                 <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-amber-500 flex flex-col"><label class="text-sm font-bold text-slate-700 uppercase mb-1">📄 Documentos (Um por linha)</label><textarea id="edit-documentos" class="w-full h-20 px-3 py-2 bg-white border rounded-lg text-sm" placeholder="RG original&#10;Comprovante de residência"></textarea></div>
 
                 <div class="bg-slate-50 p-4 rounded-xl border-l-4 border-violet-600 space-y-3">
-                    <div class="flex items-center justify-between"><h3 class="text-sm font-bold text-slate-700 uppercase">👣 Etapas</h3><button type="button" onclick="adicionarHTMLNovaEtapa()" class="px-3 py-1 bg-violet-600 text-white font-bold text-xs rounded">➕ Adicionar Etapa</button></div>
-                    <div id="container-etapas" class="space-y-3 max-h-80 overflow-y-auto"></div>
+                    <div class="flex items-center justify-between"><h3 class="text-sm font-bold text-slate-700 uppercase">👣 Etapas</h3><button type="button" onclick="adicionarHTMLNovaEtapa()" class="px-3 py-1 bg-violet-600 text-white font-bold text-xs rounded-lg shadow-sm">➕ Adicionar Etapa</button></div>
+                    <div id="container-etapas" class="space-y-3 max-h-80 overflow-y-auto pr-2"></div>
                 </div>
-                <!-- Container Flexbox para alinhar lado a lado com espaço (gap-4) -->
-        <div class="flex flex-col sm:flex-row gap-4 pt-4">
-         <!-- Botão Cancelar (tipo "button" para não disparar o envio do formulário) -->
-            <button type="button" id="btn-cancelar" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl shadow-md transition-colors text-center">
-        ❌ Cancelar
-            </button>
-        <!-- Botão Salvar (tipo "submit" que grava no Firebase) -->
-             <button type="submit" id="btn-submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors">
-        💾 Salvar Alterações
-            </button>
-        </div>
+                
+                <div class="flex flex-col sm:flex-row gap-4 pt-4 border-t border-slate-200">
+                    <button type="button" id="btn-cancelar" class="flex-1 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-3 px-6 rounded-xl transition-colors text-center shadow-sm">
+                        ❌ Cancelar
+                    </button>
+                    <button type="submit" id="btn-submit" class="flex-1 bg-[#002B5E] hover:bg-blue-900 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors">
+                        💾 Salvar Serviço
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- JAVASCRIPT RESTRUTURADO -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyAZk6WrwIHn3iRjT41Ju0GTocO1XJhFrtE",
@@ -220,7 +249,7 @@
         function adicionarHTMLNovaEtapa(t = "", d = "") {
             const c = document.getElementById('container-etapas'), n = c.children.length + 1, div = document.createElement('div');
             div.className = "bloco-etapa bg-white p-3 rounded-lg border shadow-sm space-y-2 relative";
-            div.innerHTML = `<div class="flex justify-between border-b pb-1"><span class="text-xs font-bold text-violet-600">ETAPA <span class="numero-etapa">${n}</span></span><button type="button" onclick="this.closest('.bloco-etapa').remove(); ordenarEtapas();" class="text-[10px] text-red-500 font-bold">🗑️ Remover</button></div><input type="text" class="etapa-titulo w-full p-2 bg-slate-50 border rounded text-xs font-semibold" placeholder="Título" value="${t}" required><textarea class="etapa-descricao w-full h-12 p-2 bg-slate-50 border rounded text-xs resize-none" placeholder="Descrição" required>${d}</textarea>`;
+            div.innerHTML = `<div class="flex justify-between border-b pb-1"><span class="text-xs font-bold text-violet-600">ETAPA <span class="numero-etapa">${n}</span></span><button type="button" onclick="this.closest('.bloco-etapa').remove(); ordenarEtapas();" class="text-[10px] text-red-500 font-bold hover:underline">🗑️ Remover</button></div><input type="text" class="etapa-titulo w-full p-2 bg-slate-50 border rounded text-xs font-semibold" placeholder="Título" value="${t}" required><textarea class="etapa-descricao w-full h-12 p-2 bg-slate-50 border rounded text-xs resize-none" placeholder="Descrição" required>${d}</textarea>`;
             c.appendChild(div);
         }
 
@@ -239,9 +268,6 @@
             } catch (err) { console.error("Erro EmailJS:", err); }
         }
 
-        // -------------------------------------------------------------
-        // TRATAR O ENVIO DA SOLICITAÇÃO DE ACESSO (COM CPF, TERMO E VALIDAÇÃO DE SENHA)
-        // -------------------------------------------------------------
         document.getElementById('form-solicitar').onsubmit = async (e) => {
             e.preventDefault();
             const n = document.getElementById('solicitar-nome').value.trim();
@@ -250,22 +276,15 @@
             const em = document.getElementById('solicitar-email').value.trim();
             const senha = document.getElementById('solicitar-senha').value;
             const confirmarSenha = document.getElementById('solicitar-confirmar-senha').value;
-            const termoAceito = document.getElementById('solicitar-termo').checked;
             const btn = document.getElementById('btn-solicitar');
 
             if (!validarCPF(c)) return alert("⚠️ CPF Inválido! Por favor, digite um CPF real.");
-            
-            // 🆕 VALIDAÇÃO DAS SENHAS REPETIDAS
-            if (senha !== confirmarSenha) {
-                return alert("⚠️ As senhas digitadas não coincidem! Verifique e tente novamente.");
-            }
+            if (senha !== confirmarSenha) return alert("⚠️ As senhas digitadas não coincidem! Verifique e tente novamente.");
 
             btn.disabled = true; btn.innerText = "⏳ Enviando...";
             emailUsuarioLogado = em;
 
-            // Envia a senha em formato limpo no corpo do e-mail para vocês copiarem
             const corpoEmail = `Solicitante: ${n}\nCPF: ${c}\nSecretaria: ${s}\nE-mail: ${em}\nSenha Desejada: ${senha}\n\nO servidor concordou formalmente com os termos de responsabilidade criminal, civil e auditoria técnica de logs.`;
-
             await enviarEmail("Solicitação de Acesso", "PENDENTE", corpoEmail);
             
             alert("✉️ Solicitação enviada com sucesso! Diego e Raquel foram notificados e avaliarão o seu acesso.");
@@ -282,8 +301,6 @@
             
             if (u) {
                 carregarServicosDoFirebase();
-                
-                // 🆕 CHECAGEM VIP: Se for o Diego ou a Raquel, revela o botão de exportar
                 const isMaster = EMAILS_ADMINISTRADORES.map(e => e.toLowerCase()).includes(emailUsuarioLogado.toLowerCase());
                 if (isMaster) {
                     document.getElementById('btn-exportar').classList.remove('hidden');
@@ -297,7 +314,7 @@
             e.preventDefault();
             const em = document.getElementById('login-email').value.trim(), se = document.getElementById('login-senha').value, btn = document.getElementById('btn-login');
             btn.disabled = true; btn.innerText = "⏳ Verificando...";
-            try { await auth.signInWithEmailAndPassword(em, se); } catch (err) { alert("❌ Erro: " + err.message); }
+            try { await auth.signInWithEmailAndPassword(em, se); } catch (err) { alert("❌ Erro: Usuário ou senha incorretos."); }
             btn.disabled = false; btn.innerText = "🔑 Entrar no Painel";
         };
 
@@ -305,11 +322,11 @@
 
         async function carregarServicosDoFirebase() {
             const corpo = document.getElementById('tabela-corpo');
-            corpo.innerHTML = `<tr><td colspan="4" class="p-8 text-center animate-pulse">⏳ Carregando dados do Firebase...</td></tr>`;
+            corpo.innerHTML = `<tr><td colspan="4" class="p-8 text-center animate-pulse font-semibold">⏳ Carregando banco de dados...</td></tr>`;
             try {
                 const doc = await db.collection('catalogo').doc('todosOsServicos').get();
                 if (doc.exists) { bancoDeDadosLocal = doc.data(); desenharTabelaReal(); }
-            } catch (err) { corpo.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-500">❌ Falha ao carregar dados.</td></tr>`; }
+            } catch (err) { corpo.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-500 font-bold">❌ Falha ao carregar dados.</td></tr>`; }
         }
 
         function desenharTabelaReal() {
@@ -320,15 +337,37 @@
 
             lista.forEach(s => {
                 const ativo = s.ativo !== false;
+                
+                // 🎨 CONFIGURAÇÃO DO BOTÃO GRADIENTE ANIMADO 
+                const classeBotaoStatus = ativo 
+                    ? 'from-red-500 via-rose-500 to-red-600 shadow-red-200 text-white' 
+                    : 'from-emerald-500 via-teal-500 to-emerald-600 shadow-emerald-200 text-white';
+                const textoBotaoStatus = ativo ? '🚫 Inativar' : '✅ Ativar';
+
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-colors border-b";
-                tr.innerHTML = `<td class="p-4 font-bold">ID ${s.id}</td><td class="p-4"><div class="font-semibold">${s.titulo}</div><span class="text-[10px] font-bold uppercase ${ativo?'text-emerald-600':'text-slate-400'}">${ativo?'Ativo':'Inativo'}</span></td><td class="p-4 text-slate-500">${s.secretaria}</td><td class="p-4 text-center whitespace-nowrap"><button type="button" onclick="abrirEditorDeServico(${s.id})" class="mr-3">✏️</button><button type="button" onclick="alternarStatusServico(${s.id}, ${!ativo})" class="mr-3">${ativo?'🚫':'🟢'}</button>${isMaster?`<button type="button" onclick="excluirServicoPermanente(${s.id},'${s.titulo.replace(/'/g, "\\'")}')" class="text-red-500">🗑️</button>`:''}</td>`;
+                tr.className = "hover:bg-blue-50 transition-colors border-b";
+                tr.innerHTML = `
+                    <td class="p-4 font-black text-slate-400 text-lg">#${s.id}</td>
+                    <td class="p-4">
+                        <div class="font-bold text-[#002B5E] text-base">${s.titulo}</div>
+                        <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${ativo?'bg-emerald-100 text-emerald-700':'bg-slate-200 text-slate-500'}">${ativo?'Ativo no Portal':'Oculto (Inativo)'}</span>
+                    </td>
+                    <td class="p-4 text-slate-500 font-medium text-sm">${s.secretaria}</td>
+                    <td class="p-4 text-center whitespace-nowrap flex items-center justify-center gap-3 mt-2">
+                        <button type="button" onclick="abrirEditorDeServico(${s.id})" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-600 px-3 py-2 rounded-lg shadow-sm transition-all" title="Editar este serviço">✏️ Editar</button>
+                        
+                        <button type="button" onclick="alternarStatusServico(${s.id}, ${!ativo})" class="btn-gradient-animado bg-gradient-to-r ${classeBotaoStatus} px-4 py-2 rounded-lg font-bold text-sm shadow-md transition-all flex items-center gap-2">
+                            ${textoBotaoStatus}
+                        </button>
+
+                        ${isMaster ? `<button type="button" onclick="excluirServicoPermanente(${s.id},'${s.titulo.replace(/'/g, "\\'")}')" class="bg-red-50 text-red-500 hover:bg-red-600 hover:text-white px-3 py-2 rounded-lg transition-colors" title="Excluir Definitivamente"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    </td>`;
                 corpo.appendChild(tr);
             });
         }
 
         async function alternarStatusServico(id, nSt) {
-            if (!confirm(`Deseja realmente ${nSt?'reativar':'inativar'} o serviço ID ${id}?`)) return;
+            if (!confirm(`Deseja realmente ${nSt?'ATIVAR (publicar no portal)':'INATIVAR (ocultar)'} o serviço ID ${id}?`)) return;
             bancoDeDadosLocal[`ID_${id}`].ativo = nSt;
             await db.collection('catalogo').doc('todosOsServicos').set({ [`ID_${id}`]: bancoDeDadosLocal[`ID_${id}`] }, { merge: true });
             desenharTabelaReal(); await registrarAuditoria();
@@ -336,7 +375,7 @@
         }
 
         async function excluirServicoPermanente(id, tit) {
-            if (!confirm(`⚠️ EXCLUSÃO FÍSICA: Deletar permanentemente "${tit}"?`)) return;
+            if (!confirm(`⚠️ PERIGO EXTREMO: Você está preste a deletar permanentemente "${tit}". Esta ação não pode ser desfeita. Confirmar?`)) return;
             await db.collection('catalogo').doc('todosOsServicos').update({ [`ID_${id}`]: firebase.firestore.FieldValue.delete() });
             delete bancoDeDadosLocal[`ID_${id}`]; desenharTabelaReal(); await registrarAuditoria();
             enviarEmail("Exclusão Física", id, `Apagado permanentemente do banco.`);
@@ -351,6 +390,10 @@
             document.getElementById('modal-titulo-servico').innerText = `Cadastrar Novo Serviço`;
             document.getElementById('form-servico').reset();
             document.getElementById('edit-id').value = prox;
+            
+            // Exibe o aviso que o novo serviço nascerá inativo
+            document.getElementById('aviso-inativo').classList.remove('hidden');
+
             ['presencial','telefone','email','web'].forEach(t => toggleCanal(t));
             document.getElementById('container-etapas').innerHTML = "";
             adicionarHTMLNovaEtapa("Solicitação do Serviço", "Explique o primeiro passo.");
@@ -363,7 +406,10 @@
             const isMaster = EMAILS_ADMINISTRADORES.map(e => e.toLowerCase()).includes(emailUsuarioLogado.toLowerCase());
             document.getElementById('edit-id').disabled = !isMaster;
 
-            document.getElementById('modal-titulo-servico').innerText = `Editar Serviço`;
+            // Oculta o aviso de novo inativo
+            document.getElementById('aviso-inativo').classList.add('hidden');
+
+            document.getElementById('modal-titulo-servico').innerText = `Editar Serviço #${id}`;
             document.getElementById('edit-id').value = s.id;
             document.getElementById('edit-titulo').value = s.titulo || "";
             document.getElementById('edit-secretaria').value = s.secretaria || "";
@@ -390,160 +436,75 @@
         }
 
         document.getElementById('form-servico').onsubmit = async (e) => {
-    e.preventDefault();
-    
-    const idNovo = Number(document.getElementById('edit-id').value);
-    const btn = document.getElementById('btn-submit');
-    const isEdicao = (idOriginalEdicao !== null);
-    
-    // Validações de ID duplicado
-    if (!isEdicao && bancoDeDadosLocal[`ID_${idNovo}`]) {
-        return alert(`Erro: O ID ${idNovo} ja esta ocupado pelo servico "${bancoDeDadosLocal['ID_' + idNovo].titulo}". Digite outro numero!`);
-    }
-    if (isEdicao && idNovo !== idOriginalEdicao && bancoDeDadosLocal[`ID_${idNovo}`]) {
-        return alert(`Erro: Voce nao pode mudar para o ID ${idNovo}, pois ele ja esta sendo usado por "${bancoDeDadosLocal['ID_' + idNovo].titulo}".`);
-    }
+            e.preventDefault();
+            
+            const idNovo = Number(document.getElementById('edit-id').value);
+            const btn = document.getElementById('btn-submit');
+            const isEdicao = (idOriginalEdicao !== null);
+            
+            if (!isEdicao && bancoDeDadosLocal[`ID_${idNovo}`]) return alert(`Erro: O ID ${idNovo} já está em uso.`);
+            if (isEdicao && idNovo !== idOriginalEdicao && bancoDeDadosLocal[`ID_${idNovo}`]) return alert(`Erro: O ID ${idNovo} já está em uso.`);
 
-    // Canais de atendimento
-    const canais = [];
-    ['presencial', 'telefone', 'email'].forEach(t => { 
-        if (document.getElementById(`chk-${t}`).checked) {
-            canais.push({ 
-                tipo: t.charAt(0).toUpperCase() + t.slice(1), 
-                local: document.getElementById(`input-${t}`).value.trim() 
-            }); 
-        }
-    });
-    
-    if (document.getElementById('chk-web').checked) {
-        canais.push({ 
-            tipo: "Online", 
-            local: "Internet", 
-            link: document.getElementById('input-web').value.trim() 
-        });
-    }
-    
-    if (canais.length === 0) {
-        return alert("Selecione ao menos um canal de atendimento!");
-    }
+            const canais = [];
+            ['presencial', 'telefone', 'email'].forEach(t => { 
+                if (document.getElementById(`chk-${t}`).checked) canais.push({ tipo: t.charAt(0).toUpperCase() + t.slice(1), local: document.getElementById(`input-${t}`).value.trim() }); 
+            });
+            if (document.getElementById('chk-web').checked) canais.push({ tipo: "Online", local: "Internet", link: document.getElementById('input-web').value.trim() });
+            if (canais.length === 0) return alert("Selecione ao menos um canal de atendimento!");
 
-    // Etapas do serviço
-    const etapas = [];
-    document.querySelectorAll('#container-etapas .bloco-etapa').forEach(b => {
-        etapas.push({ 
-            nome: b.querySelector('.etapa-titulo').value.trim(), 
-            desc: b.querySelector('.etapa-descricao').value.trim() 
-        });
-    });
-    
-    if (etapas.length === 0) {
-        return alert("Requer ao menos 1 etapa!");
-    }
+            const etapas = [];
+            document.querySelectorAll('#container-etapas .bloco-etapa').forEach(b => {
+                etapas.push({ nome: b.querySelector('.etapa-titulo').value.trim(), desc: b.querySelector('.etapa-descricao').value.trim() });
+            });
+            if (etapas.length === 0) return alert("Requer ao menos 1 etapa!");
 
-    // Bloquear botão durante o salvamento
-    btn.disabled = true; 
-    btn.innerText = "Gravando...";
-    
-    const sOrig = isEdicao ? bancoDeDadosLocal[`ID_${idOriginalEdicao}`] : null;
-    
-    // Montagem do objeto de dados do serviço
-    const sAtual = {
-        id: idNovo, 
-        ativo: sOrig ? (sOrig.ativo !== false) : true,
-        titulo: document.getElementById('edit-titulo').value.trim(), 
-        secretaria: document.getElementById('edit-secretaria').value,
-        descricao: document.getElementById('edit-descricao').value.trim(), 
-        elegibilidade: document.getElementById('edit-elegibilidade').value.trim(),
-        resultado: document.getElementById('edit-resultado').value.trim(),
-        prazos: { 
-            espera: document.getElementById('edit-prazo-espera').value.trim(), 
-            analise: document.getElementById('edit-prazo-analise').value.trim(), 
-            total: document.getElementById('edit-prazo-total').value.trim() 
-        },
-        custo: { 
-            gratuito: document.getElementById('edit-custo-gratuito').value === "true", 
-            descricao: document.getElementById('edit-custo-descricao').value.trim() 
-        },
-        canais: canais, 
-        etapas: etapas, 
-        documentos: document.getElementById('edit-documentos').value.split("\n").map(l => l.trim()).filter(l => l !== "")
-    };
+            btn.disabled = true; btn.innerText = "Gravando...";
+            const sOrig = isEdicao ? bancoDeDadosLocal[`ID_${idOriginalEdicao}`] : null;
+            
+            // ✅ REGRA DE OURO APLICADA AQUI: SE FOR NOVO (!sOrig), ELE NASCE INATIVO (false)
+            const sAtual = {
+                id: idNovo, 
+                ativo: sOrig ? (sOrig.ativo !== false) : false, 
+                titulo: document.getElementById('edit-titulo').value.trim(), 
+                secretaria: document.getElementById('edit-secretaria').value,
+                descricao: document.getElementById('edit-descricao').value.trim(), 
+                elegibilidade: document.getElementById('edit-elegibilidade').value.trim(),
+                resultado: document.getElementById('edit-resultado').value.trim(),
+                prazos: { espera: document.getElementById('edit-prazo-espera').value.trim(), analise: document.getElementById('edit-prazo-analise').value.trim(), total: document.getElementById('edit-prazo-total').value.trim() },
+                custo: { gratuito: document.getElementById('edit-custo-gratuito').value === "true", descricao: document.getElementById('edit-custo-descricao').value.trim() },
+                canais: canais, 
+                etapas: etapas, 
+                documentos: document.getElementById('edit-documentos').value.split("\n").map(l => l.trim()).filter(l => l !== "")
+            };
 
-    // Preparação do payload do Firestore
-    const payload = { [`ID_${idNovo}`]: sAtual };
-    if (isEdicao && idNovo !== idOriginalEdicao) {
-        payload[`ID_${idOriginalEdicao}`] = firebase.firestore.FieldValue.delete();
-    }
+            const payload = { [`ID_${idNovo}`]: sAtual };
+            if (isEdicao && idNovo !== idOriginalEdicao) payload[`ID_${idOriginalEdicao}`] = firebase.firestore.FieldValue.delete();
 
-    // Comunicação com o Firebase
-    try {
-        await db.collection('catalogo').doc('todosOsServicos').set(payload, { merge: true });
-        
-        if (isEdicao && idNovo !== idOriginalEdicao) {
-            delete bancoDeDadosLocal[`ID_${idOriginalEdicao}`];
-        }
-        
-        bancoDeDadosLocal[`ID_${idNovo}`] = sAtual;
-        desenharTabelaReal(); 
-        await registrarAuditoria();
-        
-        await enviarEmail(
-            sOrig ? "Edicao de Registro" : "Criacao de Registro", 
-            idNovo, 
-            `Servico gravado com ID manual ${idNovo}. ${isEdicao && idNovo !== idOriginalEdicao ? 'O ID antigo ' + idOriginalEdicao + ' foi removido.' : ''}`
-        );
-        
-        alert("Firebase Atualizado com Sucesso!"); 
-        document.getElementById('modal-edicao').classList.add('hidden');
-    } catch (err) { 
-        alert("Erro critico ao salvar."); 
-    } finally {
-        // O bloco 'finally' sempre roda no final, garantindo que o botão destrave mesmo se houver erro!
-        btn.disabled = false; 
-        btn.innerText = "Salvar Alteracoes";
-    }
-};
-            // Fechamento correto do form-servico.onsubmit
+            try {
+                await db.collection('catalogo').doc('todosOsServicos').set(payload, { merge: true });
+                if (isEdicao && idNovo !== idOriginalEdicao) delete bancoDeDadosLocal[`ID_${idOriginalEdicao}`];
+                bancoDeDadosLocal[`ID_${idNovo}`] = sAtual;
+                desenharTabelaReal(); await registrarAuditoria();
+                await enviarEmail(sOrig ? "Edicao" : "Criacao", idNovo, `Serviço gravado. Status inicial: ${sAtual.ativo ? 'Ativo' : 'Inativo'}.`);
+                document.getElementById('modal-edicao').classList.add('hidden');
+            } catch (err) { alert("Erro ao salvar."); } 
+            finally { btn.disabled = false; btn.innerText = "💾 Salvar Serviço"; }
+        };
 
-        // Ações para fechar o modal (comentários limpos para não confundir o Blockman)
         document.getElementById('botao-fechar').onclick = () => document.getElementById('modal-edicao').classList.add('hidden');
         document.getElementById('btn-cancelar').onclick = () => document.getElementById('modal-edicao').classList.add('hidden');
     
-        // funcao que faz o bacup dos servicos
-       function exportarDadosJSON() {
-            // Verifica se a tabela já foi carregada do Firebase
-            if (Object.keys(bancoDeDadosLocal).length === 0) {
-                return alert("⚠️ Não existem dados carregados no momento para exportar.");
-            }
-            
-            // 🆕 INSERE A DATA E HORA NO TOPO DO ARQUIVO
+        function exportarDadosJSON() {
+            if (Object.keys(bancoDeDadosLocal).length === 0) return alert("⚠️ Não há dados carregados.");
             const dataExata = new Date().toLocaleString('pt-BR');
-            const dadosParaExportar = {
-                "_METADADOS": `Backup gerado em ${dataExata}`,
-                ...bancoDeDadosLocal // O "..." copia todos os serviços logo abaixo da data
-            };
-            
-            // 1. Converte o novo objeto para texto (JSON formatado com recuo de 2 espaços)
-            const dadosString = JSON.stringify(dadosParaExportar, null, 2);
-            
-            // 2. Cria um arquivo "virtual" dentro do próprio navegador
-            const blob = new Blob([dadosString], { type: 'application/json' });
+            const dadosParaExportar = { "_METADADOS": `Backup gerado em ${dataExata}`, ...bancoDeDadosLocal };
+            const blob = new Blob([JSON.stringify(dadosParaExportar, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            
-            // 3. Cria um link fantasma, injeta na tela e clica nele sozinho para forçar o download
             const linkBackup = document.createElement('a');
             linkBackup.href = url;
-            
-            // 4. Define o nome do arquivo pegando a data de hoje automaticamente
-            const dataHoje = new Date().toISOString().slice(0, 10);
-            linkBackup.download = `backup_carta_servicos_horizontina_${dataHoje}.json`;
-            
-            document.body.appendChild(linkBackup);
-            linkBackup.click();
-            
-            // 5. Limpa a sujeira do link fantasma
-            document.body.removeChild(linkBackup);
-            URL.revokeObjectURL(url);
+            linkBackup.download = `backup_carta_servicos_horizontina_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(linkBackup); linkBackup.click();
+            document.body.removeChild(linkBackup); URL.revokeObjectURL(url);
         }
     </script>
 </body>
