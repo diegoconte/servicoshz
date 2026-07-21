@@ -249,7 +249,7 @@
         function adicionarHTMLNovaEtapa(t = "", d = "") {
             const c = document.getElementById('container-etapas'), n = c.children.length + 1, div = document.createElement('div');
             div.className = "bloco-etapa bg-white p-3 rounded-lg border shadow-sm space-y-2 relative";
-            div.innerHTML = `<div class="flex justify-between border-b pb-1"><span class="text-xs font-bold text-violet-600">ETAPA <span class="numero-etapa">${n}</span></span><button type="button" onclick="this.closest('.bloco-etapa').remove(); ordenarEtapas();" class="text-[10px] text-red-500 font-bold hover:underline">🗑️ Remover</button></div><input type="text" class="etapa-titulo w-full p-2 bg-slate-50 border rounded text-xs font-semibold" placeholder="Título" value="${t}" required><textarea class="etapa-descricao w-full h-12 p-2 bg-slate-50 border rounded text-xs resize-none" placeholder="Descrição" required>${d}</textarea>`;
+            div.innerHTML = `<div class="flex justify-between border-b pb-1"><span class="text-xs font-bold text-violet-600">ETAPA <span class="numero-etapa">${n}</span></span><button type="button" onclick="this.closest('.bloco-etapa').remove(); ordenarEtapas();" class="text-[10px] text-red-500 font-bold hover:underline">🗑️ Remover</button></div><input type="text" class="etapa-titulo w-full p-2 bg-slate-50 border rounded text-xs font-semibold" placeholder="Título" value="${t}" required><textarea class="etapa-descricao w-full h-12 p-2 bg-slate-50 border rounded text-xs resize-none" placeholder="Descrição">${d}</textarea>`;
             c.appendChild(div);
         }
 
