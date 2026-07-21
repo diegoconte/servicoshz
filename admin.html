@@ -147,7 +147,6 @@
                         <option value="Secretaria de Desenvolvimento Social e Habitação">Secretaria de Desenvolvimento Social e Habitação</option>
                         <option value="Secretaria de Desenvolvimento Rural">Secretaria de Desenvolvimento Rural</option>
                         <option value="Secretaria de Infraestrutura, Logística e Trânsito">Secretaria de Infraestrutura, Logística e Trânsito</option>
-                        <!-- ✅ SECRETARIA DE PLANEJAMENTO CORRIGIDA -->
                         <option value="Secretaria de Planejamento e Gestão de Projetos">Secretaria de Planejamento e Gestão de Projetos</option>
                         <option value="Secretaria de Fazenda">Secretaria de Fazenda</option>
                         <option value="Secretaria de Desenvolvimento Econômico">Secretaria de Desenvolvimento Econômico</option>
@@ -249,7 +248,7 @@
         function adicionarHTMLNovaEtapa(t = "", d = "") {
             const c = document.getElementById('container-etapas'), n = c.children.length + 1, div = document.createElement('div');
             div.className = "bloco-etapa bg-white p-3 rounded-lg border shadow-sm space-y-2 relative";
-            div.innerHTML = `<div class="flex justify-between border-b pb-1"><span class="text-xs font-bold text-violet-600">ETAPA <span class="numero-etapa">${n}</span></span><button type="button" onclick="this.closest('.bloco-etapa').remove(); ordenarEtapas();" class="text-[10px] text-red-500 font-bold hover:underline">🗑️ Remover</button></div><input type="text" class="etapa-titulo w-full p-2 bg-slate-50 border rounded text-xs font-semibold" placeholder="Título" value="${t}" required><textarea class="etapa-descricao w-full h-12 p-2 bg-slate-50 border rounded text-xs resize-none" placeholder="Descrição">${d}</textarea>`;
+            div.innerHTML = `<div class="flex justify-between border-b pb-1"><span class="text-xs font-bold text-violet-600">ETAPA <span class="numero-etapa">${n}</span></span><button type="button" onclick="this.closest('.bloco-etapa').remove(); ordenarEtapas();" class="text-[10px] text-red-500 font-bold hover:underline">🗑️ Remover</button></div><input type="text" class="etapa-titulo w-full p-2 bg-slate-50 border rounded text-xs font-semibold" placeholder="Título" value="${t}" required><textarea class="etapa-descricao w-full h-12 p-2 bg-slate-50 border rounded text-xs resize-none" placeholder="Descrição (Opcional)">${d}</textarea>`;
             c.appendChild(div);
         }
 
@@ -257,9 +256,18 @@
             document.querySelectorAll('#container-etapas .numero-etapa').forEach((b, i) => b.innerText = i + 1);
         }
 
-        async function registrarAuditoria() {
+        async function registrarAuditoria(detalhe = "Ação no painel") {
             const e = emailUsuarioLogado.toLowerCase().replace(/\./g, '_').replace(/@/g, '_at_');
             await db.collection('estatisticas').doc('auditoria').set({ [e]: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+            
+            try {
+                await db.collection('registros_atividades').add({
+                    email: emailUsuarioLogado,
+                    acao: detalhe,
+                    dataHora: new Date().toLocaleString('pt-BR'),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch(err) { console.error("Erro ao registrar log detalhado", err); }
         }
 
         async function enviarEmail(ac, id, det) {
@@ -314,7 +322,15 @@
             e.preventDefault();
             const em = document.getElementById('login-email').value.trim(), se = document.getElementById('login-senha').value, btn = document.getElementById('btn-login');
             btn.disabled = true; btn.innerText = "⏳ Verificando...";
-            try { await auth.signInWithEmailAndPassword(em, se); } catch (err) { alert("❌ Erro: Usuário ou senha incorretos."); }
+            try { 
+                await auth.signInWithEmailAndPassword(em, se); 
+                await db.collection('registros_atividades').add({
+                    email: em,
+                    acao: "Realizou Login no Sistema",
+                    dataHora: new Date().toLocaleString('pt-BR'),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (err) { alert("❌ Erro: Usuário ou senha incorretos."); }
             btn.disabled = false; btn.innerText = "🔑 Entrar no Painel";
         };
 
@@ -372,14 +388,16 @@
             if (!confirm(`Deseja realmente ${nSt?'ATIVAR (publicar no portal)':'INATIVAR (ocultar)'} o serviço ID ${id}?`)) return;
             bancoDeDadosLocal[`ID_${id}`].ativo = nSt;
             await db.collection('catalogo').doc('todosOsServicos').set({ [`ID_${id}`]: bancoDeDadosLocal[`ID_${id}`] }, { merge: true });
-            desenharTabelaReal(); await registrarAuditoria();
+            desenharTabelaReal(); 
+            await registrarAuditoria(`Alterou status do serviço #${id} para ${nSt ? 'Ativo' : 'Inativo'}`);
             enviarEmail(nSt ? "Reativação" : "Inativação", id, `Status alterado para ${nSt?'ATIVO':'INATIVO'}.`);
         }
 
         async function excluirServicoPermanente(id, tit) {
             if (!confirm(`⚠️ PERIGO EXTREMO: Você está preste a deletar permanentemente "${tit}". Esta ação não pode ser desfeita. Confirmar?`)) return;
             await db.collection('catalogo').doc('todosOsServicos').update({ [`ID_${id}`]: firebase.firestore.FieldValue.delete() });
-            delete bancoDeDadosLocal[`ID_${id}`]; desenharTabelaReal(); await registrarAuditoria();
+            delete bancoDeDadosLocal[`ID_${id}`]; desenharTabelaReal(); 
+            await registrarAuditoria(`Excluiu fisicamente o serviço #${id}`);
             enviarEmail("Exclusão Física", id, `Apagado permanentemente do banco.`);
         }
 
@@ -405,6 +423,7 @@
             adicionarHTMLNovaEtapa("Solicitação do Serviço", "Explique o primeiro passo.");
             document.getElementById('modal-edicao').classList.remove('hidden');
         }
+        
         function abrirEditorDeServico(id) {
             const s = bancoDeDadosLocal[`ID_${id}`]; if (!s) return;
             idOriginalEdicao = Number(id);
@@ -451,9 +470,10 @@
             // Exibe o aviso que vai nascer Inativo
             document.getElementById('aviso-inativo').classList.remove('hidden');
 
-            // Calcula qual será o próximo ID livre
+            // Calcula qual será o próximo ID livre preenchendo os buracos
             const ids = Object.values(bancoDeDadosLocal).map(serv => Number(serv.id) || 0);
-            const prox = ids.length > 0 ? Math.max(...ids) + 1 : 1;
+            let prox = 1;
+            while (ids.includes(prox)) { prox++; }
 
             document.getElementById('modal-titulo-servico').innerText = `Duplicar Serviço (Cópia do #${id})`;
             document.getElementById('edit-id').value = prox; // Coloca o novo ID
@@ -530,7 +550,8 @@
                 await db.collection('catalogo').doc('todosOsServicos').set(payload, { merge: true });
                 if (isEdicao && idNovo !== idOriginalEdicao) delete bancoDeDadosLocal[`ID_${idOriginalEdicao}`];
                 bancoDeDadosLocal[`ID_${idNovo}`] = sAtual;
-                desenharTabelaReal(); await registrarAuditoria();
+                desenharTabelaReal(); 
+                await registrarAuditoria(isEdicao ? `Editou o serviço #${idNovo}` : `Criou o serviço #${idNovo}`);
                 await enviarEmail(sOrig ? "Edicao" : "Criacao", idNovo, `Serviço gravado. Status inicial: ${sAtual.ativo ? 'Ativo' : 'Inativo'}.`);
                 document.getElementById('modal-edicao').classList.add('hidden');
             } catch (err) { alert("Erro ao salvar."); } 

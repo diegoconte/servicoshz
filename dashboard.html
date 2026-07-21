@@ -14,6 +14,9 @@
 
     <!-- O Tailwind CSS que pinta nossa tela -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Ícones FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10 flex flex-col justify-center items-center">
 
@@ -42,7 +45,6 @@
             </button>
         </form>
     </div>
-
 
     <!-- ======================================================= -->
     <!-- 2. CONTAINER PRINCIPAL DO DASHBOARD                     -->
@@ -93,27 +95,7 @@
                 <span id="stat-media-detalhe" class="text-[11px] text-amber-500 mt-1 block">Cliques por usuário</span>
             </div>
         </div>
-<!-- Tabela de Avaliação e Satisfação do Cidadão -->
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-6">
-        <h3 class="text-lg font-bold text-[#002B5E] mb-4 flex items-center gap-2">
-            <i class="fas fa-star text-yellow-500"></i> Satisfação de Conteúdo (Utilidade)
-        </h3>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-                <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
-                        <th class="p-3 font-semibold">Serviço</th>
-                        <th class="p-3 font-semibold text-center text-green-600 w-24">👍 Útil</th>
-                        <th class="p-3 font-semibold text-center text-red-600 w-24">👎 Confuso</th>
-                        <th class="p-3 font-semibold text-center w-36">Aprovação</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-feedback" class="divide-y divide-slate-100">
-                    <tr><td colspan="4" class="p-4 text-center text-slate-500">⏳ Carregando avaliações...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+
         <!-- 📊 GRÁFICOS: SEÇÃO 1 -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 lg:col-span-2">
@@ -135,9 +117,8 @@
             </div>
         </div>
 
-        <!-- 📊 GRÁFICOS: SEÇÃO 2 (NOVOS GRÁFICOS!) -->
+        <!-- 📊 GRÁFICOS: SEÇÃO 2 -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- NOVO: Gráfico de Acessos por Mês (12 meses ordenados!) -->
             <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 lg:col-span-2">
                 <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
                     📅 Histórico de Acessos Mensais (Visitas)
@@ -147,14 +128,60 @@
                 </div>
             </div>
 
-            <!-- NOVO: Gráfico de Alterações por Usuário (Auditoria) -->
+            <!-- Gráfico de Alterações por Usuário (Auditoria) -->
             <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
                 <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
-                    ✍️ Histórico de Alterações por Usuário
+                    📊 Volume de Ações por Usuário (Admin)
                 </h3>
                 <div class="h-80 relative flex items-center justify-center">
                     <canvas id="chart-auditoria"></canvas>
                 </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Avaliação e Satisfação do Cidadão -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+            <h3 class="text-lg font-bold text-[#002B5E] mb-4 flex items-center gap-2">
+                <i class="fas fa-star text-yellow-500"></i> Satisfação de Conteúdo (Utilidade)
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                            <th class="p-3 font-semibold">Serviço</th>
+                            <th class="p-3 font-semibold text-center text-green-600 w-24">👍 Útil</th>
+                            <th class="p-3 font-semibold text-center text-red-600 w-24">👎 Confuso</th>
+                            <th class="p-3 font-semibold text-center w-36">Aprovação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-feedback" class="divide-y divide-slate-100">
+                        <tr><td colspan="4" class="p-4 text-center text-slate-500">⏳ Carregando avaliações...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TABELA DE LOG DETALHADO DOS USUÁRIOS ADMIN -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-bold text-[#002B5E] flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Histórico Detalhado de Acessos e Ações
+                </h3>
+                <span class="text-xs font-bold bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Últimas 50 ações</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                        <tr>
+                            <th class="p-4 w-48">Data e Hora</th>
+                            <th class="p-4 w-64">Usuário (E-mail)</th>
+                            <th class="p-4">Descrição da Atividade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-logs" class="divide-y divide-slate-100">
+                        <tr><td colspan="3" class="p-8 text-center text-slate-500 animate-pulse">Carregando histórico de atividades...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -201,10 +228,11 @@
             if (usuario) {
                 loginBox.classList.add('hidden');
                 dashboardBox.classList.remove('hidden');
-                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10";
+                document.body.className = "bg-slate-100 text-slate-800 min-h-screen p-4 md:p-10 flex flex-col items-center";
                 
                 carregarEstatísticasDoFirebase();
-                carregarTabelaDeFeedback(); // 🆕 NOSSO GATILHO DA TABELA
+                carregarTabelaDeFeedback();
+                carregarTabelaLogs(); // Puxa o Log de Acessos em Tempo Real
                 
             } else {
                 dashboardBox.classList.add('hidden');
@@ -263,7 +291,46 @@
             }
         }
 
-        // 📊 TABELA DE FEEDBACK (Agora está livre na raiz do código!)
+        // 📊 TABELA DE LOGS (QUEM ACESSOU, QUE HORAS, O QUE FEZ)
+        function carregarTabelaLogs() {
+            const tabela = document.getElementById('tabela-logs');
+            
+            // Puxa os 50 registros mais recentes em tempo real
+            db.collection('registros_atividades')
+              .orderBy('timestamp', 'desc')
+              .limit(50)
+              .onSnapshot((snapshot) => {
+                  tabela.innerHTML = "";
+                  if (snapshot.empty) {
+                      tabela.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500">Nenhum registro de atividade encontrado.</td></tr>`;
+                      return;
+                  }
+
+                  snapshot.forEach(doc => {
+                      const log = doc.data();
+                      const tr = document.createElement('tr');
+                      tr.className = "hover:bg-blue-50 transition-colors border-b border-slate-100";
+                      
+                      // Destaca cores baseadas na ação (Login vs Criou vs Excluiu)
+                      let corAcao = "text-slate-700 font-medium";
+                      if (log.acao.includes("Login")) corAcao = "text-blue-600 font-bold";
+                      if (log.acao.includes("Excluiu")) corAcao = "text-red-600 font-bold";
+                      if (log.acao.includes("Criou")) corAcao = "text-emerald-600 font-bold";
+
+                      tr.innerHTML = `
+                          <td class="p-4 text-xs font-semibold text-slate-500 whitespace-nowrap"><i class="far fa-clock mr-1"></i> ${log.dataHora}</td>
+                          <td class="p-4 font-bold text-slate-800">${log.email}</td>
+                          <td class="p-4 ${corAcao}">${log.acao}</td>
+                      `;
+                      tabela.appendChild(tr);
+                  });
+              }, (erro) => {
+                  console.error("Erro ao puxar tabela de logs:", erro);
+                  tabela.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-red-500">Falha ao carregar histórico em tempo real.</td></tr>`;
+              });
+        }
+
+        // 📊 TABELA DE FEEDBACK DO CIDADÃO
         async function carregarTabelaDeFeedback() {
             try {
                 const container = document.getElementById('tabela-feedback');
@@ -280,25 +347,20 @@
                 // Converte os dados brutos em uma lista organizada
                 const listaAvaliacoes = Object.keys(dadosFirebase).map(chaveID => {
                     const idNumerico = parseInt(chaveID.replace('ID_', ''));
-                    
-                    // Busca o nome do serviço no banco de dados do Dashboard
                     const servLocal = databaseServicos[`ID_${idNumerico}`];
                     const tituloServico = servLocal ? servLocal.titulo : `Serviço ID ${idNumerico}`;
                     
                     const votosSim = dadosFirebase[chaveID].sim || 0;
                     const votosNao = dadosFirebase[chaveID].nao || 0;
                     const totalVotos = votosSim + votosNao;
-                    // Calcula a porcentagem de aprovação
                     const taxaAprovacao = totalVotos > 0 ? Math.round((votosSim / totalVotos) * 100) : 0;
                     
                     return { titulo: tituloServico, sim: votosSim, nao: votosNao, total: totalVotos, taxa: taxaAprovacao };
                 });
 
-                // Ordena a lista para os que receberam mais votos ficarem no topo
                 listaAvaliacoes.sort((a, b) => b.total - a.total);
 
                 listaAvaliacoes.forEach(item => {
-                    // Decide a cor da barra de progresso com base na nota
                     let corTaxa = item.taxa >= 70 ? 'text-green-600' : (item.taxa >= 50 ? 'text-amber-500' : 'text-red-600');
                     let corBarra = item.taxa >= 70 ? 'bg-green-500' : (item.taxa >= 50 ? 'bg-amber-400' : 'bg-red-500');
                     
@@ -316,9 +378,7 @@
                         </tr>
                     `;
                 });
-            } catch (erro) {
-                console.error("Erro ao carregar a tabela de feedback:", erro);
-            }
+            } catch (erro) { console.error("Erro ao carregar feedback:", erro); }
         }
 
         // PROCESSAMENTO DOS GRÁFICOS RESTANTES
@@ -368,15 +428,13 @@
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } }
                 }
             });
 
             // ---------------------------------------------------------
-            // GRÁFICO 2: DISPOSITIVOS (DOUGHNUT)
+            // GRÁFICO 2: DISPOSITIVOS
             // ---------------------------------------------------------
             new Chart(document.getElementById('chart-dispositivos'), {
                 type: 'doughnut',
@@ -387,20 +445,14 @@
                         backgroundColor: ['#f59e0b', '#002B5E']
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
             });
 
             // ---------------------------------------------------------
             // GRÁFICO 3: CONCENTRAÇÃO POR SECRETARIA
             // ---------------------------------------------------------
             const secretariasNoBanco = [...new Set(listaServicos.map(s => s.secretaria))].sort();
-            const distribuicaoSecretarias = secretariasNoBanco.map(sec => {
-                return listaServicos.filter(s => s.secretaria === sec).length;
-            });
+            const distribuicaoSecretarias = secretariasNoBanco.map(sec => listaServicos.filter(s => s.secretaria === sec).length);
 
             new Chart(document.getElementById('chart-secretarias'), {
                 type: 'bar',
@@ -414,16 +466,13 @@
                     }]
                 },
                 options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
 
             // ---------------------------------------------------------
-            // GRÁFICO 4: ACESSOS POR MÊS (ORDEM CRONOLÓGICA)
+            // GRÁFICO 4: ACESSOS POR MÊS
             // ---------------------------------------------------------
             const mesesOrdem = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const dadosMensaisOrdenados = mesesOrdem.map(mes => databaseAcessosMensais[mes] || 0);
@@ -435,50 +484,36 @@
                     datasets: [{
                         label: 'Visitas ao Site',
                         data: dadosMensaisOrdenados,
-                        borderColor: '#0284c7',
-                        backgroundColor: 'rgba(2, 132, 199, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.3,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#0284c7'
+                        borderColor: '#0284c7', backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                        borderWidth: 3, fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#0284c7'
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
 
             // ---------------------------------------------------------
-            // GRÁFICO 5: ALTERAÇÕES POR USUÁRIO (AUDITORIA)
+            // GRÁFICO 5: ALTERAÇÕES POR USUÁRIO (AUDITORIA GRÁFICO)
             // ---------------------------------------------------------
             const chavesAuditoria = Object.keys(databaseAuditoria);
-            
-            const labelsUsuarios = chavesAuditoria.map(key => {
-                return key.replace(/_at_/g, '@').replace(/_/g, '.');
-            });
-
+            const labelsUsuarios = chavesAuditoria.map(key => key.replace(/_at_/g, '@').replace(/_/g, '.'));
             const dadosAuditoria = chavesAuditoria.map(key => databaseAuditoria[key] || 0);
 
             new Chart(document.getElementById('chart-auditoria'), {
                 type: 'bar',
                 data: {
-                    labels: labelsUsuarios.length > 0 ? labelsUsuarios : ["Sem dados de alteração"],
+                    labels: labelsUsuarios.length > 0 ? labelsUsuarios : ["Sem dados"],
                     datasets: [{
                         label: 'Alterações Realizadas',
                         data: dadosAuditoria.length > 0 ? dadosAuditoria : [0],
-                        backgroundColor: '#8b5cf6',
-                        borderRadius: 6
+                        backgroundColor: '#8b5cf6', borderRadius: 6
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
         }
