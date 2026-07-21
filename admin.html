@@ -83,7 +83,7 @@
             </div>
            <div class="flex flex-wrap gap-2">
             <!-- Botão de Exportar carta em a4 -->        
-            <a href="exportar-cartas.html" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-sm transition-colors shadow-sm flex items-center gap-2">
+            <a href="gerador_cartas_a4.html" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-sm transition-colors shadow-sm flex items-center gap-2">
                 <i class="fas fa-print"></i> Gerar Cartas Físicas
             </a>
             <!-- Botão de Exportar Backup (Nasce oculto) -->
@@ -355,6 +355,8 @@
                     <td class="p-4 text-slate-500 font-medium text-sm">${s.secretaria}</td>
                     <td class="p-4 text-center whitespace-nowrap flex items-center justify-center gap-3 mt-2">
                         <button type="button" onclick="abrirEditorDeServico(${s.id})" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-600 px-3 py-2 rounded-lg shadow-sm transition-all" title="Editar este serviço">✏️ Editar</button>
+                        
+                        <button type="button" onclick="duplicarServico(${s.id})" class="bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded-lg shadow-sm transition-all" title="Criar uma cópia deste serviço">📑 Duplicar</button>
                         
                         <button type="button" onclick="alternarStatusServico(${s.id}, ${!ativo})" class="btn-gradient-animado bg-gradient-to-r ${classeBotaoStatus} px-4 py-2 rounded-lg font-bold text-sm shadow-md transition-all flex items-center gap-2">
                             ${textoBotaoStatus}
