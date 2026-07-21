@@ -435,6 +435,47 @@
             document.getElementById('modal-edicao').classList.remove('hidden');
         }
 
+        function duplicarServico(id) {
+            const s = bancoDeDadosLocal[`ID_${id}`]; if (!s) return;
+            
+            // Tratamos como um NOVO serviço zerando o id original
+            idOriginalEdicao = null;
+            const isMaster = EMAILS_ADMINISTRADORES.map(e => e.toLowerCase()).includes(emailUsuarioLogado.toLowerCase());
+            document.getElementById('edit-id').disabled = !isMaster;
+
+            // Exibe o aviso que vai nascer Inativo
+            document.getElementById('aviso-inativo').classList.remove('hidden');
+
+            // Calcula qual será o próximo ID livre
+            const ids = Object.values(bancoDeDadosLocal).map(serv => Number(serv.id) || 0);
+            const prox = ids.length > 0 ? Math.max(...ids) + 1 : 1;
+
+            document.getElementById('modal-titulo-servico').innerText = `Duplicar Serviço (Cópia do #${id})`;
+            document.getElementById('edit-id').value = prox; // Coloca o novo ID
+            document.getElementById('edit-titulo').value = (s.titulo || "") + " (Cópia)"; // Adiciona "Cópia" no final do título
+            document.getElementById('edit-secretaria').value = s.secretaria || "";
+            document.getElementById('edit-descricao').value = s.descricao || "";
+            document.getElementById('edit-elegibilidade').value = s.elegibilidade || "";
+            document.getElementById('edit-resultado').value = s.resultado || "";
+            document.getElementById('edit-prazo-espera').value = s.prazos?.espera || "";
+            document.getElementById('edit-prazo-analise').value = s.prazos?.analise || "";
+            document.getElementById('edit-prazo-total').value = s.prazos?.total || "";
+            document.getElementById('edit-custo-gratuito').value = String(s.custo?.gratuito);
+            document.getElementById('edit-custo-descricao').value = s.custo?.descricao || "";
+            document.getElementById('edit-documentos').value = s.documentos ? s.documentos.join("\n") : "";
+
+            ['presencial','telefone','email','web'].forEach(t => { document.getElementById(`chk-${t}`).checked = false; toggleCanal(t); });
+            (s.canais || []).forEach(c => {
+                const t = c.tipo === "Presencial" ? 'presencial' : c.tipo === "Telefone" ? 'telefone' : c.tipo === "E-mail" ? 'email' : 'web';
+                document.getElementById(`chk-${t}`).checked = true; toggleCanal(t);
+                document.getElementById(`input-${t}`).value = c.local || c.link || "";
+            });
+
+            const ce = document.getElementById('container-etapas'); ce.innerHTML = "";
+            (s.etapas || []).forEach(e => adicionarHTMLNovaEtapa(e.nome || e.titulo || "", e.desc || e.descricao || ""));
+            document.getElementById('modal-edicao').classList.remove('hidden');
+        }
+
         document.getElementById('form-servico').onsubmit = async (e) => {
             e.preventDefault();
             
