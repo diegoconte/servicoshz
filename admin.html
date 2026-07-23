@@ -6,7 +6,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- O script do EmailJS foi removido daqui com sucesso! -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
@@ -82,6 +82,23 @@
                 <a href="dashboard.html" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-xs rounded-xl transition-colors">📈 Ver Dashboard</a>
             </div>
            
+            <!-- SELETOR DE SECRETARIAS (Filtro) -->
+            <div class="flex-grow flex justify-end my-4 mx-4">
+                <select id="filtro-secretaria-tabela" onchange="desenharTabelaReal()" class="w-full max-w-sm px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all">
+                    <option value="TODAS">🏛️ Todas as Secretarias</option>
+                    <option value="Gabinete do Prefeito">Gabinete do Prefeito</option>
+                    <option value="Secretaria de Saúde">Secretaria de Saúde</option>
+                    <option value="Secretaria de Educação">Secretaria de Educação</option>
+                    <option value="Secretaria de Desenvolvimento Social e Habitação">Secretaria de Desenvolvimento Social e Habitação</option>
+                    <option value="Secretaria de Desenvolvimento Rural">Secretaria de Desenvolvimento Rural</option>
+                    <option value="Secretaria de Infraestrutura, Logística e Trânsito">Secretaria de Infraestrutura, Logística e Trânsito</option>
+                    <option value="Secretaria de Planejamento e Gestão de Projetos">Secretaria de Planejamento e Gestão de Projetos</option>
+                    <option value="Secretaria de Fazenda">Secretaria de Fazenda</option>
+                    <option value="Secretaria de Desenvolvimento Econômico">Secretaria de Desenvolvimento Econômico</option>
+                    <option value="Secretaria de Administração">Secretaria de Administração</option>
+                </select>
+            </div>
+
            <div class="flex flex-wrap gap-2">
             <!-- Botão de Exportar carta em a4 -->        
             <a href="gerador_cartas_a4.html" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-sm transition-colors shadow-sm flex items-center gap-2">
@@ -97,25 +114,7 @@
             </button>
             </div>
         </div>
-         <!-- NOVO: Filtro por Secretaria -->
-        <div class="flex-grow flex justify-between mb-6">
-                <select id="filtro-secretaria-tabela" onchange="desenharTabelaReal()" class="w-full max-w-sm px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all">
-                    <option value="TODAS">🏛️ Todas as Secretarias</option>
-                    <option value="Gabinete do Prefeito">Gabinete do Prefeito</option>
-                    <option value="Secretaria de Saúde">Secretaria de Saúde</option>
-                    <option value="Secretaria de Educação">Secretaria de Educação</option>
-                    <option value="Secretaria de Desenvolvimento Social e Habitação">Secretaria de Desenvolvimento Social e Habitação</option>
-                    <option value="Secretaria de Desenvolvimento Rural">Secretaria de Desenvolvimento Rural</option>
-                    <option value="Secretaria de Infraestrutura, Logística e Trânsito">Secretaria de Infraestrutura, Logística e Trânsito</option>
-                    <option value="Secretaria de Planejamento e Gestão de Projetos">Secretaria de Planejamento e Gestão de Projetos</option>
-                    <option value="Secretaria de Fazenda">Secretaria de Fazenda</option>
-                    <option value="Secretaria de Desenvolvimento Econômico">Secretaria de Desenvolvimento Econômico</option>
-                    <option value="Secretaria de Administração">Secretaria de Administração</option>
-                </select>
-                
-            </div>
-
-
+        
         <div class="overflow-x-auto rounded-xl border border-slate-200">
             <table class="w-full text-left text-sm">
                 <thead>
@@ -235,8 +234,7 @@
         let emailUsuarioLogado = "", bancoDeDadosLocal = {};
         let idOriginalEdicao = null;
 
-        emailjs.init("N73BvpXvytn4cs4xN");
-
+        // Máscara e Validação de CPF
         function mascaraCPF(i) {
             let v = i.value.replace(/\D/g, "");
             v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
@@ -267,7 +265,7 @@
         function adicionarHTMLNovaEtapa(t = "", d = "") {
             const c = document.getElementById('container-etapas'), n = c.children.length + 1, div = document.createElement('div');
             div.className = "bloco-etapa bg-white p-3 rounded-lg border shadow-sm space-y-2 relative";
-            div.innerHTML = `<div class="flex justify-between border-b pb-1"><span class="text-xs font-bold text-violet-600">ETAPA <span class="numero-etapa">${n}</span></span><button type="button" onclick="this.closest('.bloco-etapa').remove(); ordenarEtapas();" class="text-[10px] text-red-500 font-bold hover:underline">🗑️ Remover</button></div><input type="text" class="etapa-titulo w-full p-2 bg-slate-50 border rounded text-xs font-semibold" placeholder="Título" value="${t}" required><textarea class="etapa-descricao w-full h-12 p-2 bg-slate-50 border rounded text-xs resize-none" placeholder="Descrição (Opcional)">${d}</textarea>`;
+            div.innerHTML = `<div class="flex justify-between border-b pb-1"><span class="text-xs font-bold text-violet-600">ETAPA <span class="numero-etapa">${n}</span></span><button type="button" onclick="this.closest('.bloco-etapa').remove(); ordenarEtapas();" class="text-[10px] text-red-500 font-bold hover:underline">🗑️ Remover</button></div><input type="text" class="etapa-titulo w-full p-2 bg-slate-50 border rounded text-xs font-semibold" placeholder="Título" value="${t}" required><textarea class="etapa-descricao w-full h-12 p-2 bg-slate-50 border rounded text-xs resize-none" placeholder="Descrição">${d}</textarea>`;
             c.appendChild(div);
         }
 
@@ -289,10 +287,30 @@
             } catch(err) { console.error("Erro ao registrar log detalhado", err); }
         }
 
+        // NOVA FUNÇÃO DE ENVIO DE EMAIL VIA GOOGLE APPS SCRIPT
         async function enviarEmail(ac, id, det) {
             try {
-                await emailjs.send("service_hd5fuga", "template_l6vcu0y", { usuario: emailUsuarioLogado || "Não identificado", data_hora: new Date().toLocaleString("pt-BR"), acao: ac, id_servico: id, detalhes: det });
-            } catch (err) { console.error("Erro EmailJS:", err); }
+                const urlGoogleScript = "https://script.google.com/macros/s/AKfycbxxIgG0IKohzPrt-sgULpK3pk-WdvGUdJNLXxYsWinZ2SclnPeKM8T9_xlZCDeY9LMh/exec";
+                
+                const dados = {
+                    usuario: emailUsuarioLogado || "Não identificado",
+                    data_hora: new Date().toLocaleString("pt-BR"),
+                    acao: ac,
+                    id_servico: id,
+                    detalhes: det
+                };
+
+                await fetch(urlGoogleScript, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(dados)
+                });
+                
+                console.log("E-mail disparado com sucesso via Google Apps Script!");
+            } catch (err) { 
+                console.error("Erro ao enviar e-mail via Google:", err); 
+            }
         }
 
         document.getElementById('form-solicitar').onsubmit = async (e) => {
@@ -341,15 +359,7 @@
             e.preventDefault();
             const em = document.getElementById('login-email').value.trim(), se = document.getElementById('login-senha').value, btn = document.getElementById('btn-login');
             btn.disabled = true; btn.innerText = "⏳ Verificando...";
-            try { 
-                await auth.signInWithEmailAndPassword(em, se); 
-                await db.collection('registros_atividades').add({
-                    email: em,
-                    acao: "Realizou Login no Sistema",
-                    dataHora: new Date().toLocaleString('pt-BR'),
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (err) { alert("❌ Erro: Usuário ou senha incorretos."); }
+            try { await auth.signInWithEmailAndPassword(em, se); } catch (err) { alert("❌ Erro: Usuário ou senha incorretos."); }
             btn.disabled = false; btn.innerText = "🔑 Entrar no Painel";
         };
 
@@ -455,7 +465,7 @@
             adicionarHTMLNovaEtapa("Solicitação do Serviço", "Explique o primeiro passo.");
             document.getElementById('modal-edicao').classList.remove('hidden');
         }
-        
+
         function abrirEditorDeServico(id) {
             const s = bancoDeDadosLocal[`ID_${id}`]; if (!s) return;
             idOriginalEdicao = Number(id);
@@ -502,10 +512,9 @@
             // Exibe o aviso que vai nascer Inativo
             document.getElementById('aviso-inativo').classList.remove('hidden');
 
-            // Calcula qual será o próximo ID livre preenchendo os buracos
+            // Calcula qual será o próximo ID livre
             const ids = Object.values(bancoDeDadosLocal).map(serv => Number(serv.id) || 0);
-            let prox = 1;
-            while (ids.includes(prox)) { prox++; }
+            const prox = ids.length > 0 ? Math.max(...ids) + 1 : 1;
 
             document.getElementById('modal-titulo-servico').innerText = `Duplicar Serviço (Cópia do #${id})`;
             document.getElementById('edit-id').value = prox; // Coloca o novo ID
