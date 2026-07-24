@@ -194,14 +194,22 @@
 
         function desenharTabelaSelecao() {
             const tabela = document.getElementById('tabela-selecao'); tabela.innerHTML = "";
-            const lista = Object.values(bancoDeDadosLocal).filter(s => s && s.ativo !== false && s.id).sort((a, b) => parseInt(a.id) - parseInt(b.id));
+            
+            // CORREÇÃO AQUI: Removemos o filtro de "s.ativo !== false" para mostrar TODOS os serviços
+            const lista = Object.values(bancoDeDadosLocal).filter(s => s && s.id).sort((a, b) => parseInt(a.id) - parseInt(b.id));
             
             lista.forEach(s => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-blue-50 transition-colors border-b border-slate-100";
+                
+                // Adiciona um aviso visual elegante se o serviço estiver oculto/inativo
+                const badgeInativo = s.ativo === false 
+                    ? `<span class="ml-2 px-2 py-0.5 text-[10px] bg-slate-200 text-red-500 rounded-full font-bold uppercase tracking-wider">Oculto / Inativo</span>` 
+                    : '';
+
                 tr.innerHTML = `<td class="p-4"><input type="checkbox" class="filtro-selecao rounded h-5 w-5 cursor-pointer border-slate-300" value="${s.id}" onchange="atualizarContadorSelecao()"></td>
                                 <td class="p-4 font-bold text-slate-600">ID ${s.id}</td>
-                                <td class="p-4 font-bold text-[#002B5E] text-base">${s.titulo || 'Sem Título'}</td>
+                                <td class="p-4 font-bold text-[#002B5E] text-base flex items-center flex-wrap gap-2">${s.titulo || 'Sem Título'} ${badgeInativo}</td>
                                 <td class="p-4 text-slate-500 font-medium">${s.secretaria || 'N/A'}</td>`;
                 tabela.appendChild(tr);
             });
@@ -336,7 +344,7 @@
 
                     <!-- Rodapé Oficial -->
                     <div class="border-t-2 border-slate-200 pt-4 mt-8 flex flex-col items-center justify-center text-slate-500 text-xs leading-relaxed font-semibold text-center">
-                        <p>Ouvidoria Municipal: 0800-XXX-XXXX | Portal Oficial: horizontina.rs.gov.br</p>
+                        <p>Ouvidoria Municipal: 55 3537 7500 | Portal Oficial: horizontina.rs.gov.br</p>
                         <p class="mt-1 font-normal text-slate-400">Documento de transparência gerado em: ${new Date().toLocaleDateString('pt-BR')}</p>
                     </div>
                 </div>
