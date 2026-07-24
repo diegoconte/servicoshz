@@ -82,7 +82,23 @@
                 <a href="dashboard.html" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-xs rounded-xl transition-colors">📈 Ver Dashboard</a>
             </div>
            
-            <!-- SELETOR DE SECRETARIAS (Filtro) -->
+            <div class="flex flex-wrap gap-2">
+            <!-- Botão de Exportar carta em a4 -->        
+            <a href="gerador_cartas_a4.html" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-sm transition-colors shadow-sm flex items-center gap-2">
+                <i class="fas fa-print"></i> Gerar Cartas Físicas
+            </a>
+            <!-- Botão de Exportar Backup (Nasce oculto) -->
+            <button id="btn-exportar" onclick="exportarDadosJSON()" class="hidden bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-colors shadow-sm" title="Baixar base de dados completa em JSON">
+                📥 Exportar Backup
+            </button>
+            <!-- Botão de Cadastrar Serviço -->
+            <button onclick="abrirCriadorDeServico()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors shadow-sm">
+                ➕ Cadastrar Serviço
+            </button>
+            </div>
+        </div>
+       
+        <!-- SELETOR DE SECRETARIAS (Filtro) -->
             <div class="flex-grow flex justify-end my-4 mx-4">
                 <select id="filtro-secretaria-tabela" onchange="desenharTabelaReal()" class="w-full max-w-sm px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all">
                     <option value="TODAS">🏛️ Todas as Secretarias</option>
@@ -99,22 +115,6 @@
                 </select>
             </div>
 
-           <div class="flex flex-wrap gap-2">
-            <!-- Botão de Exportar carta em a4 -->        
-            <a href="gerador_cartas_a4.html" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-sm transition-colors shadow-sm flex items-center gap-2">
-                <i class="fas fa-print"></i> Gerar Cartas Físicas
-            </a>
-            <!-- Botão de Exportar Backup (Nasce oculto) -->
-            <button id="btn-exportar" onclick="exportarDadosJSON()" class="hidden bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-colors shadow-sm" title="Baixar base de dados completa em JSON">
-                📥 Exportar Backup
-            </button>
-            <!-- Botão de Cadastrar Serviço -->
-            <button onclick="abrirCriadorDeServico()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors shadow-sm">
-                ➕ Cadastrar Serviço
-            </button>
-            </div>
-        </div>
-        
         <div class="overflow-x-auto rounded-xl border border-slate-200">
             <table class="w-full text-left text-sm">
                 <thead>
@@ -290,7 +290,7 @@
         // NOVA FUNÇÃO DE ENVIO DE EMAIL VIA GOOGLE APPS SCRIPT
         async function enviarEmail(ac, id, det) {
             try {
-                const urlGoogleScript = "https://script.google.com/macros/s/AKfycbxxIgG0IKohzPrt-sgULpK3pk-WdvGUdJNLXxYsWinZ2SclnPeKM8T9_xlZCDeY9LMh/exec";
+                const urlGoogleScript = "https://script.google.com/macros/s/AKfycbynOrBaWpUVAj-iTL6_7uIwN1ptpWm_9zRqTaEzVYjlDxkLp7a4Cy9toVpXPRMQwlTC/exec";
                 
                 const dados = {
                     usuario: emailUsuarioLogado || "Não identificado",
@@ -604,15 +604,26 @@
     
         function exportarDadosJSON() {
             if (Object.keys(bancoDeDadosLocal).length === 0) return alert("⚠️ Não há dados carregados.");
-            const dataExata = new Date().toLocaleString('pt-BR');
-            const dadosParaExportar = { "_METADADOS": `Backup gerado em ${dataExata}`, ...bancoDeDadosLocal };
+            
+            const dataAtual = new Date();
+            const dataExata = dataAtual.toLocaleString('pt-BR');
+            const nomeArquivoData = dataAtual.toISOString().split('T')[0];
+            
+            // Correção de Sintaxe (Removido o spread operator corrompido que causou o travamento)
+            const dadosParaExportar = Object.assign({ "_METADADOS": "Backup gerado em " + dataExata }, bancoDeDadosLocal);
+            
             const blob = new Blob([JSON.stringify(dadosParaExportar, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
+            const url = window.URL.createObjectURL(blob);
             const linkBackup = document.createElement('a');
+            
             linkBackup.href = url;
-            linkBackup.download = `backup_carta_servicos_horizontina_${new Date().toISOString().slice(0, 10)}.json`;
-            document.body.appendChild(linkBackup); linkBackup.click();
-            document.body.removeChild(linkBackup); URL.revokeObjectURL(url);
+            linkBackup.download = "backup_carta_servicos_horizontina_" + nomeArquivoData + ".json";
+            
+            document.body.appendChild(linkBackup); 
+            linkBackup.click();
+            
+            document.body.removeChild(linkBackup); 
+            window.URL.revokeObjectURL(url);
         }
     </script>
 </body>
