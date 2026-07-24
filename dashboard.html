@@ -11,6 +11,8 @@
 
     <!-- Chart.js para desenhar gráficos interativos espetaculares -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Plugin Datalabels para exibir os valores sobre os gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 
     <!-- O Tailwind CSS que pinta nossa tela -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -161,13 +163,28 @@
             </div>
         </div>
 
-        <!-- TABELA DE LOG DETALHADO DOS USUÁRIOS ADMIN -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+        <!-- Distribuição por Secretarias (MOVIDA PARA CIMA DOS LOGS) -->
+        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 w-full mb-8">
+            <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
+                🏛️ Serviços Cadastrados por Secretaria Municipal
+            </h3>
+            <div class="h-96 relative flex items-center justify-center">
+                <canvas id="chart-secretarias"></canvas>
+            </div>
+        </div>
+
+        <!-- TABELA DE LOG DETALHADO DOS USUÁRIOS ADMIN (MOVIDA PARA O FINAL DA PÁGINA) -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-slate-100 pb-4 gap-4">
                 <h3 class="text-lg font-bold text-[#002B5E] flex items-center gap-2">
                     <i class="fas fa-list-ul"></i> Histórico Detalhado de Acessos e Ações
                 </h3>
-                <span class="text-xs font-bold bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Últimas 50 ações</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-bold bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full">Últimas 20 ações</span>
+                    <button id="btn-baixar-logs" onclick="baixarRelatorioLogsCompleto()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors flex items-center gap-2 shadow-sm">
+                        <i class="fas fa-download"></i> Baixar Relatório Completo (.csv)
+                    </button>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
@@ -182,16 +199,6 @@
                         <tr><td colspan="3" class="p-8 text-center text-slate-500 animate-pulse">Carregando histórico de atividades...</td></tr>
                     </tbody>
                 </table>
-            </div>
-        </div>
-
-        <!-- Distribuição por Secretarias -->
-        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 w-full mb-4">
-            <h3 class="font-bold text-slate-700 uppercase tracking-wider text-xs mb-4 flex items-center gap-2">
-                🏛️ Serviços Cadastrados por Secretaria Municipal
-            </h3>
-            <div class="h-96 relative flex items-center justify-center">
-                <canvas id="chart-secretarias"></canvas>
             </div>
         </div>
     </div>
@@ -212,6 +219,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
+
+        // Registra o plugin datalabels globalmente
+        Chart.register(ChartDataLabels);
 
         // Variáveis Globais de Banco
         let databaseServicos = {};
@@ -321,10 +331,10 @@
             }
             
             try {
-                // Puxa os 50 registros mais recentes em tempo real
+                // Puxa apenas os 20 registros mais recentes em tempo real para não poluir a tela
                 ouvinteDeLogs = db.collection('registros_atividades')
                   .orderBy('timestamp', 'desc')
-                  .limit(50)
+                  .limit(20)
                   .onSnapshot((snapshot) => {
                       tabela.innerHTML = "";
                       if (snapshot.empty) {
@@ -355,6 +365,52 @@
                   });
             } catch (err) {
                 console.error("Falha ao montar tabela de logs", err);
+            }
+        }
+
+        async function baixarRelatorioLogsCompleto() {
+            try {
+                const btn = document.getElementById('btn-baixar-logs');
+                const textoOriginal = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando arquivo...';
+                btn.disabled = true;
+
+                // Busca TODOS os registros da história do portal ordenados por data
+                const snapshot = await db.collection('registros_atividades').orderBy('timestamp', 'desc').get();
+                
+                // Prepara o cabeçalho do arquivo CSV
+                let conteudoCSV = "Data/Hora,Usuario,Acao\n";
+
+                snapshot.forEach(doc => {
+                    const log = doc.data();
+                    // Limpa formatações e vírgulas para não quebrar as colunas na planilha do Excel
+                    const dataHora = log.dataHora ? log.dataHora.replace(/,/g, '') : 'Sem data';
+                    const usuario = log.email ? log.email : 'Usuario';
+                    const acao = log.acao ? log.acao.replace(/,/g, ';').replace(/\n/g, ' ') : 'Sem descricao';
+                    
+                    conteudoCSV += `${dataHora},${usuario},${acao}\n`;
+                });
+
+                // Cria o arquivo CSV injetando uma máscara padrão (BOM) para o Excel reconhecer os acentos (UTF-8)
+                const blob = new Blob(["\uFEFF" + conteudoCSV], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const linkDownload = document.createElement('a');
+                
+                linkDownload.href = url;
+                linkDownload.download = `relatorio_auditoria_completo_${new Date().toISOString().split('T')[0]}.csv`;
+                
+                document.body.appendChild(linkDownload);
+                linkDownload.click();
+                document.body.removeChild(linkDownload);
+
+                // Restaura o visual do botão
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+
+            } catch (erro) {
+                console.error("Erro ao gerar relatório completo:", erro);
+                alert("Ocorreu um erro ao tentar baixar o relatório.");
+                document.getElementById('btn-baixar-logs').disabled = false;
             }
         }
 
@@ -443,6 +499,16 @@
             if (chartInstAuditoria) chartInstAuditoria.destroy();
             if (chartInstSecretarias) chartInstSecretarias.destroy();
 
+            // Configuração padrão comum para os rótulos de dados
+            const datalabelsConfig = {
+                color: '#fff',
+                font: { weight: 'bold', size: 12 },
+                formatter: Math.round,
+                display: function(context) {
+                    return context.dataset.data[context.dataIndex] > 0; // Só mostra se for maior que 0
+                }
+            };
+
             // ---------------------------------------------------------
             // GRÁFICO 1: TOP 5 SERVIÇOS MAIS ACESSADOS
             // ---------------------------------------------------------
@@ -463,7 +529,15 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } }
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: {
+                            ...datalabelsConfig,
+                            anchor: 'end',
+                            align: 'bottom'
+                        }
+                    }, 
+                    scales: { y: { beginAtZero: true } }
                 }
             });
 
@@ -479,7 +553,22 @@
                         backgroundColor: ['#f59e0b', '#002B5E']
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { position: 'bottom' },
+                        datalabels: {
+                            ...datalabelsConfig,
+                            formatter: (value, ctx) => {
+                                let sum = 0;
+                                let dataArr = ctx.chart.data.datasets[0].data;
+                                dataArr.map(data => { sum += data; });
+                                let percentage = (value * 100 / sum).toFixed(0) + "%";
+                                return percentage;
+                            }
+                        }
+                    } 
+                }
             });
 
             // ---------------------------------------------------------
@@ -501,7 +590,16 @@
                 },
                 options: {
                     indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: {
+                            ...datalabelsConfig,
+                            anchor: 'end',
+                            align: 'left',
+                            color: '#1e293b' // Texto escuro para melhor contraste em barras deitadas
+                        }
+                    }, 
+                    scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
 
@@ -524,7 +622,18 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: {
+                            ...datalabelsConfig,
+                            align: 'top',
+                            color: '#0284c7',
+                            backgroundColor: 'white',
+                            borderRadius: 4,
+                            padding: 2
+                        }
+                    }, 
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
 
@@ -547,7 +656,15 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: {
+                            ...datalabelsConfig,
+                            anchor: 'end',
+                            align: 'bottom'
+                        }
+                    }, 
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
         }
